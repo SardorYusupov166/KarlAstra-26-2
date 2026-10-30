@@ -1195,7 +1195,7 @@ implements PopupHost {
                 this.pushUndo();
                 float step = shift ? 10.0f : 1.0f;
                 float[] g = this.geom(this.selected);
-                float f = key == 263 ? -step : (ddx = key == 262 ? step : 0.0f);
+                ddx = key == 263 ? -step : (key == 262 ? step : 0.0f);
                 float ddy = key == 265 ? -step : (key == 264 ? step : 0.0f);
                 this.setGeom(this.selected, g[0] + ddx, g[1] + ddy, g[2], g[3]);
                 return true;
