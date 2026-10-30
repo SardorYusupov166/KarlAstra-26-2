@@ -2,6 +2,7 @@ package astra.utils;
 
 import astra.AstraClient;
 import astra.gui.screens.ClickGuiScreen;
+import astra.gui.screens.HudEditorScreen;
 import astra.gui.pages.ModulesPage;
 import astra.config.ConfigManager;
 import astra.decor.DecorManager;
@@ -23,6 +24,7 @@ public final class ClientSmokeTest {
     private static int ticks;
     private static boolean opened;
     private static int categoryIndex = -1;
+    private static boolean hudEditor;
     private static JsonObject original;
     private ClientSmokeTest() {}
 
@@ -47,6 +49,14 @@ public final class ClientSmokeTest {
                 // Restoring profile settings can trigger a resource-pack reload.
                 ticks = 0;
                 return;
+            } else if (hudEditor) {
+                if (!(client.gui.screen() instanceof HudEditorScreen)) throw new IllegalStateException("HUD editor closed during smoke test");
+                if (++ticks >= 40) {
+                    AstraClient.LOGGER.info("ASTRA_HUD_EDITOR_TEST_PASS: editor rendered before joining a world");
+                    AstraClient.LOGGER.info("ASTRA_SMOKE_TEST_PASS: title and ClickGUI rendered");
+                    ConfigManager.applyModules(original, false, false);
+                    client.stop();
+                }
             } else if (!(client.gui.screen() instanceof ClickGuiScreen)) {
                 throw new IllegalStateException("ClickGUI closed during smoke test");
             } else if (categoryIndex >= 0) {
@@ -83,9 +93,9 @@ public final class ClientSmokeTest {
             return;
         }
         AstraClient.LOGGER.info("ASTRA_MENU_TEST_PASS: all {} categories opened and rendered", categoryIndex);
-        AstraClient.LOGGER.info("ASTRA_SMOKE_TEST_PASS: title and ClickGUI rendered");
-        ConfigManager.applyModules(original, false, false);
-        client.stop();
+        ticks = 0;
+        hudEditor = true;
+        client.gui.setScreen(new HudEditorScreen(screen));
     }
 
     private static void verifyMixinTargets() throws ClassNotFoundException {

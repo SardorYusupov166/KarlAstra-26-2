@@ -18,6 +18,7 @@ import astra.render.Icon;
 import astra.settings.BooleanSetting;
 import astra.settings.ModeSetting;
 import astra.theme.Theme;
+import astra.utils.ItemPreview;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -51,10 +52,10 @@ extends HudModule {
             }
         }
         if (list.isEmpty() && editor) {
-            list.add(new ItemStack((ItemLike)Items.NETHERITE_HELMET));
-            list.add(new ItemStack((ItemLike)Items.NETHERITE_CHESTPLATE));
-            list.add(new ItemStack((ItemLike)Items.NETHERITE_LEGGINGS));
-            list.add(new ItemStack((ItemLike)Items.NETHERITE_BOOTS));
+            list.add(ItemPreview.stack(Items.NETHERITE_HELMET));
+            list.add(ItemPreview.stack(Items.NETHERITE_CHESTPLATE));
+            list.add(ItemPreview.stack(Items.NETHERITE_LEGGINGS));
+            list.add(ItemPreview.stack(Items.NETHERITE_BOOTS));
         }
         return list;
     }

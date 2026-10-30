@@ -20,6 +20,7 @@ import astra.render.Icon;
 import astra.render.Render2D;
 import astra.settings.BooleanSetting;
 import astra.theme.Theme;
+import astra.utils.ItemPreview;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -64,8 +65,8 @@ extends HudModule {
             }
         }
         if (list.isEmpty() && editor) {
-            list.add(new Entry(new ItemStack((ItemLike)Items.NETHERITE_SWORD), 0.45f, true));
-            list.add(new Entry(new ItemStack((ItemLike)Items.ENDER_PEARL), 0.7f, false));
+            list.add(new Entry(ItemPreview.stack(Items.NETHERITE_SWORD), 0.45f, true));
+            list.add(new Entry(ItemPreview.stack(Items.ENDER_PEARL), 0.7f, false));
         }
         return list;
     }

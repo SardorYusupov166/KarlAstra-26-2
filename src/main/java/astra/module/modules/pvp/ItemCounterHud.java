@@ -21,6 +21,7 @@ import astra.settings.BooleanSetting;
 import astra.settings.ModeSetting;
 import astra.settings.NumberSetting;
 import astra.theme.Theme;
+import astra.utils.ItemPreview;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -122,7 +123,7 @@ extends HudModule {
             if (low) {
                 Render2D.roundRect(ctx, x, y, this.vertical() ? w - 4.0f : 36.0f, 16.0f, 4.0f, ColorUtil.withAlpha(-770210, (n == 0 ? 0.18f : 0.1f) + 0.22f * blink));
             }
-            ctx.item(new ItemStack((ItemLike)kind.icon), Math.round(x + 1.0f), Math.round(y));
+            ctx.item(ItemPreview.stack(kind.icon), Math.round(x + 1.0f), Math.round(y));
             int col = n == 0 ? -770210 : (low ? ColorUtil.lerp(-340971, -770210, blink) : t.text());
             Fonts.draw(ctx, String.valueOf(n), x + 20.0f, y + 4.5f, 7.5f, col, true);
         }

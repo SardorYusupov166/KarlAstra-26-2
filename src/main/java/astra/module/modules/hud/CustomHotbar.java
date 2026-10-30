@@ -23,6 +23,7 @@ import astra.render.Render2D;
 import astra.settings.BooleanSetting;
 import astra.theme.Theme;
 import astra.utils.FrameStats;
+import astra.utils.ItemPreview;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.HumanoidArm;
@@ -38,9 +39,8 @@ extends HudModule {
     private final BooleanSetting numbers = this.add(new BooleanSetting("\u041d\u043e\u043c\u0435\u0440\u0430 \u0441\u043b\u043e\u0442\u043e\u0432", false));
     private final BooleanSetting smooth = this.add(new BooleanSetting("\u041f\u043b\u0430\u0432\u043d\u044b\u0439 \u0432\u044b\u0431\u043e\u0440", true));
     private final Animation selected = new Animation(0.0f, 22.0f);
-    private static final class PreviewItems {
-        private static final ItemStack[] STACKS = new ItemStack[]{new ItemStack((ItemLike)Items.NETHERITE_SWORD), new ItemStack((ItemLike)Items.BOW), new ItemStack((ItemLike)Items.DIAMOND_PICKAXE), new ItemStack((ItemLike)Items.DIAMOND_AXE), new ItemStack((ItemLike)Items.ENDER_PEARL, 16), new ItemStack((ItemLike)Items.GOLDEN_APPLE, 8), new ItemStack((ItemLike)Items.AMETHYST_BLOCK, 32), new ItemStack((ItemLike)Items.POTION), new ItemStack((ItemLike)Items.WATER_BUCKET)};
-    }
+    private static final ItemLike[] PREVIEW_ITEMS = {Items.NETHERITE_SWORD, Items.BOW, Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.ENDER_PEARL, Items.GOLDEN_APPLE, Items.AMETHYST_BLOCK, Items.POTION, Items.WATER_BUCKET};
+    private static final int[] PREVIEW_COUNTS = {1, 1, 1, 1, 16, 8, 32, 1, 1};
 
     public CustomHotbar() {
         super("custom_hotbar", "\u0410\u043d\u0438\u043c\u0435-\u0445\u043e\u0442\u0431\u0430\u0440", "\u0421\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0439 \u0445\u043e\u0442\u0431\u0430\u0440 \u0441\u043e \u0441\u0432\u0435\u0447\u0435\u043d\u0438\u0435\u043c \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e \u0441\u043b\u043e\u0442\u0430.", Category.HUD, Icon.LAYERS, 0.5f, 0.955f);
@@ -95,7 +95,7 @@ extends HudModule {
         Render2D.roundRect(ctx, hx, 4.0f, 20.0f, 20.0f, 4.0f, Paint.vertical(4.0f, 24.0f, ColorUtil.withAlpha(acc, 0.45f), ColorUtil.withAlpha(t.accent2(), 0.25f)));
         Render2D.outline(ctx, hx, 4.0f, 20.0f, 20.0f, 4.0f, 1.1f, ColorUtil.withAlpha(0xFFFFFF, 0.85f));
         for (int i = 0; i < 9; ++i) {
-            ItemStack stack = player != null ? player.getInventory().getItem(i) : PreviewItems.STACKS[i];
+            ItemStack stack = player != null ? player.getInventory().getItem(i) : ItemPreview.stack(PREVIEW_ITEMS[i], PREVIEW_COUNTS[i]);
             float sx = 4.0f + (float)i * 22.0f;
             if (!stack.isEmpty()) {
                 int ix = Math.round(sx + 2.0f);
