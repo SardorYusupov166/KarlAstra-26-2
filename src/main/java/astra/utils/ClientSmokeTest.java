@@ -41,6 +41,12 @@ public final class ClientSmokeTest {
                 client.gui.setScreen(screen);
                 opened = true;
                 ticks = 0;
+            } else if (client.gui.overlay() != null) {
+                // Restoring profile settings can trigger a resource-pack reload.
+                ticks = 0;
+                return;
+            } else if (!(client.gui.screen() instanceof ClickGuiScreen)) {
+                throw new IllegalStateException("ClickGUI closed during smoke test");
             } else if (++ticks == 30) {
                 net.minecraft.client.Screenshot.grab(client.gameDirectory, "astra-smoke-profile.png",
                         client.gameRenderer.mainRenderTarget(), 1, message -> AstraClient.LOGGER.info("Smoke screenshot: {}", message.getString()));
