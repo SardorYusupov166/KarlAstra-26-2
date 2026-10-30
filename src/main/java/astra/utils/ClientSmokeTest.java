@@ -37,7 +37,7 @@ public final class ClientSmokeTest {
                 if (++ticks < 40) return;
                 verifyPersonalization();
                 ClickGuiScreen screen = new ClickGuiScreen(null);
-                screen.setCategory(Category.COSMETICS);
+                screen.setCategory(Category.PROFILES);
                 client.gui.setScreen(screen);
                 opened = true;
                 ticks = 0;
@@ -47,7 +47,9 @@ public final class ClientSmokeTest {
                 return;
             } else if (!(client.gui.screen() instanceof ClickGuiScreen)) {
                 throw new IllegalStateException("ClickGUI closed during smoke test");
-            } else if (++ticks == 30) {
+            } else if (++ticks == 10) {
+                ModuleManager.get(SoundsModule.class).previewWelcome();
+            } else if (ticks == 30) {
                 net.minecraft.client.Screenshot.grab(client.gameDirectory, "astra-smoke-profile.png",
                         client.gameRenderer.mainRenderTarget(), 1, message -> AstraClient.LOGGER.info("Smoke screenshot: {}", message.getString()));
             } else if (ticks >= 60) {
