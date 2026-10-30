@@ -2,6 +2,7 @@ package astra.utils;
 
 import astra.AstraClient;
 import astra.gui.screens.ClickGuiScreen;
+import astra.gui.pages.ModulesPage;
 import astra.config.ConfigManager;
 import astra.decor.DecorManager;
 import astra.module.Category;
@@ -21,6 +22,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 public final class ClientSmokeTest {
     private static int ticks;
     private static boolean opened;
+    private static int categoryIndex = -1;
     private static JsonObject original;
     private ClientSmokeTest() {}
 
@@ -47,17 +49,43 @@ public final class ClientSmokeTest {
                 return;
             } else if (!(client.gui.screen() instanceof ClickGuiScreen)) {
                 throw new IllegalStateException("ClickGUI closed during smoke test");
+            } else if (categoryIndex >= 0) {
+                checkMenuPages(client, (ClickGuiScreen) client.gui.screen());
             } else if (++ticks == 10) {
                 ModuleManager.get(SoundsModule.class).previewWelcome();
             } else if (ticks == 30) {
                 net.minecraft.client.Screenshot.grab(client.gameDirectory, "astra-smoke-profile.png",
                         client.gameRenderer.mainRenderTarget(), 1, message -> AstraClient.LOGGER.info("Smoke screenshot: {}", message.getString()));
             } else if (ticks >= 60) {
-                AstraClient.LOGGER.info("ASTRA_SMOKE_TEST_PASS: title and ClickGUI rendered");
-                ConfigManager.applyModules(original, false, false);
-                client.stop();
+                categoryIndex = 0;
+                ticks = 0;
+                ((ClickGuiScreen) client.gui.screen()).setCategory(Category.values()[categoryIndex]);
             }
         });
+    }
+
+    private static void checkMenuPages(net.minecraft.client.Minecraft client, ClickGuiScreen screen) {
+        // Visit every category: the old boot check only opened Profiles and missed
+        // the invalid ButtonSetting -> ModeSetting cast in the Sounds constructor.
+        if (++ticks == 20 && screen.currentPage() instanceof ModulesPage page) {
+            page.cards().forEach(card -> card.setExpanded(true));
+        }
+        if (ticks == 40 && screen.getCategory() == Category.SOUNDS) {
+            net.minecraft.client.Screenshot.grab(client.gameDirectory, "astra-smoke-sounds.png",
+                    client.gameRenderer.mainRenderTarget(), 1,
+                    message -> AstraClient.LOGGER.info("Sounds screenshot: {}", message.getString()));
+        }
+        if (ticks < 50) return;
+        AstraClient.LOGGER.info("ASTRA_MENU_PAGE_PASS: {}", screen.getCategory());
+        if (++categoryIndex < Category.values().length) {
+            ticks = 0;
+            screen.setCategory(Category.values()[categoryIndex]);
+            return;
+        }
+        AstraClient.LOGGER.info("ASTRA_MENU_TEST_PASS: all {} categories opened and rendered", categoryIndex);
+        AstraClient.LOGGER.info("ASTRA_SMOKE_TEST_PASS: title and ClickGUI rendered");
+        ConfigManager.applyModules(original, false, false);
+        client.stop();
     }
 
     private static void verifyMixinTargets() throws ClassNotFoundException {

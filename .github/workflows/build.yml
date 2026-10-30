@@ -24,7 +24,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build --stacktrace --console=plain
-      - name: Boot client and render title and ClickGUI with software OpenGL
+      - name: Boot client and render every ClickGUI category with software OpenGL
         env:
           LIBGL_ALWAYS_SOFTWARE: 'true'
           ALSOFT_DRIVERS: 'null'
@@ -33,6 +33,7 @@ jobs:
           grep -q 'ASTRA_SMOKE_TEST_PASS' run/logs/latest.log
           grep -q 'ASTRA_PERSONALIZATION_TEST_PASS' run/logs/latest.log
           grep -q 'ASTRA_MIXIN_TEST_PASS' run/logs/latest.log
+          grep -q 'ASTRA_MENU_TEST_PASS' run/logs/latest.log
       - uses: actions/upload-artifact@v4
         if: success()
         with:

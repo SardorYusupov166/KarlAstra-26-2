@@ -609,9 +609,9 @@ extends Module {
         slot.variant.displayAs(slot.variant.getName().startsWith("\u0412\u0430\u0440\u0438\u0430\u043d\u0442") ? "\u0412\u0430\u0440\u0438\u0430\u043d\u0442 \u0437\u0432\u0443\u043a\u0430" : "\u0417\u0432\u0443\u043a");
         slot.test.displayAs("\u041f\u0440\u043e\u0441\u043b\u0443\u0448\u0430\u0442\u044c");
         slot.test.label(() -> "\u25b6 \u041f\u0440\u043e\u0441\u043b\u0443\u0448\u0430\u0442\u044c");
-        ArrayList list = new ArrayList(List.of(slot.volume, slot.variant));
+        List<Setting<?>> list = new ArrayList<>(List.of(slot.volume, slot.variant));
         list.addAll(List.of(extra));
-        list.add((ModeSetting)((Object)slot.test));
+        list.add(slot.test);
         return new Section(group, slot.enabled.getName(), description, icon, slot.enabled, false, list);
     }
 
@@ -660,13 +660,13 @@ extends Module {
         list.add(this.event(other, this.zoom, "\u041f\u0440\u0438\u0431\u043b\u0438\u0436\u0435\u043d\u0438\u0435 \u043a\u0430\u043c\u0435\u0440\u044b.", Icon.ZOOM, new Setting[0]));
         list.add(this.event(other, this.idle, "\u0414\u043e\u043b\u0433\u043e \u0441\u0442\u043e\u0438\u0442\u0435 \u0431\u0435\u0437 \u0434\u0435\u043b\u0430.", Icon.CLOCK, this.idleSeconds));
         list.add(this.event(other, this.board, "\u0424\u0440\u0430\u0437\u0430 \u043f\u043e \u043a\u043b\u0430\u0432\u0438\u0448\u0435.", Icon.KEYBOARD, this.boardKey));
-        Set used = Collections.newSetFromMap(new IdentityHashMap());
+        Set<Setting<?>> used = Collections.newSetFromMap(new IdentityHashMap<>());
         for (Section sec : list) {
             used.addAll(sec.settings());
             if (sec.toggle() == null) continue;
             used.add(sec.toggle());
         }
-        ArrayList rest = new ArrayList();
+        List<Setting<?>> rest = new ArrayList<>();
         for (Setting<?> st : this.getSettings()) {
             if (used.contains(st) || st.isEditorOnly()) continue;
             rest.add(st);
