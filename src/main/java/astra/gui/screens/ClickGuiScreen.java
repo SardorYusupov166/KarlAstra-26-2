@@ -32,6 +32,7 @@ import astra.gui.style.GuiStyle;
 import astra.module.Category;
 import astra.module.ClientSettings;
 import astra.module.modules.cosmetic.SoundsModule;
+import astra.module.ModuleManager;
 import astra.render.ArtManager;
 import astra.render.ColorUtil;
 import astra.render.Decorations;
