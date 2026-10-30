@@ -41,12 +41,50 @@ jobs:
                   p.parent.mkdir(parents=True,exist_ok=True)
                   p.write_bytes(z.read(n))
           PY
+      - name: Recover inherited Minecraft member names
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,re,collections
+          candidates=[]
+          for p in pathlib.Path.home().joinpath('.gradle/caches/fabric-loom').rglob('*.tiny'):
+              try:
+                  header=p.open().readline().strip().split('\t')
+                  if header[:3]==['tiny','2','0'] and 'intermediary' in header and 'named' in header:
+                      candidates.append((p,header))
+              except (OSError,UnicodeError):
+                  pass
+          print('Mapping candidates:',[(str(p),h) for p,h in candidates])
+          if not candidates:
+              raise SystemExit('No intermediary -> Mojang mapping file found')
+          mapping={}
+          for p,h in candidates:
+              source=3+h[3:].index('intermediary')
+              target=3+h[3:].index('named')
+              for line in p.read_text().splitlines():
+                  cols=line.split('\t')
+                  if len(cols)>max(source,target) and cols[0]=='' and cols[1] in ('m','f'):
+                      a,b=cols[source],cols[target]
+                      if re.fullmatch(r'(method|field)_\d+',a) and a!=b:
+                          mapping.setdefault(a,collections.Counter())[b]+=1
+          resolved={k:v.most_common(1)[0][0] for k,v in mapping.items()}
+          ref=pathlib.Path('.port-reference');ref.mkdir(exist_ok=True)
+          (ref/'member-map.json').write_text(json.dumps(resolved,indent=2,sort_keys=True))
+          count=0
+          for p in pathlib.Path('src/main/java').rglob('*.java'):
+              s=p.read_text()
+              s=re.sub(r'\b(?:method|field)_\d+\b',lambda m:resolved.get(m[0],m[0]),s)
+              s=re.sub(r'\\u([0-9a-fA-F]{4})',lambda m:chr(int(m[1],16)) if int(m[1],16)>=128 else m[0],s)
+              p.write_text(s)
+              count+=1
+          print('Resolved',len(resolved),'members across',count,'source files')
+          PY
       - name: Preserve recovered sources
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src
+          git add src .port-reference
           git commit -m "Recover original Astra sources and resources from supplied 1.21.11 JAR"
+          git pull --rebase
           git push
       - uses: actions/upload-artifact@v4
         if: always()
