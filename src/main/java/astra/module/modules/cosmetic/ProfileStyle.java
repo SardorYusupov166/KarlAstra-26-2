@@ -135,7 +135,7 @@ extends Module {
             public void render(UiContext ui, float x, float y, float w, float h) {
                 ProfileStyle.this.drawAvatar(ui.ctx, ui.theme, x + 4.0f, y + 2.0f, 40.0f);
                 Fonts.draw(ui.ctx, mc.getUser().getName(), x + 52.0f, y + 9.0f, 8.5f, ui.theme.text(), true);
-                String tg = ProfileStyle.this.tag();
+                String tg = Fonts.trim(ProfileStyle.this.tag(), Math.max(1, w - 62), 6.5f, true);
                 if (!tg.isEmpty()) {
                     float tw = Fonts.width(tg, 6.5f, true) + 10.0f;
                     Render2D.roundRect(ui.ctx, x + 52.0f, y + 22.0f, tw, 11.0f, 5.5f, Paint.horizontal(x + 52.0f, x + 52.0f + tw, ui.theme.accent(), ui.theme.accent2()));

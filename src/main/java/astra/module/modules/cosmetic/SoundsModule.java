@@ -404,9 +404,19 @@ extends Module {
         float out = Math.min(1.0f, (float)(life - age) / 500.0f);
         Theme t = ThemeManager.get();
         float size = 8.5f;
+        String[] lines = this.caption.clone();
         float textW = 0.0f;
-        for (String line : this.caption) {
+        for (String line : lines) {
             textW = Math.max(textW, Fonts.width(line, size, true));
+        }
+        float available = Math.max(1.0f, ctx.guiWidth() - 84.0f);
+        if (textW > available) {
+            size = Math.max(5.0f, size * available / textW);
+            textW = 0.0f;
+            for (int i = 0; i < lines.length; i++) {
+                lines[i] = Fonts.trim(lines[i], available, size, true);
+                textW = Math.max(textW, Fonts.width(lines[i], size, true));
+            }
         }
         float w = textW + 64.0f;
         float h = 44.0f;
@@ -424,7 +434,7 @@ extends Module {
         float ty = y + (h - (float)this.caption.length * (size + 3.0f)) / 2.0f + 1.0f;
         for (int i = 0; i < this.caption.length; ++i) {
             int col = i == this.caption.length - 1 ? ColorUtil.lerp(t.accent2(), -1, 0.25f) : t.text();
-            Fonts.draw(ctx, this.caption[i], x + 48.0f, ty + (float)i * (size + 3.0f), size, col, true);
+            Fonts.draw(ctx, lines[i], x + 48.0f, ty + (float)i * (size + 3.0f), size, col, true);
         }
         Render2D.sparkle(ctx, x + w - 10.0f, y + 9.0f, 3.2f, (float)age * 0.2f, -1);
         Render2D.alpha = prev;

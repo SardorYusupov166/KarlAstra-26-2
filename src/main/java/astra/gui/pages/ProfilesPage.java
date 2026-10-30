@@ -269,6 +269,8 @@ extends Page {
             Fonts.draw(ui.ctx, user, this.x + 76.0f, this.y + 16.0f, 12.0f, t.text(), true);
             String tag = style != null ? style.tag() : "";
             float tx = this.x + 76.0f + Fonts.width(user, 12.0f, true) + 8.0f;
+            float tagSpace = this.x + this.w - 148.0f - tx;
+            tag = tagSpace > 8.0f ? Fonts.trim(tag, tagSpace, 6.5f, true) : "";
             if (!tag.isEmpty()) {
                 float tw = Fonts.width(tag, 6.5f, true) + 12.0f;
                 Render2D.roundRect(ui.ctx, tx, this.y + 17.0f, tw, 12.0f, 6.0f, Paint.horizontal(tx, tx + tw, t.accent(), t.accent2()));
