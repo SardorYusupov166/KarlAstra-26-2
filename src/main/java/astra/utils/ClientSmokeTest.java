@@ -46,7 +46,7 @@ public final class ClientSmokeTest {
                         client.gameRenderer.mainRenderTarget(), 1, message -> AstraClient.LOGGER.info("Smoke screenshot: {}", message.getString()));
             } else if (ticks >= 60) {
                 AstraClient.LOGGER.info("ASTRA_SMOKE_TEST_PASS: title and ClickGUI rendered");
-                ConfigManager.applyModules(original, true, false);
+                ConfigManager.applyModules(original, false, false);
                 client.stop();
             }
         });
@@ -103,7 +103,7 @@ public final class ClientSmokeTest {
     private static void verifyPersonalization() {
         try {
             verifyMixinTargets();
-            original = ConfigManager.serializeModules(true);
+            original = ConfigManager.serializeModules(false);
             ProfileStyle profile = ProfileStyle.get();
             SoundsModule sounds = ModuleManager.get(SoundsModule.class);
             Path avatar = ArtManager.artDir().resolve("smoke-avatar.png");
@@ -119,12 +119,12 @@ public final class ClientSmokeTest {
             set(sounds, "Своё приветствие", true);
             set(sounds, "Заголовок приветствия", "Привет, игрок!");
             set(sounds, "Подпись приветствия", "Проверка 26.2");
-            JsonObject saved = ConfigManager.serializeModules(true);
+            JsonObject saved = ConfigManager.serializeModules(false);
             Path file = ConfigManager.root().resolve("smoke-profile.json");
             ConfigManager.writeJson(file, saved);
             set(profile, "Тег", "Astra");
             set(sounds, "Своё приветствие", false);
-            ConfigManager.applyModules(ConfigManager.readJson(file), true, false);
+            ConfigManager.applyModules(ConfigManager.readJson(file), false, false);
             Files.deleteIfExists(file);
             if (!profile.tag().equals("CI Sakura")) throw new IllegalStateException("Custom tag did not survive persistence");
             String[] caption = sounds.welcomeCaption("join_1");
