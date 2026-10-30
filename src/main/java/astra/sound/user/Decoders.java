@@ -109,12 +109,9 @@ public final class Decoders {
                         return bl;
                     }
                     catch (Exception exception) {}
-                    continue;
                     finally {
                         this.bitstream.closeFrame();
-                        continue;
                     }
-                    break;
                 }
             }
             catch (Exception e) {

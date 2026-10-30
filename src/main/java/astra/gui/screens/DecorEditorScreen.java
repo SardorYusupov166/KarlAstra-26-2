@@ -387,9 +387,8 @@ implements PopupHost {
             this.buttons.add(new float[]{x, y, w, 15.0f, 300.0f});
             y += 18.0f;
             if (this.elementsOpen) {
-                boolean bl = false;
+                int elementIndex = 0;
                 for (GuiStyle.Element e : GuiStyle.ELEMENTS.values()) {
-                    void var14_22;
                     GuiStyle.Override o;
                     boolean sel = e.id().equals(this.element);
                     boolean hov = this.ui.hover(x, y, w, 13.0f);
@@ -398,9 +397,9 @@ implements PopupHost {
                     }
                     String mark = (o = GuiStyle.get(e.id())) != null && !o.isDefault() ? " \u2022" : "";
                     Fonts.draw(ctx, e.label() + mark, x + 6.0f, y + 3.5f, 6.4f, sel ? t.text() : t.textDim(), sel);
-                    this.buttons.add(new float[]{x, y, w, 13.0f, 400 + var14_22});
+                    this.buttons.add(new float[]{x, y, w, 13.0f, 400 + elementIndex});
                     y += 14.0f;
-                    ++var14_22;
+                    ++elementIndex;
                 }
                 y += 4.0f;
             }
