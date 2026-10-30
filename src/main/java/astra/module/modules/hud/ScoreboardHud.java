@@ -4,7 +4,7 @@
  * Could not load the following classes:
  *  net.minecraft.ChatFormatting
  *  net.minecraft.client.gui.Font
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.network.chat.Component
  *  net.minecraft.network.chat.FontDescription
  *  net.minecraft.network.chat.FontDescription$Resource
@@ -39,7 +39,7 @@ import java.util.Comparator;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.FormattedText;
@@ -89,7 +89,7 @@ extends HudModule {
         }
         Scoreboard sb = ScoreboardHud.mc.level.getScoreboard();
         PlayerTeam team = sb.getPlayersTeam(ScoreboardHud.mc.player.getScoreboardName());
-        if (team != null && (slot = DisplaySlot.teamColorToSlot((ChatFormatting)team.getColor())) != null && sb.getDisplayObjective(slot) != null) {
+        if (team != null && (slot = team.getColor().map(net.minecraft.world.scores.TeamColor::displaySlot).orElse(null)) != null && sb.getDisplayObjective(slot) != null) {
             return sb.getDisplayObjective(slot);
         }
         return sb.getDisplayObjective(DisplaySlot.SIDEBAR);
@@ -156,7 +156,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         float titleW;
         if (!this.collect()) {
             if (!editor) {
@@ -185,7 +185,7 @@ extends HudModule {
         } else if (this.titleStyle.is("\u0421\u0432\u043e\u0439 \u0446\u0432\u0435\u0442")) {
             Fonts.drawCentered(ctx, plain, w / 2.0f, ty, 9.0f, this.titleColor.getColor(), true);
         } else {
-            ctx.drawString(tr, this.styledBold(this.title), (int)((w - titleW) / 2.0f), (int)ty, -1, ((Boolean)this.lineShadow.get()).booleanValue());
+            ctx.text(tr, this.styledBold(this.title), (int)((w - titleW) / 2.0f), (int)ty, -1, ((Boolean)this.lineShadow.get()).booleanValue());
         }
         float y = ty + 11.0f;
         if (((Boolean)this.separator.get()).booleanValue()) {
@@ -197,14 +197,14 @@ extends HudModule {
         }
         int alpha = (int)(255.0f * Render2D.alpha) << 24;
         for (Line l : this.lines) {
-            ctx.drawString(tr, this.styled(l.name()), (int)pad, (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
+            ctx.text(tr, this.styled(l.name()), (int)pad, (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
             if (showNums) {
                 Component sc = this.styled(l.score());
                 int sw = tr.width((FormattedText)sc);
                 if (this.numbers.is("\u0426\u0432\u0435\u0442 \u0442\u0435\u043c\u044b")) {
                     Fonts.drawRight(ctx, sc.getString(), w - pad, y, 9.0f, ColorUtil.brighten(acc, 0.25f), false);
                 } else {
-                    ctx.drawString(tr, sc, (int)(w - pad - (float)sw), (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
+                    ctx.text(tr, sc, (int)(w - pad - (float)sw), (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
                 }
             }
             y += lh;

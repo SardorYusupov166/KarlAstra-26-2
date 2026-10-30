@@ -2,8 +2,8 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
- *  net.minecraft.client.gui.components.PlayerFaceRenderer
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
+ *  net.minecraft.client.gui.components.PlayerFaceExtractor
  *  net.minecraft.client.player.AbstractClientPlayer
  *  net.minecraft.world.entity.Entity
  *  net.minecraft.world.entity.LivingEntity
@@ -30,8 +30,8 @@ import astra.theme.Theme;
 import astra.utils.CombatTracker;
 import astra.utils.FrameStats;
 import java.util.Locale;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -88,7 +88,7 @@ extends HudModule {
         return this.compact() ? 26.0f : 42.0f;
     }
 
-    private static float badge(GuiGraphics ctx, String text, float right, float y, int bg, int fg) {
+    private static float badge(GuiGraphicsExtractor ctx, String text, float right, float y, int bg, int fg) {
         float w = Fonts.width(text, 6.0f, true) + 8.0f;
         float x = right - w;
         Render2D.roundRect(ctx, x, y, w, 9.0f, 4.5f, bg);
@@ -97,7 +97,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         float shield;
         float a;
         Theme t = TargetHud.theme();
@@ -130,7 +130,7 @@ extends HudModule {
             Render2D.roundRect(ctx, 4.0f, 4.0f, av + 2.0f, av + 2.0f, 4.0f, ColorUtil.withAlpha(this.accentColor(), 0.6f));
             if (e instanceof AbstractClientPlayer) {
                 AbstractClientPlayer player = (AbstractClientPlayer)e;
-                PlayerFaceRenderer.draw((GuiGraphics)ctx, (PlayerSkin)player.getSkin(), (int)5, (int)5, (int)Math.round(av));
+                PlayerFaceExtractor.extractRenderState((GuiGraphicsExtractor)ctx, (PlayerSkin)player.getSkin(), (int)5, (int)5, (int)Math.round(av));
             } else {
                 Render2D.roundRect(ctx, 5.0f, 5.0f, av, av, 3.0f, Paint.linear(5.0f, 5.0f, 5.0f + av, 5.0f + av, t.accent(), t.accent2()));
                 Fonts.drawCentered(ctx, name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase(Locale.ROOT), 5.0f + av / 2.0f, 5.0f + av / 2.0f - 6.0f, 12.0f, -1, true);

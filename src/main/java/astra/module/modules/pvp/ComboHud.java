@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  org.joml.Matrix3x2fStack
  */
 package astra.module.modules.pvp;
@@ -21,7 +21,7 @@ import astra.settings.BooleanSetting;
 import astra.settings.ColorSetting;
 import astra.settings.ModeSetting;
 import astra.utils.CombatTracker;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
 
 public class ComboHud
@@ -58,7 +58,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         int combo = CombatTracker.combo();
         if (editor && combo == 0) {
             combo = 12;
@@ -66,7 +66,7 @@ extends HudModule {
         this.drawCombo(ctx, w, h, combo);
     }
 
-    private void drawCombo(GuiGraphics ctx, float w, float h, int combo) {
+    private void drawCombo(GuiGraphicsExtractor ctx, float w, float h, int combo) {
         if (combo != this.lastCombo) {
             if (combo > this.lastCombo) {
                 this.popAt = System.currentTimeMillis();

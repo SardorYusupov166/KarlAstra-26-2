@@ -8,11 +8,11 @@
  *  com.mojang.blaze3d.textures.GpuSampler
  *  com.mojang.blaze3d.textures.GpuTextureView
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.navigation.ScreenRectangle
  *  net.minecraft.client.gui.render.TextureSetup
- *  net.minecraft.client.gui.render.state.GuiElementRenderState
- *  net.minecraft.client.gui.render.state.GuiRenderState
+ *  net.minecraft.client.renderer.state.gui.GuiElementRenderState
+ *  net.minecraft.client.renderer.state.gui.GuiRenderState
  *  net.minecraft.client.renderer.RenderPipelines
  *  net.minecraft.client.renderer.texture.AbstractTexture
  *  net.minecraft.resources.Identifier
@@ -35,11 +35,11 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import java.util.Arrays;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
@@ -81,7 +81,7 @@ public final class Render2D {
     private Render2D() {
     }
 
-    public static float pixel(GuiGraphics ctx) {
+    public static float pixel(GuiGraphicsExtractor ctx) {
         double gui;
         Matrix3x2fStack m = ctx.pose();
         float scale = (float)Math.sqrt(m.m00 * m.m00 + m.m01 * m.m01);
@@ -94,7 +94,7 @@ public final class Render2D {
         return MESH;
     }
 
-    public static void end(GuiGraphics ctx) {
+    public static void end(GuiGraphicsExtractor ctx) {
         Render2D.submit(ctx, MESH, RenderPipelines.GUI, TextureSetup.noTexture());
     }
 
@@ -140,7 +140,7 @@ public final class Render2D {
         return a.m00 == b.m00 && a.m01 == b.m01 && a.m10 == b.m10 && a.m11 == b.m11 && a.m20 == b.m20 && a.m21 == b.m21;
     }
 
-    public static void submit(GuiGraphics ctx, Mesh m, RenderPipeline pipeline, TextureSetup textures) {
+    public static void submit(GuiGraphicsExtractor ctx, Mesh m, RenderPipeline pipeline, TextureSetup textures) {
         ScreenRectangle scissor;
         if (m.count == 0) {
             return;
@@ -187,7 +187,7 @@ public final class Render2D {
         }
         Render2D.flushBatch();
         ScreenRectangle bounds = new ScreenRectangle(TMP_BOUNDS[0], TMP_BOUNDS[1], TMP_BOUNDS[2] - TMP_BOUNDS[0], TMP_BOUNDS[3] - TMP_BOUNDS[1]);
-        ctx.guiRenderState.submitGuiElement((GuiElementRenderState)new ShapeRenderState(pipeline, textures, new Matrix3x2f((Matrix3x2fc)cur), Arrays.copyOf(m.pos, m.count * 2), m.uv != null ? Arrays.copyOf(m.uv, m.count * 2) : null, Arrays.copyOf(m.col, m.count), 0, m.count, scissor, bounds));
+        ctx.guiRenderState.addGuiElement((GuiElementRenderState)new ShapeRenderState(pipeline, textures, new Matrix3x2f((Matrix3x2fc)cur), Arrays.copyOf(m.pos, m.count * 2), m.uv != null ? Arrays.copyOf(m.uv, m.count * 2) : null, Arrays.copyOf(m.col, m.count), 0, m.count, scissor, bounds));
     }
 
     public static void dropBatch() {
@@ -203,7 +203,7 @@ public final class Render2D {
         flushing = true;
         try {
             ScreenRectangle bounds = new ScreenRectangle(bx0, by0, Math.max(1, bx1 - bx0), Math.max(1, by1 - by0));
-            batchState.submitGuiElement((GuiElementRenderState)new ShapeRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f((Matrix3x2fc)BATCH_POSE), arenaPos, null, arenaCol, batchStart, batchCount, batchScissor, bounds));
+            batchState.addGuiElement((GuiElementRenderState)new ShapeRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f((Matrix3x2fc)BATCH_POSE), arenaPos, null, arenaCol, batchStart, batchCount, batchScissor, bounds));
         }
         finally {
             batchCount = 0;
@@ -576,85 +576,85 @@ public final class Render2D {
         Render2D.addPolygon(m, pts, n, cx, cy + size * 0.1f, Paint.solid(color), px);
     }
 
-    public static void rect(GuiGraphics ctx, float x, float y, float w, float h, int color) {
+    public static void rect(GuiGraphicsExtractor ctx, float x, float y, float w, float h, int color) {
         Mesh m = Render2D.begin();
         m.rect(x, y, w, h, color);
         Render2D.end(ctx);
     }
 
-    public static void rect(GuiGraphics ctx, float x, float y, float w, float h, Paint paint) {
+    public static void rect(GuiGraphicsExtractor ctx, float x, float y, float w, float h, Paint paint) {
         Mesh m = Render2D.begin();
         m.rect(x, y, w, h, paint);
         Render2D.end(ctx);
     }
 
-    public static void roundRect(GuiGraphics ctx, float x, float y, float w, float h, float r, int color) {
+    public static void roundRect(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r, int color) {
         Render2D.roundRect(ctx, x, y, w, h, r, Paint.solid(color));
     }
 
-    public static void roundRect(GuiGraphics ctx, float x, float y, float w, float h, float r, Paint paint) {
+    public static void roundRect(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r, Paint paint) {
         Mesh m = Render2D.begin();
         Render2D.addRoundRect(m, x, y, w, h, r, r, r, r, paint, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void roundRect(GuiGraphics ctx, float x, float y, float w, float h, float rtl, float rtr, float rbr, float rbl, Paint paint) {
+    public static void roundRect(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float rtl, float rtr, float rbr, float rbl, Paint paint) {
         Mesh m = Render2D.begin();
         Render2D.addRoundRect(m, x, y, w, h, rtl, rtr, rbr, rbl, paint, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void outline(GuiGraphics ctx, float x, float y, float w, float h, float r, float thickness, int color) {
+    public static void outline(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r, float thickness, int color) {
         Render2D.outline(ctx, x, y, w, h, r, thickness, Paint.solid(color));
     }
 
-    public static void outline(GuiGraphics ctx, float x, float y, float w, float h, float r, float thickness, Paint paint) {
+    public static void outline(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r, float thickness, Paint paint) {
         Mesh m = Render2D.begin();
         Render2D.addOutline(m, x, y, w, h, r, r, r, r, thickness, paint, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void glow(GuiGraphics ctx, float x, float y, float w, float h, float r, float spread, int color) {
+    public static void glow(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r, float spread, int color) {
         Mesh m = Render2D.begin();
         Render2D.addGlow(m, x, y, w, h, r, spread, color, false, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void shadow(GuiGraphics ctx, float x, float y, float w, float h, float r, float spread, int color) {
+    public static void shadow(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r, float spread, int color) {
         Mesh m = Render2D.begin();
         Render2D.addGlow(m, x, y, w, h, r, spread, color, true, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void circle(GuiGraphics ctx, float cx, float cy, float r, int color) {
+    public static void circle(GuiGraphicsExtractor ctx, float cx, float cy, float r, int color) {
         Mesh m = Render2D.begin();
         Render2D.addCircle(m, cx, cy, r, Paint.solid(color), Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void circle(GuiGraphics ctx, float cx, float cy, float r, Paint paint) {
+    public static void circle(GuiGraphicsExtractor ctx, float cx, float cy, float r, Paint paint) {
         Mesh m = Render2D.begin();
         Render2D.addCircle(m, cx, cy, r, paint, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void ring(GuiGraphics ctx, float cx, float cy, float r, float width, int color) {
+    public static void ring(GuiGraphicsExtractor ctx, float cx, float cy, float r, float width, int color) {
         Render2D.arc(ctx, cx, cy, r, width, 0.0f, 360.0f, color);
     }
 
-    public static void arc(GuiGraphics ctx, float cx, float cy, float r, float width, float start, float sweep, int color) {
+    public static void arc(GuiGraphicsExtractor ctx, float cx, float cy, float r, float width, float start, float sweep, int color) {
         Mesh m = Render2D.begin();
         Render2D.addArc(m, cx, cy, r, width, start, sweep, color, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void line(GuiGraphics ctx, float x1, float y1, float x2, float y2, float width, int color) {
+    public static void line(GuiGraphicsExtractor ctx, float x1, float y1, float x2, float y2, float width, int color) {
         Mesh m = Render2D.begin();
         Render2D.addLine(m, x1, y1, x2, y2, width, color, false, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void dashedLine(GuiGraphics ctx, float x1, float y1, float x2, float y2, float width, float dash, float gap, int color) {
+    public static void dashedLine(GuiGraphicsExtractor ctx, float x1, float y1, float x2, float y2, float width, float dash, float gap, int color) {
         float dx = x2 - x1;
         float dy = y2 - y1;
         float len = (float)Math.sqrt(dx * dx + dy * dy);
@@ -672,7 +672,7 @@ public final class Render2D {
         Render2D.end(ctx);
     }
 
-    public static void textureRoundRect(GuiGraphics ctx, Identifier id, float texAspect, float x, float y, float w, float h, float r, int color) {
+    public static void textureRoundRect(GuiGraphicsExtractor ctx, Identifier id, float texAspect, float x, float y, float w, float h, float r, int color) {
         if (w <= 0.0f || h <= 0.0f) {
             return;
         }
@@ -704,31 +704,31 @@ public final class Render2D {
         Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)Render2D.textureView(id), (GpuSampler)Render2D.linearSampler()));
     }
 
-    public static void petal(GuiGraphics ctx, float cx, float cy, float size, float rot, Paint paint) {
+    public static void petal(GuiGraphicsExtractor ctx, float cx, float cy, float size, float rot, Paint paint) {
         Mesh m = Render2D.begin();
         Render2D.addPetal(m, cx, cy, size, rot, paint, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void sparkle(GuiGraphics ctx, float cx, float cy, float size, float rot, int color) {
+    public static void sparkle(GuiGraphicsExtractor ctx, float cx, float cy, float size, float rot, int color) {
         Mesh m = Render2D.begin();
         Render2D.addSparkle(m, cx, cy, size, rot, color, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void star(GuiGraphics ctx, float cx, float cy, float size, float rot, int color) {
+    public static void star(GuiGraphicsExtractor ctx, float cx, float cy, float size, float rot, int color) {
         Mesh m = Render2D.begin();
         Render2D.addStar(m, cx, cy, size, rot, color, Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void triangle(GuiGraphics ctx, float x1, float y1, float x2, float y2, float x3, float y3, int color) {
+    public static void triangle(GuiGraphicsExtractor ctx, float x1, float y1, float x2, float y2, float x3, float y3, int color) {
         Mesh m = Render2D.begin();
         Render2D.addPolygon(m, new float[]{x1, y1, x2, y2, x3, y3}, 3, (x1 + x2 + x3) / 3.0f, (y1 + y2 + y3) / 3.0f, Paint.solid(color), Render2D.pixel(ctx));
         Render2D.end(ctx);
     }
 
-    public static void heart(GuiGraphics ctx, float cx, float cy, float size, int color) {
+    public static void heart(GuiGraphicsExtractor ctx, float cx, float cy, float size, int color) {
         Mesh m = Render2D.begin();
         Render2D.addHeart(m, cx, cy, size, color, Render2D.pixel(ctx));
         Render2D.end(ctx);
@@ -743,23 +743,23 @@ public final class Render2D {
         return tex.getTextureView();
     }
 
-    public static void texture(GuiGraphics ctx, GpuTextureView view, float x, float y, float w, float h, float u0, float v0, float u1, float v1, int color) {
+    public static void texture(GuiGraphicsExtractor ctx, GpuTextureView view, float x, float y, float w, float h, float u0, float v0, float u1, float v1, int color) {
         TEX_MESH.reset();
         TEX_MESH.quadUv(x, y, u0, v0, color, x, y + h, u0, v1, color, x + w, y + h, u1, v1, color, x + w, y, u1, v0, color);
         Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
     }
 
-    public static void textureGradient(GuiGraphics ctx, Identifier id, float x, float y, float w, float h, int left, int right) {
+    public static void textureGradient(GuiGraphicsExtractor ctx, Identifier id, float x, float y, float w, float h, int left, int right) {
         TEX_MESH.reset();
         TEX_MESH.quadUv(x, y, 0.0f, 0.0f, left, x, y + h, 0.0f, 1.0f, left, x + w, y + h, 1.0f, 1.0f, right, x + w, y, 1.0f, 0.0f, right);
         Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)Render2D.textureView(id), (GpuSampler)Render2D.linearSampler()));
     }
 
-    public static void texture(GuiGraphics ctx, Identifier id, float x, float y, float w, float h, float u0, float v0, float u1, float v1, int color) {
+    public static void texture(GuiGraphicsExtractor ctx, Identifier id, float x, float y, float w, float h, float u0, float v0, float u1, float v1, int color) {
         Render2D.texture(ctx, Render2D.textureView(id), x, y, w, h, u0, v0, u1, v1, color);
     }
 
-    public static void texturedCircle(GuiGraphics ctx, GpuTextureView view, float cx, float cy, float r, float u, float v, float uvRadius, float rotationDeg, int color) {
+    public static void texturedCircle(GuiGraphicsExtractor ctx, GpuTextureView view, float cx, float cy, float r, float u, float v, float uvRadius, float rotationDeg, int color) {
         TEX_MESH.reset();
         int segs = 64;
         double rot = Math.toRadians(rotationDeg);
@@ -779,7 +779,7 @@ public final class Render2D {
         Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
     }
 
-    public static void texturedSquare(GuiGraphics ctx, GpuTextureView view, float cx, float cy, float half, float u, float v, float uvHalf, float rotationDeg, int color) {
+    public static void texturedSquare(GuiGraphicsExtractor ctx, GpuTextureView view, float cx, float cy, float half, float u, float v, float uvHalf, float rotationDeg, int color) {
         TEX_MESH.reset();
         double rot = Math.toRadians(rotationDeg);
         float cos = (float)Math.cos(rot);

@@ -135,7 +135,7 @@ public final class CosmeticTextures {
                     continue;
                 }
                 float inside = (v - topEdge) / Math.max(0.01f, bottomEdge - topEdge);
-                int n = dark ? CosmeticTextures.mix(-13956289, -16186609, inside) : (base = crystal ? CosmeticTextures.mix(-2034946, -8530948, inside) : CosmeticTextures.mix(-1, -25899, inside * 0.9f));
+                base = dark ? CosmeticTextures.mix(-13956289, -16186609, inside) : (crystal ? CosmeticTextures.mix(-2034946, -8530948, inside) : CosmeticTextures.mix(-1, -25899, inside * 0.9f));
                 if ((int)(u * 22.0f + inside * 4.0f) % 3 == 0) {
                     base = CosmeticTextures.mix(base, dark ? -5745153 : -1452545, 0.35f);
                 }

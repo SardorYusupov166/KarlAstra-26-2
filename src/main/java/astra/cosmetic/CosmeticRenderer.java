@@ -6,7 +6,7 @@
  *  com.mojang.blaze3d.vertex.PoseStack$Pose
  *  com.mojang.blaze3d.vertex.VertexConsumer
  *  com.mojang.math.Axis
- *  net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback
+ *  net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.model.player.PlayerModel
  *  net.minecraft.client.renderer.SubmitNodeCollector
@@ -35,7 +35,7 @@ import astra.render.ArtManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -56,7 +56,7 @@ public final class CosmeticRenderer {
     }
 
     public static void init() {
-        LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, renderer, helper, context) -> {
+        LivingEntityRenderLayerRegistrationCallback.EVENT.register((entityType, renderer, helper, context) -> {
             if (renderer instanceof AvatarRenderer) {
                 AvatarRenderer playerRenderer = (AvatarRenderer)renderer;
                 helper.register((RenderLayer)new Feature((RenderLayerParent<AvatarRenderState, PlayerModel>)playerRenderer));
@@ -70,7 +70,7 @@ public final class CosmeticRenderer {
             super(context);
         }
 
-        public void render(PoseStack matrices, SubmitNodeCollector vcp, int light, AvatarRenderState state, float limbAngle, float limbDistance) {
+        public void submit(PoseStack matrices, SubmitNodeCollector vcp, int light, AvatarRenderState state, float limbAngle, float limbDistance) {
             block13: {
                 AuraCosmetic aura;
                 HaloCosmetic halo;
@@ -143,7 +143,7 @@ public final class CosmeticRenderer {
             if (!art) {
                 tex = CosmeticTextures.wing(wings.design().equals("Astra") ? "\u0410\u043d\u0433\u0435\u043b\u044c\u0441\u043a\u0438\u0435" : wings.design());
             }
-            RenderType layer = wings.solid() ? RenderTypes.entityCutoutNoCull((Identifier)tex) : (wings.glow() ? RenderTypes.entityTranslucentEmissive((Identifier)tex) : RenderTypes.entityTranslucent((Identifier)tex));
+            RenderType layer = wings.solid() ? RenderTypes.entityCutout((Identifier)tex) : (wings.glow() ? RenderTypes.entityTranslucentEmissive((Identifier)tex) : RenderTypes.entityTranslucent((Identifier)tex));
             int lightValue = wings.glow() ? 0xF000F0 : light;
             int color = wings.color();
             float scale = wings.scale();

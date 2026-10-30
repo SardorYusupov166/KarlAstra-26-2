@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  org.joml.Matrix3x2fStack
  */
 package astra.hud;
@@ -21,7 +21,7 @@ import astra.settings.NumberSetting;
 import astra.settings.Setting;
 import astra.theme.Theme;
 import astra.theme.ThemeManager;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
 
 public abstract class HudModule
@@ -38,7 +38,7 @@ extends Module {
     public final BooleanSetting background = this.add((BooleanSetting)new BooleanSetting("\u041f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0442\u044c \u0444\u043e\u043d", true).editorOnly());
     public final ModeSetting frame = this.add((ModeSetting)new ModeSetting("\u0421\u0442\u0438\u043b\u044c \u0440\u0430\u043c\u043a\u0438", "Astra Glow", "Astra Glow", "\u0422\u043e\u043d\u043a\u0430\u044f", "\u0411\u0435\u0437 \u0440\u0430\u043c\u043a\u0438").editorOnly());
     public final BooleanSetting themeAccent = this.add((BooleanSetting)new BooleanSetting("\u0426\u0432\u0435\u0442 \u0442\u0435\u043c\u044b", true).editorOnly());
-    public final ColorSetting accent = this.add((ColorSetting)((Setting)new ColorSetting("\u0426\u0432\u0435\u0442 \u0430\u043a\u0446\u0435\u043d\u0442\u0430", -5745153).editorOnly()).visibleWhen(() -> (Boolean)this.themeAccent.get() == false));
+    public final ColorSetting accent = this.add((ColorSetting)(new ColorSetting("\u0426\u0432\u0435\u0442 \u0430\u043a\u0446\u0435\u043d\u0442\u0430", -5745153).editorOnly()).visibleWhen(() -> (Boolean)this.themeAccent.get() == false));
 
     protected HudModule(String id, String name, String description, Category category, Icon icon, float defaultX, float defaultY) {
         super(id, name, description, category, icon);
@@ -52,7 +52,7 @@ extends Module {
 
     public abstract float height();
 
-    protected abstract void renderContent(GuiGraphics var1, float var2, float var3, boolean var4);
+    protected abstract void renderContent(GuiGraphicsExtractor var1, float var2, float var3, boolean var4);
 
     public boolean shouldRender() {
         return true;
@@ -125,7 +125,7 @@ extends Module {
         return (Boolean)this.themeAccent.get() != false ? ThemeManager.get().accent() : this.accent.getColor();
     }
 
-    public final void render(GuiGraphics ctx, float screenW, float screenH, boolean editor) {
+    public final void render(GuiGraphicsExtractor ctx, float screenW, float screenH, boolean editor) {
         float x = this.getX(screenW);
         float y = this.getY(screenH);
         float s = this.getScale();
@@ -142,11 +142,11 @@ extends Module {
         m.popMatrix();
     }
 
-    protected void drawPanel(GuiGraphics ctx, float w, float h) {
+    protected void drawPanel(GuiGraphicsExtractor ctx, float w, float h) {
         this.drawPanel(ctx, 0.0f, 0.0f, w, h, 5.0f);
     }
 
-    protected void drawPanel(GuiGraphics ctx, float x, float y, float w, float h, float r) {
+    protected void drawPanel(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r) {
         Theme t = ThemeManager.get();
         float op = this.opacity.getFloat() / 100.0f;
         int acc = this.accentColor();

@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.player.LocalPlayer
  *  net.minecraft.tags.FluidTags
  *  net.minecraft.world.effect.MobEffects
@@ -27,7 +27,7 @@ import astra.settings.ColorSetting;
 import astra.settings.ModeSetting;
 import astra.theme.Theme;
 import astra.utils.FrameStats;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.effect.MobEffects;
@@ -136,7 +136,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         boolean low;
         LivingEntity le;
         Entity entity;
@@ -228,7 +228,7 @@ extends HudModule {
         return r == (float)((int)r) ? String.valueOf((int)r) : String.valueOf(r);
     }
 
-    private void bar(GuiGraphics ctx, Theme t, float x, float y, float w, float fill, float ghostFill, float extra, int c1, int c2, Icon icon, String text, boolean warn) {
+    private void bar(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, float fill, float ghostFill, float extra, int c1, int c2, Icon icon, String text, boolean warn) {
         float ex;
         float ew;
         float r = 4.5f;

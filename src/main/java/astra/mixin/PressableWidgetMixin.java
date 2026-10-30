@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  net.minecraft.client.gui.ActiveTextCollector
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.AbstractButton
  *  net.minecraft.client.gui.components.AbstractWidget
  *  net.minecraft.client.gui.components.SpriteIconButton$CenteredIcon
@@ -19,7 +19,7 @@ package astra.mixin;
 import astra.gui.vanilla.AstraWidgets;
 import astra.mixin.ClickableWidgetAccessor;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.SpriteIconButton;
@@ -35,19 +35,19 @@ public abstract class PressableWidgetMixin {
     @Unique
     private boolean astra$labelDrawn;
 
-    @Inject(method={"renderDefaultSprite"}, at={@At(value="HEAD")}, cancellable=true)
-    private void astra$background(GuiGraphics ctx, CallbackInfo ci) {
+    @Inject(method={"renderDefaultSprite"}, at=@At(value="HEAD"), cancellable=true)
+    private void astra$background(GuiGraphicsExtractor ctx, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;
         }
-        AbstractWidget w = (AbstractWidget)this;
-        boolean iconOnly = this instanceof SpriteIconButton.CenteredIcon;
+        AbstractWidget w = (AbstractWidget)(Object)this;
+        boolean iconOnly = (Object)this instanceof SpriteIconButton.CenteredIcon;
         AstraWidgets.button(ctx, this, w.getX(), w.getY(), w.getWidth(), w.getHeight(), (Component)(iconOnly ? Component.empty() : w.getMessage()), w.active, w.isHoveredOrFocused(), ((ClickableWidgetAccessor)w).astra$getAlpha());
         this.astra$labelDrawn = true;
         ci.cancel();
     }
 
-    @Inject(method={"renderDefaultLabel"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderDefaultLabel"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$label(ActiveTextCollector drawer, CallbackInfo ci) {
         if (this.astra$labelDrawn) {
             this.astra$labelDrawn = false;

@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.input.KeyEvent
  *  net.minecraft.client.input.MouseButtonEvent
@@ -26,7 +26,7 @@ import astra.theme.ThemeManager;
 import astra.utils.FrameStats;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -57,16 +57,16 @@ extends Screen {
     }
 
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     private static NowPlayingModule module() {
         return NowPlayingModule.get();
     }
 
-    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         if (this.minecraft.level == null) {
-            this.renderPanorama(ctx, delta);
+            this.extractPanorama(ctx, delta);
         }
         if (this.minecraft.options.getMenuBackgroundBlurriness() >= 1) {
             ctx.blurBeforeThisStratum();
@@ -80,9 +80,9 @@ extends Screen {
         return AnimationUtils.easeOutCubic(Math.min(1.0f, (float)(System.currentTimeMillis() - this.openedAt) / 260.0f));
     }
 
-    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         int[] nArray;
-        super.render(ctx, mouseX, mouseY, delta);
+        super.extractRenderState(ctx, mouseX, mouseY, delta);
         NowPlayingModule mod = PlayerScreen.module();
         if (mod == null) {
             return;
@@ -184,7 +184,7 @@ extends Screen {
         Render2D.alpha = prevAlpha;
     }
 
-    private void drawBlob(GuiGraphics ctx, float cx, float cy, float size, int[] c, boolean playing, float time) {
+    private void drawBlob(GuiGraphicsExtractor ctx, float cx, float cy, float size, int[] c, boolean playing, float time) {
         float a;
         int i;
         float beat = playing ? (float)Math.pow(Math.abs(Math.sin((double)time * Math.PI * 1.05)), 6.0) : 0.0f;
@@ -214,7 +214,7 @@ extends Screen {
         }
     }
 
-    private void drawRoundButton(GuiGraphics ctx, float[] b, int mx, int my, boolean primary, int[] c, boolean enabled) {
+    private void drawRoundButton(GuiGraphicsExtractor ctx, float[] b, int mx, int my, boolean primary, int[] c, boolean enabled) {
         boolean hover = Math.hypot((float)mx - b[0], (float)my - b[1]) <= (double)b[2];
         float r = b[2] * (hover ? 1.08f : 1.0f);
         if (primary) {
@@ -226,7 +226,7 @@ extends Screen {
         }
     }
 
-    private void drawPrevNext(GuiGraphics ctx, float[] b, boolean next) {
+    private void drawPrevNext(GuiGraphicsExtractor ctx, float[] b, boolean next) {
         float s = 4.2f;
         float x = b[0];
         float y = b[1];
@@ -236,7 +236,7 @@ extends Screen {
         Render2D.roundRect(ctx, next ? x + s * 0.6f : x - s * 0.6f - 1.4f, y - s, 1.4f, s * 2.0f, 0.5f, col);
     }
 
-    private void drawHistory(GuiGraphics ctx, NowPlayingModule mod, float x, float y, float w, float h, NowPlaying np, int[] c, Theme t) {
+    private void drawHistory(GuiGraphicsExtractor ctx, NowPlayingModule mod, float x, float y, float w, float h, NowPlaying np, int[] c, Theme t) {
         Fonts.draw(ctx, "\u0418\u0441\u0442\u043e\u0440\u0438\u044f", x, y, 9.0f, t.text(), true);
         Render2D.roundRect(ctx, x, y + 13.0f, 18.0f, 2.0f, 1.0f, Paint.horizontal(x, x + 18.0f, c[0], c[1]));
         float iy = y + 24.0f;
@@ -265,7 +265,7 @@ extends Screen {
         }
     }
 
-    private void drawLyrics(GuiGraphics ctx, NowPlayingModule mod, NowPlaying np, float x, float y, float w, float h, int[] c, Theme t, int mx, int my) {
+    private void drawLyrics(GuiGraphicsExtractor ctx, NowPlayingModule mod, NowPlaying np, float x, float y, float w, float h, int[] c, Theme t, int mx, int my) {
         float targetScroll;
         String msg;
         this.lineHits.clear();
@@ -358,7 +358,7 @@ extends Screen {
                 Render2D.roundRect(ctx, x - 5.0f, ly - 3.0f, w + 6.0f, lh + 2.0f, 5.0f, ColorUtil.withAlpha(-1, 0.06f));
             }
             float yy = ly;
-            for (String part : (List)wrapped.get(i)) {
+            for (String part : wrapped.get(i)) {
                 if (i == cur) {
                     Fonts.drawGradient(ctx, part, x, yy, size, ColorUtil.brighten(c[0], 0.2f), ColorUtil.brighten(c[1], 0.2f), true);
                 } else {

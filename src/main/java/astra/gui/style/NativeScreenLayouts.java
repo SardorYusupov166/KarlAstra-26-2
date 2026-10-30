@@ -11,7 +11,7 @@
  *  net.fabricmc.fabric.api.event.Event
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.Font
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.AbstractButton
  *  net.minecraft.client.gui.components.AbstractWidget
  *  net.minecraft.client.gui.components.Button
@@ -56,7 +56,7 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -154,7 +154,7 @@ public final class NativeScreenLayouts {
             if (NativeScreenLayouts.key(s).isEmpty()) {
                 return;
             }
-            Screens.getButtons((Screen)s).removeIf(widget -> EDITOR_LABEL.equals(widget.getMessage().getString()));
+            Screens.getWidgets((Screen)s).removeIf(widget -> EDITOR_LABEL.equals(widget.getMessage().getString()));
             IdentityHashMap<AbstractWidget, Base> previous = new IdentityHashMap<AbstractWidget, Base>();
             for (Entry entry : NativeScreenLayouts.entries(s)) {
                 previous.put(entry.widget(), entry.base());
@@ -162,15 +162,15 @@ public final class NativeScreenLayouts {
             owners.entrySet().removeIf(e -> e.getValue() == s);
             ArrayList<Entry> list = new ArrayList<Entry>();
             HashMap<String, Integer> counts = new HashMap<String, Integer>();
-            for (AbstractWidget widget2 : Screens.getButtons((Screen)s)) {
+            for (AbstractWidget widget2 : Screens.getWidgets((Screen)s)) {
                 String name;
                 if (!(widget2 instanceof AbstractButton)) continue;
                 ComponentContents componentContents = widget2.getMessage().getContents();
                 if (componentContents instanceof TranslatableContents) {
                     TranslatableContents t = (TranslatableContents)componentContents;
-                    v0 = t.getKey();
+                    name = t.getKey();
                 } else {
-                    v0 = name = widget2.getMessage().getString();
+                    name = widget2.getMessage().getString();
                 }
                 if (name.isBlank()) {
                     name = widget2.getClass().getName();
@@ -184,19 +184,19 @@ public final class NativeScreenLayouts {
             entries.put(s, list);
             NativeScreenLayouts.apply(s);
             int[] frames = new int[]{0};
-            ScreenEvents.beforeRender((Screen)s).register((screen, ctx, mx, my, delta) -> {
+            ScreenEvents.beforeExtract((Screen)s).register((screen, ctx, mx, my, delta) -> {
                 int n = frames[0];
                 frames[0] = n + 1;
                 if (n < 3) {
                     NativeScreenLayouts.adoptDrift(screen);
                 }
             });
-            Event clickEvent = ScreenMouseEvents.allowMouseClick((Screen)s);
+            Event<ScreenMouseEvents.AllowMouseClick> clickEvent = ScreenMouseEvents.allowMouseClick((Screen)s);
             if (clickHooks.get(s) != clickEvent) {
                 clickHooks.put(s, clickEvent);
                 clickEvent.register((screen, click) -> !NativeScreenLayouts.routeMovedClick(screen, click.x(), click.y(), click.button()));
             }
-            Screens.getButtons((Screen)s).add(Button.builder((Component)Component.literal((String)EDITOR_LABEL), b -> mc.setScreen((Screen)new NativeLayoutEditor(s))).bounds(s instanceof JoinMultiplayerScreen ? Math.max(6, w - 118) : 6, s instanceof TitleScreen ? h - 42 : (s instanceof JoinMultiplayerScreen ? 6 : h - 24), s instanceof JoinMultiplayerScreen ? 112 : 128, 18).build());
+            Screens.getWidgets((Screen)s).add(Button.builder((Component)Component.literal((String)EDITOR_LABEL), b -> mc.gui.setScreen((Screen)new NativeLayoutEditor(s))).bounds(s instanceof JoinMultiplayerScreen ? Math.max(6, w - 118) : 6, s instanceof TitleScreen ? h - 42 : (s instanceof JoinMultiplayerScreen ? 6 : h - 24), s instanceof JoinMultiplayerScreen ? 112 : 128, 18).build());
         });
     }
 
@@ -244,7 +244,7 @@ public final class NativeScreenLayouts {
     }
 
     public static boolean routeMovedClick(Screen s, double x, double y, int button) {
-        if (button != 0 || Minecraft.getInstance().screen != s) {
+        if (button != 0 || Minecraft.getInstance().gui.screen() != s) {
             return false;
         }
         List<Entry> list = NativeScreenLayouts.entries(s);
@@ -298,7 +298,7 @@ public final class NativeScreenLayouts {
         return o != null && o.radius >= 0.0f ? o.radius : fallback;
     }
 
-    public static void logo(Screen s, GuiGraphics ctx, float x, float y, float w, float alpha) {
+    public static void logo(Screen s, GuiGraphicsExtractor ctx, float x, float y, float w, float alpha) {
         if (s == null || NativeScreenLayouts.key(s).isEmpty()) {
             return;
         }
@@ -334,7 +334,7 @@ public final class NativeScreenLayouts {
     }
 
     public static Screen current() {
-        return preview != null ? preview : Minecraft.getInstance().screen;
+        return preview != null ? preview : Minecraft.getInstance().gui.screen();
     }
 
     private static void rect(Screen screen, String id, float x, float y, float w, float h) {
@@ -376,7 +376,7 @@ public final class NativeScreenLayouts {
         };
     }
 
-    public static void splash(Screen screen, GuiGraphics ctx, Font tr, Component text, float alpha) {
+    public static void splash(Screen screen, GuiGraphicsExtractor ctx, Font tr, Component text, float alpha) {
         Item o = NativeScreenLayouts.item(screen, "@splash");
         text = Component.literal((String)(o.text.isBlank() ? text.getString() : o.text));
         float scale = (1.8f - (float)Math.abs(Math.sin((double)(System.currentTimeMillis() % 1000L) / 1000.0 * Math.PI * 2.0)) * 0.1f) * 100.0f / (float)(tr.width((FormattedText)text) + 32) * NativeScreenLayouts.clamp(o.scale, 25.0f, 250.0f) / 100.0f;
@@ -401,11 +401,11 @@ public final class NativeScreenLayouts {
         catch (Exception exception) {
             // empty catch block
         }
-        ctx.drawString(tr, text, -tr.width((FormattedText)text) / 2, -8, (int)(255.0f * alpha * o.opacity / 100.0f) << 24 | rgb);
+        ctx.text(tr, text, -tr.width((FormattedText)text) / 2, -8, (int)(255.0f * alpha * o.opacity / 100.0f) << 24 | rgb);
         m.popMatrix();
     }
 
-    public static void footer(Screen screen, GuiGraphics ctx, Font tr, String text, int x, int y, int color) {
+    public static void footer(Screen screen, GuiGraphicsExtractor ctx, Font tr, String text, int x, int y, int color) {
         Item o = NativeScreenLayouts.item(screen, "@version");
         if (!o.text.isBlank()) {
             text = o.text;
@@ -430,11 +430,11 @@ public final class NativeScreenLayouts {
         catch (Exception exception) {
             // empty catch block
         }
-        ctx.drawString(tr, text, 0, 0, (int)((float)(color >>> 24) * o.opacity / 100.0f) << 24 | rgb);
+        ctx.text(tr, text, 0, 0, (int)((float)(color >>> 24) * o.opacity / 100.0f) << 24 | rgb);
         m.popMatrix();
     }
 
-    public static boolean textWidget(Object object, GuiGraphics ctx) {
+    public static boolean textWidget(Object object, GuiGraphicsExtractor ctx) {
         if (!(object instanceof AbstractWidget)) {
             return false;
         }
@@ -465,7 +465,7 @@ public final class NativeScreenLayouts {
             }
             float alpha = ((ClickableWidgetAccessor)widget).astra$getAlpha() * o.opacity / 100.0f;
             if ((double)alpha > 0.003) {
-                ctx.drawString(Minecraft.getInstance().font, widget.getMessage(), 0, 0, (int)(alpha * 255.0f) << 24 | rgb);
+                ctx.text(Minecraft.getInstance().font, widget.getMessage(), 0, 0, (int)(alpha * 255.0f) << 24 | rgb);
             }
             m.popMatrix();
             return true;
@@ -473,7 +473,7 @@ public final class NativeScreenLayouts {
         return false;
     }
 
-    public static void art(Screen screen, GuiGraphics ctx, Theme theme, float x, float bottom, float w, float maxH, float alpha) {
+    public static void art(Screen screen, GuiGraphicsExtractor ctx, Theme theme, float x, float bottom, float w, float maxH, float alpha) {
         Identifier tex;
         if (screen == null || NativeScreenLayouts.key(screen).isEmpty()) {
             ArtManager.drawSidebarArt(ctx, theme, x, bottom, w, maxH, alpha);
@@ -513,7 +513,7 @@ public final class NativeScreenLayouts {
         }
     }
 
-    public static void backdrop(Screen s, GuiGraphics ctx) {
+    public static void backdrop(Screen s, GuiGraphicsExtractor ctx) {
         if (s == null || NativeScreenLayouts.key(s).isEmpty()) {
             return;
         }

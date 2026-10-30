@@ -7,8 +7,8 @@
  *  com.google.gson.JsonObject
  *  com.google.gson.JsonParser
  *  net.minecraft.ChatFormatting
- *  net.minecraft.client.GuiMessage
- *  net.minecraft.client.GuiMessage$Line
+ *  net.minecraft.client.multiplayer.chat.GuiMessage
+ *  net.minecraft.client.multiplayer.chat.GuiMessage$Line
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.components.ChatComponent
  *  net.minecraft.client.multiplayer.ServerData
@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.multiplayer.ServerData;
@@ -126,19 +126,19 @@ public final class ChatPatches {
         if (!ChatPatches.active()) {
             return;
         }
-        ChatComponent hud = mc.gui.getChat();
+        ChatComponent hud = mc.gui.hud.getChat();
         raw = true;
         try {
             if (!restored && ChatPatches.keepChat()) {
                 restored = true;
                 for (Component t : ChatPatches.load()) {
-                    hud.addMessage(t);
+                    hud.addClientSystemMessage(t);
                 }
             }
             if (ChatPatches.m().sessionDivider() && !((ChatHudAccessor)hud).astra$messages().isEmpty()) {
                 ServerData server = mc.getCurrentServer();
                 String where = server != null ? (server.name == null || server.name.isBlank() ? server.ip : server.name) : "\u041e\u0434\u0438\u043d\u043e\u0447\u043d\u0430\u044f \u0438\u0433\u0440\u0430";
-                hud.addMessage((Component)Component.literal((String)"\u2014\u2014\u2014\u2014 ").withStyle(ChatFormatting.DARK_GRAY).append((Component)Component.literal((String)where).setStyle(Style.EMPTY.withColor(-28720).withBold(Boolean.valueOf(true)))).append((Component)Component.literal((String)("  \u00b7  " + LocalTime.now().format(TIME) + " \u2014\u2014\u2014\u2014")).withStyle(ChatFormatting.DARK_GRAY)));
+                hud.addClientSystemMessage((Component)Component.literal((String)"\u2014\u2014\u2014\u2014 ").withStyle(ChatFormatting.DARK_GRAY).append((Component)Component.literal((String)where).setStyle(Style.EMPTY.withColor(-28720).withBold(Boolean.valueOf(true)))).append((Component)Component.literal((String)("  \u00b7  " + LocalTime.now().format(TIME) + " \u2014\u2014\u2014\u2014")).withStyle(ChatFormatting.DARK_GRAY)));
             }
         }
         finally {
@@ -157,7 +157,7 @@ public final class ChatPatches {
             return;
         }
         try {
-            List<GuiMessage> lines = ((ChatHudAccessor)Minecraft.getInstance().gui.getChat()).astra$messages();
+            List<GuiMessage> lines = ((ChatHudAccessor)Minecraft.getInstance().gui.hud.getChat()).astra$messages();
             JsonArray arr = new JsonArray();
             int n = Math.min(500, lines.size());
             for (int i = n - 1; i >= 0; --i) {
@@ -269,7 +269,7 @@ public final class ChatPatches {
             return false;
         }
         Minecraft mc = Minecraft.getInstance();
-        ChatComponent hud = mc.gui.getChat();
+        ChatComponent hud = mc.gui.hud.getChat();
         int idx = ChatPatches.lineAt(hud, acc = (ChatHudAccessor)hud, (visible = acc.astra$visibleMessages()).size(), mouseX, mouseY);
         if (idx < 0 || idx >= visible.size()) {
             return false;
@@ -279,7 +279,7 @@ public final class ChatPatches {
             if (line.addedTime() != tick) continue;
             String text = COUNT.matcher(STAMP.matcher(line.content().getString()).replaceFirst("")).replaceFirst("").replaceAll("\u00a7.", "");
             mc.keyboardHandler.setClipboard(text);
-            mc.gui.setOverlayMessage((Component)Component.literal((String)("\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e: " + (String)(text.length() > 40 ? text.substring(0, 40) + "\u2026" : text))).setStyle(Style.EMPTY.withColor(-28720)), false);
+            mc.gui.hud.setOverlayMessage((Component)Component.literal((String)("\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e: " + (String)(text.length() > 40 ? text.substring(0, 40) + "\u2026" : text))).setStyle(Style.EMPTY.withColor(-28720)), false);
             return true;
         }
         return false;

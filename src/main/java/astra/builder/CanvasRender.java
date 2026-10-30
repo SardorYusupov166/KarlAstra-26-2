@@ -17,7 +17,10 @@ package astra.builder;
 
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.LinkedHashMap;
@@ -41,7 +44,7 @@ public final class CanvasRender {
         if (result != null) {
             return result;
         }
-        result = RenderType.create((String)("astra_canvas_" + n), (RenderSetup)RenderSetup.builder((RenderPipeline)pipelines[n]).withTexture("Sampler0", texture).bufferSize(4096).sortOnUpload().createRenderSetup());
+        result = RenderType.create((String)("astra_canvas_" + n), (RenderSetup)RenderSetup.builder((RenderPipeline)pipelines[n]).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup());
         layers.put(key, result);
         if (layers.size() > 128) {
             layers.remove(layers.keySet().iterator().next());
@@ -51,7 +54,7 @@ public final class CanvasRender {
 
     static {
         for (int i = 0; i < 4; ++i) {
-            CanvasRender.pipelines[i] = RenderPipelines.register((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.GUI_TEXTURED_SNIPPET}).withLocation(Identifier.fromNamespaceAndPath((String)"astra", (String)("pipeline/canvas_" + i))).withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS).withCull(false).withBlend(BlendFunction.TRANSLUCENT).withDepthWrite((i & 1) != 0).withDepthTestFunction((i & 2) != 0 ? DepthTestFunction.NO_DEPTH_TEST : DepthTestFunction.LEQUAL_DEPTH_TEST).build());
+            CanvasRender.pipelines[i] = RenderPipelines.register((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.GUI_TEXTURED_SNIPPET}).withLocation(Identifier.fromNamespaceAndPath((String)"astra", (String)("pipeline/canvas_" + i))).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).withCull(false).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withDepthStencilState(new DepthStencilState((i & 2) != 0 ? CompareOp.ALWAYS_PASS : CompareOp.LESS_THAN_OR_EQUAL, (i & 1) != 0)).build());
         }
     }
 }

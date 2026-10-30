@@ -155,7 +155,7 @@ extends Widget {
     protected float measure(float width) {
         this.syncExpansion();
         float textW = width - 18.0f - 22.0f - (this.toggleable() ? 28.0f : 0.0f);
-        List<Object> list = this.descLines = this.description().isEmpty() ? List.of() : Fonts.wrap(this.description(), textW, 6.3f, false);
+        List<String> list = this.descLines = this.description().isEmpty() ? List.of() : Fonts.wrap(this.description(), textW, 6.3f, false);
         if (this.descLines.size() > 3) {
             this.descLines = this.descLines.subList(0, 3);
         }

@@ -54,7 +54,7 @@ extends Module {
     @Override
     public void onTick() {
         boolean down;
-        boolean bl = down = ScreenshotModule.mc.screen == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
+        boolean bl = down = ScreenshotModule.mc.gui.screen() == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
         if (down && !this.wasDown) {
             this.requestShot();
         }
@@ -63,17 +63,17 @@ extends Module {
             return;
         }
         if (this.pending == 2 && ((Boolean)this.hideHud.get()).booleanValue()) {
-            this.hudWasHidden = ScreenshotModule.mc.options.hideGui;
-            ScreenshotModule.mc.options.hideGui = true;
+            this.hudWasHidden = ScreenshotModule.mc.gui.hud.isHidden();
+            if (!ScreenshotModule.mc.gui.hud.isHidden()) ScreenshotModule.mc.gui.hud.toggle();
         }
-        if (this.pending-- == 0 && ScreenshotModule.mc.screen == null) {
-            Screenshot.grab((File)ScreenshotModule.mc.gameDirectory, (RenderTarget)mc.getMainRenderTarget(), message -> mc.execute(() -> {
+        if (this.pending-- == 0 && ScreenshotModule.mc.gui.screen() == null) {
+            Screenshot.grab((File)ScreenshotModule.mc.gameDirectory, (RenderTarget)mc.gameRenderer.mainRenderTarget(), message -> mc.execute(() -> {
                 if (ScreenshotModule.mc.gui != null) {
-                    ScreenshotModule.mc.gui.getChat().addMessage(message);
+                    ScreenshotModule.mc.gui.hud.getChat().addClientSystemMessage(message);
                 }
             }));
             if (((Boolean)this.hideHud.get()).booleanValue()) {
-                ScreenshotModule.mc.options.hideGui = this.hudWasHidden;
+                if (ScreenshotModule.mc.gui.hud.isHidden() != this.hudWasHidden) ScreenshotModule.mc.gui.hud.toggle();
             }
             this.pending = -1;
         }

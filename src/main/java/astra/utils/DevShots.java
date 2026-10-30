@@ -15,7 +15,7 @@
  *  net.minecraft.client.CameraType
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.Screenshot
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.AbstractWidget
  *  net.minecraft.client.gui.components.Button
  *  net.minecraft.client.gui.components.ChatComponent
@@ -162,7 +162,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -242,7 +242,7 @@ public final class DevShots {
     }
 
     private static void shot(Minecraft client, String name) {
-        Screenshot.grab((File)client.gameDirectory, (String)("astra_" + name + ".png"), (RenderTarget)client.getMainRenderTarget(), (int)1, text -> AstraClient.LOGGER.info("DevShots: {}", (Object)text.getString()));
+        Screenshot.grab((File)client.gameDirectory, (String)("astra_" + name + ".png"), (RenderTarget)client.gameRenderer.mainRenderTarget(), (int)1, text -> AstraClient.LOGGER.info("DevShots: {}", (Object)text.getString()));
     }
 
     private static void devCommand(Minecraft client, String command) {
@@ -287,7 +287,7 @@ public final class DevShots {
         for (Setting<?> s : m.getSettings()) {
             if (!s.getName().equals(name)) continue;
             Setting<?> setting = s;
-            setting.set(value);
+            ((Setting)setting).set(value);
             return;
         }
         AstraClient.LOGGER.warn("DevShots: \u043d\u0435\u0442 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 {}", (Object)name);
@@ -318,8 +318,8 @@ public final class DevShots {
 
     private static void perfScenes(Minecraft client) {
         if (tick == 1) {
-            client.options.enableVsync().set((Object)false);
-            client.options.framerateLimit().set((Object)260);
+            client.options.enableVsync().set(false);
+            client.options.framerateLimit().set(260);
             for (String id : PERF_MODULES) {
                 Module m = ModuleManager.byId(id);
                 if (m != null) {
@@ -336,9 +336,9 @@ public final class DevShots {
             for (int i = 0; i < 10; ++i) {
                 DevShots.devCommand(client, "scoreboard players set \u0421\u0442\u0440\u043e\u043a\u0430_" + i + " astra_perf " + i);
             }
-            ChatComponent chat = client.gui.getChat();
+            ChatComponent chat = client.gui.hud.getChat();
             for (int i = 0; i < 60; ++i) {
-                chat.addMessage((Component)Component.literal((String)("\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fPlayer" + i + " \u00a76\u25b8 \u00a7f\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u043d\u043e\u043c\u0435\u0440 " + i)));
+                chat.addClientSystemMessage((Component)Component.literal((String)("\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fPlayer" + i + " \u00a76\u25b8 \u00a7f\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u043d\u043e\u043c\u0435\u0440 " + i)));
             }
         }
         if (tick >= 60 && tick < 460) {
@@ -356,7 +356,7 @@ public final class DevShots {
         if (tick == 460) {
             DevShots.perfReport("\u0438\u0433\u0440\u0430, \u0432\u0441\u0451 \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u043e");
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 462) {
             gui.setCategory(Category.VISUAL);
@@ -366,7 +366,7 @@ public final class DevShots {
         }
         if (tick == 700) {
             DevShots.perfReport("\u043c\u0435\u043d\u044e Astra");
-            client.setScreen(null);
+            client.gui.setScreen(null);
             for (Module m : ModuleManager.all()) {
                 if (m instanceof ClientSettings) continue;
                 m.setEnabled(false);
@@ -390,7 +390,7 @@ public final class DevShots {
     private static void artEditScenes(Minecraft client) {
         if (tick == 1) {
             artTitle = new PauseScreen(true);
-            client.setScreen(artTitle);
+            client.gui.setScreen(artTitle);
             try {
                 Path fixture = client.gameDirectory.toPath().resolve("astra-art-test.png");
                 try (InputStream stream = DevShots.class.getResourceAsStream("/assets/astra/textures/gui/sidebar_girl.png");){
@@ -415,7 +415,7 @@ public final class DevShots {
         }
         if (tick == 22) {
             NativeLayoutEditor ed = new NativeLayoutEditor(artTitle);
-            client.setScreen((Screen)ed);
+            client.gui.setScreen((Screen)ed);
             try {
                 Field f = ed.getClass().getDeclaredField("selected");
                 f.setAccessible(true);
@@ -438,7 +438,7 @@ public final class DevShots {
                 throw new IllegalStateException("Missing art geometry");
             }
             try {
-                NativeLayoutEditor ed = (NativeLayoutEditor)client.screen;
+                NativeLayoutEditor ed = (NativeLayoutEditor)client.gui.screen();
                 Class<?> c = ed.getClass();
                 Field selected = c.getDeclaredField("selected");
                 selected.setAccessible(true);
@@ -534,7 +534,7 @@ public final class DevShots {
             o.sw = 100.0f;
             NativeScreenLayouts.layout((Screen)DevShots.artTitle).art = null;
             NativeScreenLayouts.save();
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -545,7 +545,7 @@ public final class DevShots {
         Page page2;
         if (tick == 1) {
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.SOUNDS);
@@ -587,7 +587,7 @@ public final class DevShots {
             DevShots.shot(client, "cards_pvp");
         }
         if (tick == 70) {
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -668,12 +668,12 @@ public final class DevShots {
             }
         }
         if (tick == 50) {
-            long night = client.level.getDayTime() % 24000L;
+            long night = client.level.clockManager().getTotalTicks(client.level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.WORLD_CLOCK).getOrThrow(net.minecraft.world.clock.WorldClocks.OVERWORLD)) % 24000L;
             AstraClient.LOGGER.info("DevShots: BINDS time {} (\u043d\u043e\u0447\u044c \u2248 13000)", (Object)night);
             DevShots.shot(client, "binds_chat");
             ModuleManager.byId("minimap").setEnabled(true);
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 52) {
             gui.setCategory(Category.PVP);
@@ -685,7 +685,7 @@ public final class DevShots {
             DevShots.shot(client, "binds_menu");
         }
         if (tick == 80) {
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -763,10 +763,10 @@ public final class DevShots {
             p.setXRot(5.0f);
         }
         if (tick == 10) {
-            ChatComponent chatComponent = client.gui.getChat();
-            chatComponent.addMessage((Component)Component.literal((String)"\u00a7d[Astra] \u00a7f\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c \u043d\u0430 \u0441\u0435\u0440\u0432\u0435\u0440!"));
-            chatComponent.addMessage((Component)Component.literal((String)"\u00a7b<Bob> \u00a7f\u043f\u0440\u0438\u0432\u0435\u0442, \u0442\u044b \u0433\u0434\u0435?"));
-            chatComponent.addMessage((Component)Component.literal((String)("\u00a7e<Kira> \u00a7f" + client.player.getGameProfile().name() + ", \u043f\u043e\u0439\u0434\u0451\u043c \u0432 \u043f\u0432\u043f!")));
+            ChatComponent chatComponent = client.gui.hud.getChat();
+            chatComponent.addClientSystemMessage((Component)Component.literal((String)"\u00a7d[Astra] \u00a7f\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c \u043d\u0430 \u0441\u0435\u0440\u0432\u0435\u0440!"));
+            chatComponent.addClientSystemMessage((Component)Component.literal((String)"\u00a7b<Bob> \u00a7f\u043f\u0440\u0438\u0432\u0435\u0442, \u0442\u044b \u0433\u0434\u0435?"));
+            chatComponent.addClientSystemMessage((Component)Component.literal((String)("\u00a7e<Kira> \u00a7f" + client.player.getGameProfile().name() + ", \u043f\u043e\u0439\u0434\u0451\u043c \u0432 \u043f\u0432\u043f!")));
         }
         if (tick == 30) {
             CompanionHud.onKill();
@@ -786,20 +786,20 @@ public final class DevShots {
         }
         if (tick == 102) {
             client.options.keyPlayerList.setDown(false);
-            client.setScreen((Screen)new ChatScreen("\u043f\u0440\u0438\u0432\u0435\u0442", false));
+            client.gui.setScreen((Screen)new ChatScreen("\u043f\u0440\u0438\u0432\u0435\u0442", false));
         }
         if (tick == 110) {
             DevShots.shot(client, "feat_chat");
         }
         if (tick == 112) {
             EmoteCosmetic emoteCosmetic = (EmoteCosmetic)ModuleManager.byId("emotes");
-            client.setScreen((Screen)new EmoteWheelScreen(emoteCosmetic, 71));
+            client.gui.setScreen((Screen)new EmoteWheelScreen(emoteCosmetic, 71));
         }
         if (tick == 125) {
             DevShots.shot(client, "feat_wheel");
         }
         if (tick == 127) {
-            client.setScreen(null);
+            client.gui.setScreen(null);
             StylePresets.ALL.get(1).apply().run();
             client.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
@@ -870,20 +870,20 @@ public final class DevShots {
             DevShots.shot(client, "menus_ingame");
         }
         if (tick == 62) {
-            client.setScreen((Screen)new PauseScreen(true));
+            client.gui.setScreen((Screen)new PauseScreen(true));
         }
         if (tick == 90) {
             DevShots.shot(client, "menus_pause");
         }
         if (tick == 92) {
-            client.setScreen((Screen)new OptionsScreen(client.screen, client.options));
+            client.gui.setScreen((Screen)new OptionsScreen(client.gui.screen(), client.options, false));
         }
         if (tick == 120) {
             DevShots.shot(client, "menus_options");
         }
         if (tick == 122) {
             DevShots.devCommand(client, "scoreboard objectives remove astra_test");
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -907,14 +907,14 @@ public final class DevShots {
             }
             ClientSettings.get().theme.set("Astra Purple");
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.THEMES);
         }
         if (tick == 20) {
             decorEditor = new DecorEditorScreen(null);
-            client.setScreen((Screen)decorEditor);
+            client.gui.setScreen((Screen)decorEditor);
         }
         if (tick == 40) {
             c = DevShots.hitCenter("logo");
@@ -972,7 +972,7 @@ public final class DevShots {
             n.dy = 40.0f;
             decorEditor.onClose();
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 120) {
             float[] g = gui.devDesignToGui(128.0f, 244.0f);
@@ -987,7 +987,7 @@ public final class DevShots {
                 GuiStyle.reset(id);
             }
             GuiStyle.save();
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1001,7 +1001,7 @@ public final class DevShots {
             cs.sidebarArt.set("sidebar.jpg");
             cs.theme.set("Midnight Blue");
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.THEMES);
@@ -1018,7 +1018,7 @@ public final class DevShots {
         if (tick == 72) {
             cs.theme.set("Astra Purple");
             decorEditor = new DecorEditorScreen(null);
-            client.setScreen((Screen)decorEditor);
+            client.gui.setScreen((Screen)decorEditor);
         }
         if (tick == 100) {
             DevShots.shot(client, "themebg_editor_before");
@@ -1044,13 +1044,13 @@ public final class DevShots {
         if (tick == 152) {
             decorEditor.onClose();
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 190) {
             DevShots.shot(client, "themebg_menu_after");
         }
         if (tick == 192) {
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1101,14 +1101,14 @@ public final class DevShots {
         }
         if (tick == 22) {
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 60) {
             DevShots.shot(client, "decor_menu");
         }
         if (tick == 62) {
             decorEditor = new DecorEditorScreen(null);
-            client.setScreen((Screen)decorEditor);
+            client.gui.setScreen((Screen)decorEditor);
         }
         if (tick == 64) {
             decorEditor.devSelect(layers.get(1), "menu");
@@ -1137,7 +1137,7 @@ public final class DevShots {
         }
         if (tick == 142) {
             decorEditor.onClose();
-            client.setScreen(null);
+            client.gui.setScreen(null);
         }
         if (tick == 150) {
             phase = Phase.DONE;
@@ -1155,7 +1155,7 @@ public final class DevShots {
         if (tick == 1) {
             cs.sidebarArt.set("\u0410\u0432\u0442\u043e");
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.THEMES);
@@ -1181,7 +1181,7 @@ public final class DevShots {
         }
         if (tick == 122) {
             cs.sidebarArt.set("\u0410\u0432\u0442\u043e");
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1269,7 +1269,7 @@ public final class DevShots {
         }
         if (tick == 362) {
             gui = new ClickGuiScreen(null);
-            client.setScreen((Screen)gui);
+            client.gui.setScreen((Screen)gui);
         }
         if (tick == 364) {
             gui.setCategory(Category.COSMETICS);
@@ -1284,7 +1284,7 @@ public final class DevShots {
             DevShots.shot(client, "packs_visual");
         }
         if (tick == 442) {
-            client.setScreen(null);
+            client.gui.setScreen(null);
             ((ModeSetting)DevShots.setting(music, "\u0421\u0432\u043e\u0438 \u043f\u0435\u0441\u043d\u0438")).set("\u0412\u043c\u0435\u0441\u0442\u0435 \u0441\u043e \u0432\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u043c\u0438");
             phase = Phase.DONE;
             tick = 0;
@@ -1364,13 +1364,13 @@ public final class DevShots {
             DevShots.shot(client, "np_compact");
         }
         if (tick == 217) {
-            client.setScreen((Screen)new PlayerScreen(null));
+            client.gui.setScreen((Screen)new PlayerScreen(null));
         }
         if (tick == 250) {
             DevShots.shot(client, "np_player");
         }
         if (tick == 252) {
-            client.setScreen(null);
+            client.gui.setScreen(null);
             DevShots.set(np, "\u0412\u0438\u0434 \u0432\u0438\u0434\u0436\u0435\u0442\u0430", "\u041a\u0430\u0440\u0442\u043e\u0447\u043a\u0430");
             DevShots.set(np, "\u0422\u0435\u043a\u0441\u0442 \u043f\u0435\u0441\u043d\u0438", "\u0412 \u043c\u0438\u0440\u0435");
             DevShots.set(np, "\u042d\u0444\u0444\u0435\u043a\u0442 \u043f\u043e\u044f\u0432\u043b\u0435\u043d\u0438\u044f", "\u0412\u043e\u043b\u043d\u0430");
@@ -1405,7 +1405,7 @@ public final class DevShots {
             input.scale.set(100.0);
             DevShots.set(input, "\u0428\u0438\u0440\u0438\u043d\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", 100.0);
             DevShots.set(input, "\u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", 14.0);
-            client.setScreen((Screen)new ChatScreen("\u0422\u0435\u0441\u0442 \u0432\u0432\u043e\u0434\u0430", false));
+            client.gui.setScreen((Screen)new ChatScreen("\u0422\u0435\u0441\u0442 \u0432\u0432\u043e\u0434\u0430", false));
             AstraClient.LOGGER.info("DevShots: INPUT DEFAULT bounds={}", (Object)input.bounds());
         }
         if (tick == 8) {
@@ -1418,15 +1418,15 @@ public final class DevShots {
             DevShots.set(input, "\u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", 24.0);
             DevShots.set(input, "\u041e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u0435 \u0441\u0442\u0440\u043e\u043a\u0438", "\u0421\u0432\u043e\u044f \u043f\u0430\u043d\u0435\u043b\u044c");
             DevShots.set(input, "\u0426\u0432\u0435\u0442 \u0442\u0435\u043a\u0441\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", -8331009);
-            client.setScreen((Screen)new ChatScreen("", false));
-            Screen screen = client.screen;
+            client.gui.setScreen((Screen)new ChatScreen("", false));
+            Screen screen = client.gui.screen();
             EditBox field = screen.children().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
             ChatInputHud.Bounds b = input.bounds();
             if (field.getX() != b.x() + 4 || field.getWidth() != b.width() - 8) {
                 throw new IllegalStateException("Input geometry regression");
             }
             for (char c : "\u043f\u0440\u0438\u0432\u0435\u0442".toCharArray()) {
-                screen.charTyped(new CharacterEvent((int)c, 0));
+                screen.charTyped(new CharacterEvent((int)c));
             }
             screen.keyPressed(new KeyEvent(263, 0, 0));
             screen.keyPressed(new KeyEvent(259, 0, 0));
@@ -1434,7 +1434,7 @@ public final class DevShots {
                 throw new IllegalStateException("Input editing regression: " + field.getValue());
             }
             screen.mouseClicked(new MouseButtonEvent((double)(field.getX() + 1), (double)(field.getY() + 3), new MouseButtonInfo(0, 0)), false);
-            screen.charTyped(new CharacterEvent(1071, 0));
+            screen.charTyped(new CharacterEvent(1071));
             if (!field.getValue().startsWith("\u042f")) {
                 throw new IllegalStateException("Input cursor hit testing regression");
             }
@@ -1450,7 +1450,7 @@ public final class DevShots {
             DevShots.shot(client, "input_moved");
         }
         if (tick == 20) {
-            client.setScreen((Screen)new HudEditorScreen(null));
+            client.gui.setScreen((Screen)new HudEditorScreen(null));
         }
         if (tick == 24) {
             ChatInputHud.Bounds b = input.bounds();
@@ -1458,13 +1458,13 @@ public final class DevShots {
             double y = (double)b.y() + (double)b.height() / 2.0;
             float oldX = input.getPosX();
             float oldY = input.getPosY();
-            client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
-            client.screen.mouseDragged(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)), -80.0, 55.0);
-            client.screen.mouseReleased(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)));
+            client.gui.screen().mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
+            client.gui.screen().mouseDragged(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)), -80.0, 55.0);
+            client.gui.screen().mouseReleased(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)));
             if (input.getPosX() == oldX && input.getPosY() == oldY) {
                 throw new IllegalStateException("HUD input drag regression");
             }
-            String[] snapshot = ConfigManager.serializeModules(true);
+            JsonObject snapshot = ConfigManager.serializeModules(true);
             ChatInputHud.Bounds expected = input.bounds();
             input.resetPosition();
             ConfigManager.applyModules((JsonObject)snapshot, true, false);
@@ -1478,16 +1478,16 @@ public final class DevShots {
         }
         if (tick == 32) {
             input.setPos(0.5f, 0.05f);
-            client.setScreen((Screen)new ChatScreen("/", false));
+            client.gui.setScreen((Screen)new ChatScreen("/", false));
         }
         if (tick == 42) {
-            client.screen.keyPressed(new KeyEvent(258, 0, 0));
+            client.gui.screen().keyPressed(new KeyEvent(258, 0, 0));
         }
         if (tick == 48) {
             try {
                 Field sf = ChatScreen.class.getDeclaredField("chatInputSuggestor");
                 sf.setAccessible(true);
-                CommandSuggestions suggestor = (CommandSuggestions)sf.get(client.screen);
+                CommandSuggestions suggestor = (CommandSuggestions)sf.get(client.gui.screen());
                 Field wf = suggestor.getClass().getDeclaredField("window");
                 wf.setAccessible(true);
                 Object window = wf.get(suggestor);
@@ -1498,7 +1498,7 @@ public final class DevShots {
                 af.setAccessible(true);
                 Rect2i area = (Rect2i)af.get(window);
                 ChatInputHud.Bounds b = input.bounds();
-                if (area.getY() < b.y() + b.height() || area.getY() + area.getHeight() > client.screen.height) {
+                if (area.getY() < b.y() + b.height() || area.getY() + area.getHeight() > client.gui.screen().height) {
                     throw new IllegalStateException("Top input completion bounds regression");
                 }
                 AstraClient.LOGGER.info("DevShots: INPUT COMPLETION PASS \u2014 menu below top input, inside window");
@@ -1562,9 +1562,9 @@ public final class DevShots {
                 throw new RuntimeException(e4);
             }
             input.setEnabled(false);
-            client.setScreen((Screen)new ChatScreen("\u0412\u0430\u043d\u0438\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043b\u0435", false));
-            EditBox field = client.screen.children().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
-            if (field.getX() != 4 || field.getY() != client.screen.height - 12) {
+            client.gui.setScreen((Screen)new ChatScreen("\u0412\u0430\u043d\u0438\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043b\u0435", false));
+            EditBox field = client.gui.screen().children().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
+            if (field.getX() != 4 || field.getY() != client.gui.screen().height - 12) {
                 throw new IllegalStateException("Disabled input fallback regression");
             }
             AstraClient.LOGGER.info("DevShots: INPUT DISABLED PASS");
@@ -1572,7 +1572,7 @@ public final class DevShots {
         if (tick == 60) {
             input.setEnabled(true);
             input.setPos(0.52f, 0.45f);
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1589,25 +1589,25 @@ public final class DevShots {
             banner.setEnabled(true);
             banner.scale.set(100.0);
             banner.setPos(0.42f, 0.4f);
-            client.setScreen((Screen)new HudEditorScreen(null));
+            client.gui.setScreen((Screen)new HudEditorScreen(null));
         }
         if (tick == 10) {
-            double x = banner.getX(client.screen.width) + banner.scaledWidth() / 2.0f;
-            double y = banner.getY(client.screen.height) + banner.scaledHeight() / 2.0f;
+            double x = banner.getX(client.gui.screen().width) + banner.scaledWidth() / 2.0f;
+            double y = banner.getY(client.gui.screen().height) + banner.scaledHeight() / 2.0f;
             float oldX = banner.getPosX();
             float oldY = banner.getPosY();
-            client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
-            client.screen.mouseDragged(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)), 45.0, 70.0);
-            client.screen.mouseReleased(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)));
+            client.gui.screen().mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
+            client.gui.screen().mouseDragged(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)), 45.0, 70.0);
+            client.gui.screen().mouseReleased(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)));
             if (banner.getPosX() == oldX && banner.getPosY() == oldY) {
                 throw new IllegalStateException("Banner drag regression");
             }
-            float cornerX = banner.getX(client.screen.width) + banner.scaledWidth() + 1.5f;
-            float cornerY = banner.getY(client.screen.height) + banner.scaledHeight() + 1.5f;
+            float cornerX = banner.getX(client.gui.screen().width) + banner.scaledWidth() + 1.5f;
+            float cornerY = banner.getY(client.gui.screen().height) + banner.scaledHeight() + 1.5f;
             double oldSize = (Double)banner.scale.get();
-            client.screen.mouseClicked(new MouseButtonEvent((double)cornerX, (double)cornerY, new MouseButtonInfo(0, 0)), false);
-            client.screen.mouseDragged(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)), 65.0, 20.0);
-            client.screen.mouseReleased(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)));
+            client.gui.screen().mouseClicked(new MouseButtonEvent((double)cornerX, (double)cornerY, new MouseButtonInfo(0, 0)), false);
+            client.gui.screen().mouseDragged(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)), 65.0, 20.0);
+            client.gui.screen().mouseReleased(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)));
             if ((Double)banner.scale.get() <= oldSize || player.bannerSize() != ((Double)banner.scale.get()).doubleValue()) {
                 throw new IllegalStateException("Banner resize binding regression");
             }
@@ -1634,7 +1634,7 @@ public final class DevShots {
             DevShots.set(player, "\u041f\u043b\u0430\u0448\u043a\u0430 \u0441\u043c\u0435\u043d\u044b \u0442\u0440\u0435\u043a\u0430", true);
             DevShots.set(player, "\u041f\u043b\u0430\u0448\u043a\u0430: \u0432\u0440\u0435\u043c\u044f \u043f\u043e\u043a\u0430\u0437\u0430", 15.0);
             MediaBridge.devOverride(new NowPlaying(true, "Firefox.exe", "In Affliction", "Yakui The Maid", "", true, 0L, System.currentTimeMillis(), 180000L, "", false, false, false));
-            client.setScreen(null);
+            client.gui.setScreen(null);
         }
         if (tick == 42) {
             if (!player.bannerVisible()) {
@@ -1658,13 +1658,13 @@ public final class DevShots {
             if (player.bannerVisible()) {
                 throw new IllegalStateException("Banner expiry regression");
             }
-            client.setScreen((Screen)new HudEditorScreen(null));
+            client.gui.setScreen((Screen)new HudEditorScreen(null));
         }
         if (tick == 50) {
-            float x = banner.getX(client.screen.width) + 20.0f;
-            float y = banner.getY(client.screen.height) + 20.0f;
-            client.screen.mouseClicked(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)), false);
-            client.screen.mouseReleased(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)));
+            float x = banner.getX(client.gui.screen().width) + 20.0f;
+            float y = banner.getY(client.gui.screen().height) + 20.0f;
+            client.gui.screen().mouseClicked(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)), false);
+            client.gui.screen().mouseReleased(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)));
             DevShots.shot(client, "track_banner_expired_editor");
             AstraClient.LOGGER.info("DevShots: TRACK BANNER EXPIRED PASS \u2014 editor preview still visible and selectable");
         }
@@ -1678,7 +1678,7 @@ public final class DevShots {
             }
             AstraClient.LOGGER.info("DevShots: TRACK BANNER LONG TITLE PASS");
             MediaBridge.devOverride(null);
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1719,7 +1719,7 @@ public final class DevShots {
         try {
             Method method = module.getClass().getDeclaredMethod("worldPlacement", Camera.class, Vec3.class, Quaternionf.class, Float.TYPE);
             method.setAccessible(true);
-            Object placement = method.invoke((Object)module, client.gameRenderer.getMainCamera(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
+            Object placement = method.invoke((Object)module, client.gameRenderer.mainCamera(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
             if (placement == null) {
                 throw new IllegalStateException("World lyrics culled unexpectedly");
             }
@@ -1807,7 +1807,7 @@ public final class DevShots {
                 throw new IllegalStateException("No pinned world text");
             }
             lyricsWorldScale = DevShots.actualWorldScale(module, client);
-            lyricsApparent = lyricsWorldScale / (float)lyricsPinned.distanceTo(client.gameRenderer.getMainCamera().position());
+            lyricsApparent = lyricsWorldScale / (float)lyricsPinned.distanceTo(client.gameRenderer.mainCamera().position());
             DevShots.shot(client, "world_lyrics_near");
         }
         if (tick == 32) {
@@ -1816,7 +1816,7 @@ public final class DevShots {
         if (tick == 44) {
             Vec3 at = (Vec3)DevShots.lyricField(module, "worldAnchor");
             float actual = DevShots.actualWorldScale(module, client);
-            float apparent = actual / (float)at.distanceTo(client.gameRenderer.getMainCamera().position());
+            float apparent = actual / (float)at.distanceTo(client.gameRenderer.mainCamera().position());
             if (!at.equals((Object)lyricsPinned) || Math.abs(actual - lyricsWorldScale) > 1.0E-6f || apparent >= lyricsApparent) {
                 throw new IllegalStateException("Walking away enlarged or moved pinned lyrics");
             }
@@ -1915,7 +1915,7 @@ public final class DevShots {
             try {
                 Method method = module.getClass().getDeclaredMethod("worldPlacement", Camera.class, Vec3.class, Quaternionf.class, Float.TYPE);
                 method.setAccessible(true);
-                Object placement = method.invoke((Object)module, client.gameRenderer.getMainCamera(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
+                Object placement = method.invoke((Object)module, client.gameRenderer.mainCamera(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
                 if (placement == null) {
                     throw new IllegalStateException("Near camera unexpectedly culled");
                 }
@@ -1942,7 +1942,7 @@ public final class DevShots {
             MediaBridge.devOverride(null);
             DevShots.devCommand(client, "gamemode " + lyricsOriginalGameMode + " @p");
             DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f %.3f %.3f", DevShots.lyricsOriginalPosition.x, DevShots.lyricsOriginalPosition.y, DevShots.lyricsOriginalPosition.z, Float.valueOf(lyricsOriginalYaw), Float.valueOf(lyricsOriginalPitch)));
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -2020,7 +2020,7 @@ public final class DevShots {
         }
         if (tick == 48) {
             MediaBridge.devOverride(null);
-            client.setScreen(null);
+            client.gui.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -2090,14 +2090,14 @@ public final class DevShots {
             if (tick == 70) {
                 DevShots.builderTest.opacity = 1.0;
                 CanvasBoard.put(builderTest);
-                client.setScreen((Screen)new CanvasScreen(null));
+                client.gui.setScreen((Screen)new CanvasScreen(null));
             }
             if (tick == 100) {
                 DevShots.shot(client, "builder_editor");
             }
             if (tick == 110) {
                 CanvasBoard.delete(builderTest);
-                client.setScreen(null);
+                client.gui.setScreen(null);
                 client.player.setYRot(builderYaw);
                 client.player.setXRot(builderPitch);
                 AstraClient.LOGGER.info("DevShots: BUILDER PASS \u2014 import, world texture, opacity, editor, delete");
@@ -2115,18 +2115,18 @@ public final class DevShots {
         try {
             Object previewField;
             DecorEditorScreen editor;
-            Screen button;
+            Button button;
             if (tick == 1) {
                 ModuleManager.byId("astra_online").setEnabled(false);
                 editorSource = new TitleScreen();
-                client.setScreen(editorSource);
+                client.gui.setScreen(editorSource);
             }
             if (tick == 12) {
                 if (NativeScreenLayouts.entries(editorSource).isEmpty()) {
                     throw new AssertionError((Object)"no native button baselines");
                 }
                 editorSnapshot = NativeScreenLayouts.snapshot(editorSource);
-                client.setScreen((Screen)new NativeLayoutEditor(editorSource));
+                client.gui.setScreen((Screen)new NativeLayoutEditor(editorSource));
             }
             if (tick == 30) {
                 if (!NativeScreenLayouts.rects(editorSource).containsKey("@splash") || !NativeScreenLayouts.rects(editorSource).containsKey("@version")) {
@@ -2146,9 +2146,9 @@ public final class DevShots {
                 }
                 NativeScreenLayouts.restore(editorSource, editorSnapshot);
                 for (int i = 0; i < 6; ++i) {
-                    client.setScreen((Screen)new NativeLayoutEditor(editorSource));
-                    client.setScreen(editorSource);
-                    long launchers = Screens.getButtons((Screen)editorSource).stream().filter(w -> w.getMessage().getString().equals("\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u043e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u044f")).count();
+                    client.gui.setScreen((Screen)new NativeLayoutEditor(editorSource));
+                    client.gui.setScreen(editorSource);
+                    long launchers = Screens.getWidgets((Screen)editorSource).stream().filter(w -> w.getMessage().getString().equals("\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u043e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u044f")).count();
                     if (launchers != 1L) {
                         throw new AssertionError((Object)("duplicate editor buttons: " + launchers));
                     }
@@ -2158,17 +2158,17 @@ public final class DevShots {
                 }
                 AstraClient.LOGGER.info("DevShots: REOPEN PASS \u2014 six editor round trips, one launcher");
                 editorSource = new PauseScreen(true);
-                client.setScreen(editorSource);
+                client.gui.setScreen(editorSource);
             }
             if (tick == 38) {
-                client.setScreen((Screen)new NativeLayoutEditor(editorSource));
+                client.gui.setScreen((Screen)new NativeLayoutEditor(editorSource));
             }
             if (tick == 58) {
                 DevShots.shot(client, "editor_pause");
             }
             if (tick == 62) {
                 editorSource = new JoinMultiplayerScreen((Screen)new TitleScreen());
-                client.setScreen(editorSource);
+                client.gui.setScreen(editorSource);
             }
             if (tick == 66) {
                 AtomicInteger count = new AtomicInteger();
@@ -2193,22 +2193,22 @@ public final class DevShots {
                 AstraClient.LOGGER.info("DevShots: CLICK PASS \u2014 moved button gets exactly one action, bounds clamped");
             }
             if (tick == 68) {
-                client.setScreen((Screen)new NativeLayoutEditor(editorSource));
+                client.gui.setScreen((Screen)new NativeLayoutEditor(editorSource));
             }
             if (tick == 88) {
                 DevShots.shot(client, "editor_multiplayer");
             }
             if (tick == 92) {
-                client.setScreen((Screen)new DecorEditorScreen(null));
+                client.gui.setScreen((Screen)new DecorEditorScreen(null));
             }
-            if (tick == 110 && (button = client.screen) instanceof DecorEditorScreen) {
-                editor = (DecorEditorScreen)button;
+            if (tick == 110 && client.gui.screen() instanceof DecorEditorScreen) {
+                editor = (DecorEditorScreen)client.gui.screen();
                 previewField = DecorEditorScreen.class.getDeclaredField("preview");
                 ((Field)previewField).setAccessible(true);
                 ClickGuiScreen preview = (ClickGuiScreen)((Field)previewField).get(editor);
                 preview.setCategory(Category.THEMES);
             }
-            if (tick == 120 && (previewField = client.screen) instanceof DecorEditorScreen) {
+            if (tick == 120 && (previewField = client.gui.screen()) instanceof DecorEditorScreen) {
                 editor = (DecorEditorScreen)previewField;
                 previewField = DecorEditorScreen.class.getDeclaredField("preview");
                 ((Field)previewField).setAccessible(true);
@@ -2247,17 +2247,17 @@ public final class DevShots {
                     throw new AssertionError((Object)"sounds category missing");
                 }
                 AstraClient.LOGGER.info("DevShots: CARDS PASS \u2014 collapsed by default, RMB expand, reset, separate sounds");
-                client.setScreen((Screen)new CanvasScreen(null));
+                client.gui.setScreen((Screen)new CanvasScreen(null));
             }
             if (tick == 164) {
                 DevShots.shot(client, "editor_canvas_empty");
             }
             if (tick == 168) {
-                client.setScreen((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
+                client.gui.setScreen((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
 
                     @Override
-                    public void render(GuiGraphics ctx, int mx, int my, float delta) {
-                        super.render(ctx, this.width / 2, this.height / 2 - 55, delta);
+                    public void extractRenderState(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+                        super.extractRenderState(ctx, this.width / 2, this.height / 2 - 55, delta);
                     }
                 });
             }
@@ -2265,11 +2265,11 @@ public final class DevShots {
                 DevShots.shot(client, "wheel_love");
             }
             if (tick == 188) {
-                client.setScreen((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
+                client.gui.setScreen((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
 
                     @Override
-                    public void render(GuiGraphics ctx, int mx, int my, float delta) {
-                        super.render(ctx, this.width / 2 + 32, this.height / 2 + 45, delta);
+                    public void extractRenderState(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+                        super.extractRenderState(ctx, this.width / 2 + 32, this.height / 2 + 45, delta);
                     }
                 });
             }
@@ -2277,7 +2277,7 @@ public final class DevShots {
                 DevShots.shot(client, "wheel_music");
             }
             if (tick == 208) {
-                client.setScreen(null);
+                client.gui.setScreen(null);
                 AstraClient.LOGGER.info("DevShots: EDITORS PASS \u2014 native extras, repeat open, moved click, collapse, sounds, wheel, HUD-style inspector");
                 phase = Phase.DONE;
                 tick = 0;
@@ -2297,43 +2297,43 @@ public final class DevShots {
         ++tick;
         switch (phase.ordinal()) {
             case 0: {
-                if (ONLY.equals("menus") && client.getOverlay() == null && titleTicks < 100 && (client.screen instanceof TitleScreen || client.screen instanceof AstraModsScreen)) {
+                if (ONLY.equals("menus") && client.gui.overlay() == null && titleTicks < 100 && (client.gui.screen() instanceof TitleScreen || client.gui.screen() instanceof AstraModsScreen)) {
                     if (++titleTicks == 40) {
                         DevShots.shot(client, "menus_title");
                     }
                     if (titleTicks == 42) {
-                        client.setScreen((Screen)new AstraModsScreen(client.screen));
+                        client.gui.setScreen((Screen)new AstraModsScreen(client.gui.screen()));
                     }
                     if (titleTicks == 75) {
                         DevShots.shot(client, "menus_mods");
                     }
                     if (titleTicks == 78) {
-                        client.setScreen((Screen)new TitleScreen());
+                        client.gui.setScreen((Screen)new TitleScreen());
                     }
                     if (titleTicks < 100) {
                         tick = 0;
                         return;
                     }
                 }
-                if (!(client.screen instanceof TitleScreen) || client.getOverlay() != null || tick < 40) {
+                if (!(client.gui.screen() instanceof TitleScreen) || client.gui.overlay() != null || tick < 40) {
                     return;
                 }
                 File saves = new File(client.gameDirectory, "saves");
                 File[] worlds = saves.listFiles(File::isDirectory);
                 if (worlds != null && worlds.length > 0) {
                     AstraClient.LOGGER.info("DevShots: \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043c\u0438\u0440\u0430 {}", (Object)worlds[0].getName());
-                    client.createWorldOpenFlows().openWorld(worlds[0].getName(), () -> client.setScreen((Screen)new TitleScreen()));
+                    client.createWorldOpenFlows().openWorld(worlds[0].getName(), () -> client.gui.setScreen((Screen)new TitleScreen()));
                     phase = Phase.LOADING;
                 } else {
-                    Screen back = client.screen;
-                    CreateWorldScreen.openFresh((Minecraft)client, () -> client.setScreen(back));
+                    Screen back = client.gui.screen();
+                    CreateWorldScreen.openFresh((Minecraft)client, () -> client.gui.setScreen(back));
                     phase = Phase.CREATE;
                 }
                 tick = 0;
                 return;
             }
             case 1: {
-                Screen worlds = client.screen;
+                Screen worlds = client.gui.screen();
                 if (!(worlds instanceof CreateWorldScreen)) return;
                 CreateWorldScreen screen = (CreateWorldScreen)worlds;
                 if (tick < 20) {
@@ -2351,7 +2351,7 @@ public final class DevShots {
                 return;
             }
             case 2: {
-                if (client.player == null || client.level == null || client.screen != null) {
+                if (client.player == null || client.level == null || client.gui.screen() != null) {
                     tick = 0;
                     return;
                 }
@@ -2553,7 +2553,7 @@ public final class DevShots {
                 }
                 if (tick <= 358) return;
                 gui = new ClickGuiScreen(null);
-                client.setScreen((Screen)gui);
+                client.gui.setScreen((Screen)gui);
                 phase = Phase.MENU;
                 step = 0;
                 tick = 0;
@@ -2614,7 +2614,7 @@ public final class DevShots {
             case 15: {
                 int i;
                 ChatLayoutHud layout = ChatLayoutHud.get();
-                ChatComponent hud = client.gui.getChat();
+                ChatComponent hud = client.gui.hud.getChat();
                 ChatHudAccessor access = (ChatHudAccessor)hud;
                 String[] styles = new String[]{"\u041d\u0435\u043e\u043d", "\u0421\u0442\u0435\u043a\u043b\u043e", "\u041f\u0443\u0437\u044b\u0440\u0438", "\u0413\u0440\u0430\u0434\u0438\u0435\u043d\u0442", "\u041c\u0438\u043d\u0438\u043c\u0430\u043b", "\u041a\u043b\u0430\u0441\u0441\u0438\u043a\u0430"};
                 if (tick == 1) {
@@ -2622,16 +2622,16 @@ public final class DevShots {
                     layout.setEnabled(true);
                     layout.resetPosition();
                     layout.scale.set(100.0);
-                    client.options.chatScale().set((Object)1.0);
-                    client.options.chatWidth().set((Object)0.65);
-                    client.options.chatHeightFocused().set((Object)0.65);
-                    client.options.chatLineSpacing().set((Object)0.0);
-                    client.options.textBackgroundOpacity().set((Object)0.6);
+                    client.options.chatScale().set(1.0);
+                    client.options.chatWidth().set(0.65);
+                    client.options.chatHeightFocused().set(0.65);
+                    client.options.chatLineSpacing().set(0.0);
+                    client.options.textBackgroundOpacity().set(0.6);
                     hud.clearMessages(false);
                     for (i = 0; i < 80; ++i) {
-                        hud.addMessage((Component)Component.literal((String)("\u00a7b[G] \u00a7fAstra_" + i + " \u00a77\u25b8 \u00a7f\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u0441\u0442\u043e\u0440\u0438\u0438 \u2116" + i)));
+                        hud.addClientSystemMessage((Component)Component.literal((String)("\u00a7b[G] \u00a7fAstra_" + i + " \u00a77\u25b8 \u00a7f\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u0441\u0442\u043e\u0440\u0438\u0438 \u2116" + i)));
                     }
-                    client.setScreen((Screen)new ChatScreen("", false));
+                    client.gui.setScreen((Screen)new ChatScreen("", false));
                 }
                 for (i = 0; i < styles.length; ++i) {
                     if (tick == 5 + i * 20) {
@@ -2643,7 +2643,7 @@ public final class DevShots {
                 if (tick == 127) {
                     layout.setPos(0.6f, 0.43f);
                     layout.scale.set(120.0);
-                    client.options.chatScale().set((Object)0.7);
+                    client.options.chatScale().set(0.7);
                     DevShots.set(layout, "\u0421\u0442\u0438\u043b\u044c \u0447\u0430\u0442\u0430", "\u0421\u0442\u0435\u043a\u043b\u043e");
                 }
                 if (tick == 135) {
@@ -2657,23 +2657,23 @@ public final class DevShots {
                     double vy = (bottom - 2.0) * scale;
                     double x = (double)tr[0] + vx * (double)tr[2];
                     double y = (double)tr[1] + (vy - (sh - 40.0)) * (double)tr[2];
-                    boolean clicked = client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
+                    boolean clicked = client.gui.screen().mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
                     double topY = (double)tr[1] + ((bottom - h - 50.0) * scale - (sh - 40.0)) * (double)tr[2];
-                    boolean dragged = client.screen.mouseDragged(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)), 120.0, topY - y);
+                    boolean dragged = client.gui.screen().mouseDragged(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)), 120.0, topY - y);
                     int max = access.astra$visibleMessages().size() - hud.getLinesPerPage();
                     if (!clicked || !dragged || access.astra$scrolledLines() != max) {
                         throw new IllegalStateException("Scrollbar top regression: " + access.astra$scrolledLines() + " / " + max);
                     }
-                    boolean released = client.screen.mouseReleased(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)));
-                    client.screen.mouseDragged(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), 0.0, 0.0);
+                    boolean released = client.gui.screen().mouseReleased(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)));
+                    client.gui.screen().mouseDragged(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), 0.0, 0.0);
                     if (!released || access.astra$scrolledLines() != max) {
                         throw new IllegalStateException("Scrollbar release regression");
                     }
-                    if (!client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false) || access.astra$scrolledLines() != 0) {
+                    if (!client.gui.screen().mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false) || access.astra$scrolledLines() != 0) {
                         throw new IllegalStateException("Scrollbar track regression");
                     }
-                    client.screen.mouseReleased(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)));
-                    if (client.screen.mouseClicked(new MouseButtonEvent(x - 50.0, y, new MouseButtonInfo(0, 0)), false)) {
+                    client.gui.screen().mouseReleased(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)));
+                    if (client.gui.screen().mouseClicked(new MouseButtonEvent(x - 50.0, y, new MouseButtonInfo(0, 0)), false)) {
                         AstraClient.LOGGER.info("DevShots: normal chat click handled by vanilla");
                     }
                     hud.scrollChat(30);
@@ -2685,12 +2685,12 @@ public final class DevShots {
                 if (tick != 150) return;
                 ChatScrollbar small = new ChatScrollbar();
                 hud.clearMessages(false);
-                hud.addMessage((Component)Component.literal((String)"\u041a\u043e\u0440\u043e\u0442\u043a\u0430\u044f \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u2014 \u0431\u0435\u0437 \u043f\u043e\u043b\u043e\u0441\u044b \u043f\u0440\u043e\u043a\u0440\u0443\u0442\u043a\u0438"));
+                hud.addClientSystemMessage((Component)Component.literal((String)"\u041a\u043e\u0440\u043e\u0442\u043a\u0430\u044f \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u2014 \u0431\u0435\u0437 \u043f\u043e\u043b\u043e\u0441\u044b \u043f\u0440\u043e\u043a\u0440\u0443\u0442\u043a\u0438"));
                 if (small.click(1.0, 1.0)) {
                     throw new IllegalStateException("Empty scrollbar regression");
                 }
                 AstraClient.LOGGER.info("DevShots: CHAT SHORT HISTORY PASS");
-                client.setScreen(null);
+                client.gui.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
@@ -2732,13 +2732,13 @@ public final class DevShots {
                 if (tick == 1) {
                     chatLayout.setPos(0.62f, 0.45f);
                     chatLayout.scale.set(120.0);
-                    ChatComponent hud = client.gui.getChat();
+                    ChatComponent hud = client.gui.hud.getChat();
                     for (int i = 0; i < 6; ++i) {
-                        hud.addMessage((Component)Component.literal((String)("\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 " + i + " \u2014 \u0447\u0430\u0442 \u0441\u0434\u0432\u0438\u043d\u0443\u0442 \u0438 \u0443\u0432\u0435\u043b\u0438\u0447\u0435\u043d")));
+                        hud.addClientSystemMessage((Component)Component.literal((String)("\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 " + i + " \u2014 \u0447\u0430\u0442 \u0441\u0434\u0432\u0438\u043d\u0443\u0442 \u0438 \u0443\u0432\u0435\u043b\u0438\u0447\u0435\u043d")));
                     }
                 }
                 if (tick == 5) {
-                    client.setScreen((Screen)new ChatScreen("", false));
+                    client.gui.setScreen((Screen)new ChatScreen("", false));
                 }
                 if (tick == 20) {
                     DevShots.shot(client, "layout_chat");
@@ -2750,7 +2750,7 @@ public final class DevShots {
                     float y = chatLayout.getY(sh) + chatLayout.scaledHeight() - 6.0f;
                     boolean ok = ChatPatches.copyAt(x, y);
                     AstraClient.LOGGER.info("DevShots: \u041f\u041a\u041c \u043f\u043e \u0441\u0434\u0432\u0438\u043d\u0443\u0442\u043e\u043c\u0443 \u0447\u0430\u0442\u0443 {} \u2192 \u00ab{}\u00bb", (Object)ok, (Object)client.keyboardHandler.getClipboard());
-                    client.setScreen((Screen)new HudEditorScreen(null));
+                    client.gui.setScreen((Screen)new HudEditorScreen(null));
                 }
                 if (tick == 45) {
                     DevShots.shot(client, "layout_editor");
@@ -2758,22 +2758,22 @@ public final class DevShots {
                 if (tick != 47) return;
                 chatLayout.resetPosition();
                 chatLayout.scale.set(100.0);
-                client.setScreen(null);
+                client.gui.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
             }
             case 14: {
-                ChatComponent hud = client.gui.getChat();
+                ChatComponent hud = client.gui.hud.getChat();
                 if (tick == 1) {
-                    hud.addMessage((Component)Component.literal((String)"\u00a76[G] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fStrawBag7774 \u00a76\u25b8 \u00a7f\u043a\u0442\u043e \u0422\u0438\u043c?"));
+                    hud.addClientSystemMessage((Component)Component.literal((String)"\u00a76[G] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fStrawBag7774 \u00a76\u25b8 \u00a7f\u043a\u0442\u043e \u0422\u0438\u043c?"));
                     for (int i = 0; i < 3; ++i) {
-                        hud.addMessage((Component)Component.literal((String)"\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fMinor_GG \u00a76\u25b8 \u00a7f\u0434\u0430\u0439 \u0441\u0435\u0442"));
+                        hud.addClientSystemMessage((Component)Component.literal((String)"\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fMinor_GG \u00a76\u25b8 \u00a7f\u0434\u0430\u0439 \u0441\u0435\u0442"));
                     }
-                    hud.addMessage((Component)Component.literal((String)"\u00a7a[+] \u00a7fDima_070100 \u00a77/ahead"));
+                    hud.addClientSystemMessage((Component)Component.literal((String)"\u00a7a[+] \u00a7fDima_070100 \u00a77/ahead"));
                 }
                 if (tick == 5) {
-                    client.setScreen((Screen)new ChatScreen("", false));
+                    client.gui.setScreen((Screen)new ChatScreen("", false));
                 }
                 if (tick == 20) {
                     DevShots.shot(client, "chat_patches");
@@ -2792,32 +2792,32 @@ public final class DevShots {
                     }
                 }
                 if (tick != 24) return;
-                client.setScreen(null);
+                client.gui.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
             }
             case 13: {
                 if (tick == 1) {
-                    client.setScreen((Screen)new ChatScreen("/login mySecret123", false));
+                    client.gui.setScreen((Screen)new ChatScreen("/login mySecret123", false));
                 }
                 if (tick == 15) {
                     DevShots.shot(client, "stream_login");
                 }
                 if (tick == 17) {
-                    client.setScreen((Screen)new ChatScreen("/reg pass123 pass123", false));
+                    client.gui.setScreen((Screen)new ChatScreen("/reg pass123 pass123", false));
                 }
                 if (tick == 30) {
                     DevShots.shot(client, "stream_reg");
                 }
                 if (tick == 32) {
-                    client.setScreen((Screen)new ChatScreen("/l qwerty", false));
+                    client.gui.setScreen((Screen)new ChatScreen("/l qwerty", false));
                 }
                 if (tick == 45) {
                     DevShots.shot(client, "stream_l");
                 }
                 if (tick != 47) return;
-                client.setScreen(null);
+                client.gui.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
@@ -2879,12 +2879,12 @@ public final class DevShots {
             case 30: {
                 Screen screen;
                 if (tick == 1) {
-                    client.setScreen((Screen)new HudEditorScreen(null));
+                    client.gui.setScreen((Screen)new HudEditorScreen(null));
                 }
                 if (tick == 30) {
                     DevShots.shot(client, "hud_editor");
                 }
-                if (tick == 32 && (screen = client.screen) instanceof HudEditorScreen) {
+                if (tick == 32 && (screen = client.gui.screen()) instanceof HudEditorScreen) {
                     HudEditorScreen editor = (HudEditorScreen)screen;
                     editor.select(ModuleManager.get(MinimapHud.class));
                 }

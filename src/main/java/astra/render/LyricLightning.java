@@ -9,7 +9,7 @@
  *  com.mojang.blaze3d.vertex.DefaultVertexFormat
  *  com.mojang.blaze3d.vertex.VertexConsumer
  *  com.mojang.blaze3d.vertex.VertexFormat$Mode
- *  net.minecraft.client.renderer.MultiBufferSource$BufferSource
+ *  astra.render.WorldBuffers$BufferSource
  *  net.minecraft.client.renderer.RenderPipelines
  *  net.minecraft.client.renderer.rendertype.RenderSetup
  *  net.minecraft.client.renderer.rendertype.RenderType
@@ -23,12 +23,15 @@ import astra.media.LyricFx;
 import astra.render.ColorUtil;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.List;
-import net.minecraft.client.renderer.MultiBufferSource;
+import astra.render.WorldBuffers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -48,8 +51,8 @@ public final class LyricLightning {
 
     private static RenderType layer(boolean overlay) {
         String name = overlay ? "lyric_lightning_overlay" : "lyric_lightning_depth";
-        RenderPipeline pipeline = RenderPipelines.register((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.DEBUG_FILLED_SNIPPET}).withLocation(Identifier.fromNamespaceAndPath((String)"astra", (String)("pipeline/" + name))).withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS).withBlend(BlendFunction.TRANSLUCENT).withCull(false).withDepthWrite(false).withDepthTestFunction(overlay ? DepthTestFunction.NO_DEPTH_TEST : DepthTestFunction.LEQUAL_DEPTH_TEST).build());
-        return RenderType.create((String)("astra_" + name), (RenderSetup)RenderSetup.builder((RenderPipeline)pipeline).bufferSize(4096).sortOnUpload().createRenderSetup());
+        RenderPipeline pipeline = RenderPipelines.register((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.DEBUG_FILLED_SNIPPET}).withLocation(Identifier.fromNamespaceAndPath((String)"astra", (String)("pipeline/" + name))).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withCull(false).withDepthStencilState(new DepthStencilState(overlay ? CompareOp.ALWAYS_PASS : CompareOp.LESS_THAN_OR_EQUAL, false)).build());
+        return RenderType.create((String)("astra_" + name), (RenderSetup)RenderSetup.builder((RenderPipeline)pipeline).sortOnUpload().createRenderSetup());
     }
 
     public static float strikeAt(int index, int count, float duration) {
@@ -69,7 +72,7 @@ public final class LyricLightning {
         return points;
     }
 
-    public static void draw(MultiBufferSource.BufferSource provider, Matrix4f base, List<LyricFx.Glyph> glyphs, float y, float age, float entryDuration, float duration, float height, float width, int branches, int color, float opacity, boolean overlay) {
+    public static void draw(WorldBuffers.BufferSource provider, Matrix4f base, List<LyricFx.Glyph> glyphs, float y, float age, float entryDuration, float duration, float height, float width, int branches, int color, float opacity, boolean overlay) {
         RenderType layer = overlay ? OVERLAY : DEPTH;
         VertexConsumer vertices = null;
         float total = LyricFx.totalWidth(glyphs) * 9.0f;

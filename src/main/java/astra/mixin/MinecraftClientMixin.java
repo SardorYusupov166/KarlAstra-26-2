@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={Minecraft.class})
 public abstract class MinecraftClientMixin {
-    @Inject(method={"runTick"}, at={@At(value="HEAD")})
+    @Inject(method={"runTick"}, at=@At(value="HEAD"))
     private void astra$frame(boolean tick, CallbackInfo ci) {
         FrameStats.onFrame();
         BenchmarkModule bench = ModuleManager.get(BenchmarkModule.class);

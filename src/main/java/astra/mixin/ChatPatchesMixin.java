@@ -29,14 +29,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ChatPatchesMixin {
     private static final String ADD = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V";
 
-    @ModifyVariable(method={"addMessage(Lnet/minecraft/class_2561;Lnet/minecraft/class_7469;Lnet/minecraft/class_7591;)V"}, at={@At(value="HEAD")}, argsOnly=true, ordinal=0)
+    @ModifyVariable(method={"addMessage(Lnet/minecraft/class_2561;Lnet/minecraft/class_7469;Lnet/minecraft/class_7591;)V"}, at=@At(value="HEAD"), argsOnly=true, ordinal=0)
     private Component astra$decorate(Component message) {
-        return ChatPatches.decorate((ChatComponent)this, message);
+        return ChatPatches.decorate((ChatComponent)(Object)this, message);
     }
 
-    @Inject(method={"addMessage(Lnet/minecraft/class_2561;Lnet/minecraft/class_7469;Lnet/minecraft/class_7591;)V"}, at={@At(value="TAIL")})
+    @Inject(method={"addMessage(Lnet/minecraft/class_2561;Lnet/minecraft/class_7469;Lnet/minecraft/class_7591;)V"}, at=@At(value="TAIL"))
     private void astra$afterAdd(CallbackInfo ci) {
-        ChatPatches.afterAdd((ChatComponent)this);
+        ChatPatches.afterAdd((ChatComponent)(Object)this);
     }
 
     @ModifyConstant(method={"addMessageToDisplayQueue", "addMessageToQueue(Lnet/minecraft/class_303;)V"}, constant={@Constant(intValue=100)}, require=0)
@@ -44,7 +44,7 @@ public abstract class ChatPatchesMixin {
         return ChatPatches.limit();
     }
 
-    @Inject(method={"clearMessages"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"clearMessages"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$keep(boolean clearHistory, CallbackInfo ci) {
         if (clearHistory && ChatPatches.keepChat()) {
             ci.cancel();

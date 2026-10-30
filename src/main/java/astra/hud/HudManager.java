@@ -4,7 +4,7 @@
  * Could not load the following classes:
  *  net.minecraft.client.DeltaTracker
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.hud;
 
@@ -19,19 +19,19 @@ import astra.module.modules.visual.NowPlayingModule;
 import astra.module.modules.visual.VisualizerModule;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public final class HudManager {
     private HudManager() {
     }
 
-    public static void render(GuiGraphics ctx, DeltaTracker tickCounter) {
+    public static void render(GuiGraphicsExtractor ctx, DeltaTracker tickCounter) {
         TargetEffects fx;
         Minecraft mc = Minecraft.getInstance();
-        if (mc.options.hideGui || mc.player == null) {
+        if (mc.gui.hud.isHidden() || mc.player == null) {
             return;
         }
-        if (mc.screen instanceof HudEditorScreen) {
+        if (mc.gui.screen() instanceof HudEditorScreen) {
             return;
         }
         float w = ctx.guiWidth();

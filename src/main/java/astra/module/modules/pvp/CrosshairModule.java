@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  net.minecraft.client.DeltaTracker
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.world.phys.HitResult$Type
  *  org.joml.Matrix3x2fStack
  */
@@ -25,7 +25,7 @@ import astra.settings.ModeSetting;
 import astra.settings.NumberSetting;
 import astra.utils.FrameStats;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.phys.HitResult;
 import org.joml.Matrix3x2fStack;
 
@@ -51,8 +51,8 @@ extends Module {
         this.setDefaultEnabled(true);
     }
 
-    public void renderCrosshair(GuiGraphics ctx, DeltaTracker tick) {
-        if (CrosshairModule.mc.player == null || CrosshairModule.mc.options.hideGui) {
+    public void renderCrosshair(GuiGraphicsExtractor ctx, DeltaTracker tick) {
+        if (CrosshairModule.mc.player == null || CrosshairModule.mc.gui.hud.isHidden()) {
             return;
         }
         if (!CrosshairModule.mc.options.getCameraType().isFirstPerson() && !((Boolean)this.thirdPerson.get()).booleanValue()) {
@@ -83,7 +83,7 @@ extends Module {
         this.draw(ctx, cx, cy, 1.0f, sp, col, (Boolean)this.spin.get() != false ? this.rotation : 0.0f, cd);
     }
 
-    private void draw(GuiGraphics ctx, float cx, float cy, float k, float sp, int col, float rot, float cooldownProgress) {
+    private void draw(GuiGraphicsExtractor ctx, float cx, float cy, float k, float sp, int col, float rot, float cooldownProgress) {
         float s = this.size.getFloat() / 100.0f * k;
         float th = this.thickness.getFloat() * k;
         float g = (this.gap.getFloat() + sp * 3.0f) * k;

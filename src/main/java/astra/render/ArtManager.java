@@ -4,7 +4,7 @@
  * Could not load the following classes:
  *  com.mojang.blaze3d.platform.NativeImage
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.renderer.texture.AbstractTexture
  *  net.minecraft.client.renderer.texture.DynamicTexture
  *  net.minecraft.resources.Identifier
@@ -41,7 +41,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
@@ -279,7 +279,7 @@ public final class ArtManager {
         return custom ? (texH > 0 ? (float)texW / (float)texH : 1.0f) : ArtManager.aspect(SIDEBAR_GIRL, 1.0f);
     }
 
-    public static void drawSidebarArt(GuiGraphics ctx, Theme t, float x, float bottom, float w, float maxH, float alpha) {
+    public static void drawSidebarArt(GuiGraphicsExtractor ctx, Theme t, float x, float bottom, float w, float maxH, float alpha) {
         float aspect;
         Identifier id;
         if (loaded) {
@@ -315,7 +315,7 @@ public final class ArtManager {
         }
     }
 
-    public static void drawBackground(GuiGraphics ctx, float x, float y, float w, float h, float r, float alpha) {
+    public static void drawBackground(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float r, float alpha) {
         if (alpha <= 0.0f || !ArtManager.exists(BACKGROUND)) {
             return;
         }
@@ -329,7 +329,7 @@ public final class ArtManager {
         Render2D.textureRoundRect(ctx, BACKGROUND, ArtManager.aspect(BACKGROUND, 1.5f), x, y, w, h, r, ColorUtil.withAlpha(-1, alpha));
     }
 
-    public static void drawLogo(GuiGraphics ctx, float x, float y, float width, float alpha, int from, int to) {
+    public static void drawLogo(GuiGraphicsExtractor ctx, float x, float y, float width, float alpha, int from, int to) {
         if (!ArtManager.exists(LOGO_GLOW) || !ArtManager.exists(LOGO_CORE)) {
             ArtManager.drawLogo(ctx, x, y, width, alpha);
             return;
@@ -339,7 +339,7 @@ public final class ArtManager {
         Render2D.texture(ctx, LOGO_CORE, x, y, width, h, 0.0f, 0.0f, 1.0f, 1.0f, ColorUtil.withAlpha(-1, alpha));
     }
 
-    public static void drawLogo(GuiGraphics ctx, float x, float y, float width, float alpha) {
+    public static void drawLogo(GuiGraphicsExtractor ctx, float x, float y, float width, float alpha) {
         if (!ArtManager.exists(LOGO)) {
             return;
         }
@@ -359,7 +359,7 @@ public final class ArtManager {
         return list;
     }
 
-    public static void drawAvatar(GuiGraphics ctx, int index, float cx, float cy, float r) {
+    public static void drawAvatar(GuiGraphicsExtractor ctx, int index, float cx, float cy, float r) {
         List<Identifier> list = ArtManager.avatars();
         if (list.isEmpty()) {
             Render2D.circle(ctx, cx, cy, r, -13885370);

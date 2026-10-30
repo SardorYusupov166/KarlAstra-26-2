@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.module.modules.pvp;
 
@@ -16,7 +16,7 @@ import astra.settings.ColorSetting;
 import astra.settings.ModeSetting;
 import astra.utils.CombatTracker;
 import java.util.Locale;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class DamageIndicatorHud
 extends HudModule {
@@ -49,7 +49,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         long now = System.currentTimeMillis();
         if (editor && CombatTracker.damageNumbers().isEmpty()) {
             if (((Boolean)this.background.get()).booleanValue()) {
@@ -66,7 +66,7 @@ extends HudModule {
         }
     }
 
-    private void draw(GuiGraphics ctx, float amount, float age, boolean crit, float w, float h) {
+    private void draw(GuiGraphicsExtractor ctx, float amount, float age, boolean crit, float w, float h) {
         float a = age < 0.15f ? age / 0.15f : 1.0f - Math.max(0.0f, (age - 0.6f) / 0.4f);
         float prev = Render2D.alpha;
         Render2D.alpha *= Math.max(0.0f, a);

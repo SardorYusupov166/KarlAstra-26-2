@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.core.Direction
  *  net.minecraft.resources.Identifier
@@ -42,7 +42,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -95,9 +95,9 @@ extends AstraInspectorScreen {
             this.draft = all.get(0).copy();
             this.selected = this.draft.id;
         }
-        LinkedHashMap<CallSite, String> names = new LinkedHashMap<CallSite, String>();
+        LinkedHashMap<String, String> names = new LinkedHashMap<String, String>();
         for (int i = 0; i < all.size(); ++i) {
-            names.put((CallSite)((Object)(i + 1 + ". " + all.get((int)i).name)), all.get((int)i).id);
+            names.put((i + 1 + ". " + all.get(i).name), all.get((int)i).id);
         }
         if (!names.isEmpty()) {
             String chosen = names.entrySet().stream().filter(e -> ((String)e.getValue()).equals(this.selected)).map(Map.Entry::getKey).findFirst().orElse((String)names.keySet().iterator().next());
@@ -317,7 +317,7 @@ extends AstraInspectorScreen {
     }
 
     @Override
-    protected void workspace(GuiGraphics ctx, int mx, int my, float delta) {
+    protected void workspace(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
         if (this.draft == null) {
             return;
         }
@@ -389,7 +389,7 @@ extends AstraInspectorScreen {
 
     public void onClose() {
         this.commit();
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 }
 

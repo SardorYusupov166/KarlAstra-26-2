@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.util.Mth
  */
 package astra.module.modules.hud;
@@ -16,7 +16,7 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.settings.ModeSetting;
 import astra.theme.Theme;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Mth;
 
 public class DirectionHud
@@ -56,7 +56,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = DirectionHud.theme();
         if (!this.tape()) {
             String s = this.cardinal() + "  |  " + Math.round(this.bearing()) + "\u00b0";

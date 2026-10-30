@@ -34,14 +34,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={ClientPacketListener.class})
 public abstract class ClientPlayNetworkHandlerMixin {
-    @Inject(method={"handleSoundEvent"}, at={@At(value="TAIL")})
+    @Inject(method={"handleSoundEvent"}, at=@At(value="TAIL"))
     private void astra$shieldBreak(ClientboundSoundPacket packet, CallbackInfo ci) {
         if (packet.getSound().value() == SoundEvents.SHIELD_BREAK.value()) {
             ShieldStatus.onShieldBreakSound(packet.getX(), packet.getY(), packet.getZ());
         }
     }
 
-    @Inject(method={"handleEntityEvent"}, at={@At(value="TAIL")})
+    @Inject(method={"handleEntityEvent"}, at=@At(value="TAIL"))
     private void astra$totemPop(ClientboundEntityEventPacket packet, CallbackInfo ci) {
         if (packet.getEventId() != 35) {
             return;

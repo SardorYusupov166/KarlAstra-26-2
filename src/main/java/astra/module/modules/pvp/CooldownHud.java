@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.world.item.Item
  *  net.minecraft.world.item.ItemCooldowns
  *  net.minecraft.world.item.ItemStack
@@ -22,7 +22,7 @@ import astra.settings.BooleanSetting;
 import astra.theme.Theme;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
@@ -86,7 +86,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = CooldownHud.theme();
         List<Entry> list = this.entries(editor);
         for (int i = 0; i < list.size(); ++i) {
@@ -104,7 +104,7 @@ extends HudModule {
                 m.pushMatrix();
                 m.translate(cx - 6.0f, cy - 6.0f);
                 m.scale(0.75f, 0.75f);
-                ctx.renderItem(e.stack, 0, 0);
+                ctx.item(e.stack, 0, 0);
                 m.popMatrix();
             }
             if (!((Boolean)this.percent.get()).booleanValue()) continue;

@@ -325,7 +325,7 @@ public final class ConfigManager {
     }
 
     public static String uniqueName(String base) {
-        Object name = base;
+        String name = base;
         int i = 2;
         while (Files.exists(ConfigManager.profileFile((String)name), new LinkOption[0])) {
             name = base + " " + i++;
@@ -334,37 +334,14 @@ public final class ConfigManager {
     }
 
     public static JsonObject readJson(Path path) {
-        JsonObject jsonObject;
-        block9: {
-            if (path == null || !Files.isRegularFile(path, new LinkOption[0])) {
-                return null;
-            }
-            BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);
-            try {
-                JsonElement el = JsonParser.parseReader((Reader)reader);
-                JsonObject jsonObject2 = jsonObject = el.isJsonObject() ? el.getAsJsonObject() : null;
-                if (reader == null) break block9;
-            }
-            catch (Throwable throwable) {
-                try {
-                    if (reader != null) {
-                        try {
-                            ((Reader)reader).close();
-                        }
-                        catch (Throwable throwable2) {
-                            throwable.addSuppressed(throwable2);
-                        }
-                    }
-                    throw throwable;
-                }
-                catch (Exception e) {
-                    AstraClient.LOGGER.error("\u041f\u043e\u0432\u0440\u0435\u0436\u0434\u0451\u043d \u0444\u0430\u0439\u043b \u043a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u0438 {}", (Object)path, (Object)e);
-                    return null;
-                }
-            }
-            ((Reader)reader).close();
+        if (path == null || !Files.isRegularFile(path)) return null;
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            JsonElement element = JsonParser.parseReader(reader);
+            return element.isJsonObject() ? element.getAsJsonObject() : null;
+        } catch (Exception e) {
+            AstraClient.LOGGER.error("Unable to read configuration {}", path, e);
+            return null;
         }
-        return jsonObject;
     }
 
     public static void writeJson(Path path, JsonObject json) {

@@ -34,7 +34,7 @@ extends Module {
     public static final String PACK_ID = "astra:astra_pink_glint";
     private static final EquipmentSlot[] SLOTS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
     private static final float[][] BANDS = new float[][]{{0.78f, 1.0f}, {0.42f, 0.78f}, {0.22f, 0.5f}, {0.0f, 0.22f}};
-    private final BooleanSetting pinkGlint = this.add((BooleanSetting)((Setting)new BooleanSetting("\u0420\u043e\u0437\u043e\u0432\u044b\u0439 \u0431\u043b\u0435\u0441\u043a \u0437\u0430\u0447\u0430\u0440\u043e\u0432\u0430\u043d\u0438\u0439", true).desc("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439 \u0440\u0435\u0441\u0443\u0440\u0441\u043f\u0430\u043a, \u043f\u0440\u0438\u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f \u0441\u0440\u0430\u0437\u0443")).onChange(this::applyPack));
+    private final BooleanSetting pinkGlint = this.add((BooleanSetting)(new BooleanSetting("\u0420\u043e\u0437\u043e\u0432\u044b\u0439 \u0431\u043b\u0435\u0441\u043a \u0437\u0430\u0447\u0430\u0440\u043e\u0432\u0430\u043d\u0438\u0439", true).desc("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439 \u0440\u0435\u0441\u0443\u0440\u0441\u043f\u0430\u043a, \u043f\u0440\u0438\u043c\u0435\u043d\u044f\u0435\u0442\u0441\u044f \u0441\u0440\u0430\u0437\u0443")).onChange(this::applyPack));
     private final BooleanSetting sparkles = this.add(new BooleanSetting("\u0418\u0441\u043a\u0440\u044b \u043d\u0430 \u0431\u0440\u043e\u043d\u0435", true));
     private final NumberSetting intensity = this.add((NumberSetting)new NumberSetting("\u0418\u043d\u0442\u0435\u043d\u0441\u0438\u0432\u043d\u043e\u0441\u0442\u044c", 100.0, 20.0, 300.0, 10.0).unit("%").visibleWhen(() -> (Boolean)this.sparkles.get()));
     private final ColorSetting color = this.add((ColorSetting)new ColorSetting("\u0426\u0432\u0435\u0442 \u0438\u0441\u043a\u0440", -34080).visibleWhen(() -> (Boolean)this.sparkles.get()));
@@ -67,7 +67,7 @@ extends Module {
 
     @Override
     protected void onEnable() {
-        if (mc.getResourcePackRepository() != null && mc.getOverlay() == null) {
+        if (mc.getResourcePackRepository() != null && mc.gui.overlay() == null) {
             this.applyPack((Boolean)this.pinkGlint.get());
         }
     }

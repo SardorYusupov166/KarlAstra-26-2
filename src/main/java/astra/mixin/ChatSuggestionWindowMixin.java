@@ -23,11 +23,11 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(value={CommandSuggestions.SuggestionsList.class})
 public abstract class ChatSuggestionWindowMixin {
-    @ModifyArgs(method={"<init>"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/renderer/Rect2i;<init>(IIII)V")})
+    @ModifyArgs(method={"<init>"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/renderer/Rect2i;<init>(IIII)V"))
     private void astra$placeSuggestions(Args args) {
         Minecraft mc = Minecraft.getInstance();
         ChatInputHud input = ChatInputHud.get();
-        if (!(mc.screen instanceof ChatScreen) || input == null || !input.isEnabled()) {
+        if (!(mc.gui.screen() instanceof ChatScreen) || input == null || !input.isEnabled()) {
             return;
         }
         ChatInputHud.Bounds b = input.bounds();

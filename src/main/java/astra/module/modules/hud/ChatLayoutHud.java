@@ -4,7 +4,7 @@
  * Could not load the following classes:
  *  com.mojang.blaze3d.platform.Window
  *  net.minecraft.client.OptionInstance
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.ChatComponent
  *  org.joml.Matrix3x2fStack
  */
@@ -26,7 +26,7 @@ import astra.theme.Theme;
 import com.mojang.blaze3d.platform.Window;
 import java.util.function.Supplier;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.joml.Matrix3x2fStack;
 
@@ -60,10 +60,10 @@ extends HudModule {
             if (mc == null || ChatLayoutHud.mc.options == null) {
                 return;
             }
-            ((OptionInstance)opt.get()).set((Object)Math.max(0.0, Math.min(1.0, v / 100.0)));
+            ((OptionInstance)opt.get()).set(Math.max(0.0, Math.min(1.0, v / 100.0)));
             optionsDirty = true;
             if (ChatLayoutHud.mc.gui != null) {
-                ChatLayoutHud.mc.gui.getChat().rescaleChat();
+                ChatLayoutHud.mc.gui.hud.getChat().rescaleChat();
             }
         });
     }
@@ -78,7 +78,7 @@ extends HudModule {
     }
 
     private static ChatComponent hud() {
-        return ChatLayoutHud.mc.gui.getChat();
+        return ChatLayoutHud.mc.gui.hud.getChat();
     }
 
     @Override
@@ -128,7 +128,7 @@ extends HudModule {
         return new float[]{x, bottom, s};
     }
 
-    public static boolean begin(GuiGraphics ctx) {
+    public static boolean begin(GuiGraphicsExtractor ctx) {
         float sh = ctx.guiHeight();
         float[] t = ChatLayoutHud.transform(ctx.guiWidth(), sh);
         if (t == null) {
@@ -172,7 +172,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         if (!editor) {
             return;
         }

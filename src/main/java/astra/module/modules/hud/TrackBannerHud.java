@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.module.modules.hud;
 
@@ -17,7 +17,7 @@ import astra.render.Icon;
 import astra.render.Render2D;
 import astra.settings.ModeSetting;
 import astra.settings.NumberSetting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public final class TrackBannerHud
 extends HudModule {
@@ -52,7 +52,7 @@ extends HudModule {
 
     @Override
     public float width() {
-        return TrackBannerHud.player().bannerLayout(TrackBannerHud.mc.screen instanceof HudEditorScreen || !TrackBannerHud.player().bannerVisible(), this.getScale()).width();
+        return TrackBannerHud.player().bannerLayout(TrackBannerHud.mc.gui.screen() instanceof HudEditorScreen || !TrackBannerHud.player().bannerVisible(), this.getScale()).width();
     }
 
     @Override
@@ -80,7 +80,7 @@ extends HudModule {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         int[] nArray;
         if (!editor && !TrackBannerHud.player().bannerVisible()) {
             return;

@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.world.entity.EquipmentSlot
  *  net.minecraft.world.item.ItemStack
  *  net.minecraft.world.item.Items
@@ -20,7 +20,7 @@ import astra.settings.ModeSetting;
 import astra.theme.Theme;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -93,14 +93,14 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = ArmorHud.theme();
         List<ItemStack> list = this.items(editor);
         for (int i = 0; i < list.size(); ++i) {
             ItemStack s = list.get(i);
             float x = this.vertical() ? 3.0f : 3.0f + (float)i * this.cellW();
             float y = this.vertical() ? (float)(3 + i * 18) : 4.0f;
-            ctx.renderItem(s, Math.round(x + 1.0f), Math.round(y + 1.0f));
+            ctx.item(s, Math.round(x + 1.0f), Math.round(y + 1.0f));
             String txt = this.text(s);
             if (txt.isEmpty()) continue;
             int col = t.text();

@@ -4,7 +4,7 @@
  * Could not load the following classes:
  *  com.mojang.blaze3d.platform.InputConstants
  *  com.mojang.blaze3d.platform.Window
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.player.LocalPlayer
  *  net.minecraft.tags.ItemTags
  *  net.minecraft.world.entity.Entity
@@ -48,7 +48,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
@@ -65,13 +65,13 @@ extends Module {
     private static final Set<String> EXPLICIT = Set.of("join_3", "hurt_3", "hurt_4", "death_1", "kill_8", "board_1", "board_2", "totem_3");
     private final NumberSetting master = this.add(new NumberSetting("\u041e\u0431\u0449\u0430\u044f \u0433\u0440\u043e\u043c\u043a\u043e\u0441\u0442\u044c", 80.0, 0.0, 100.0, 5.0).unit("%"));
     private final BooleanSetting adult = this.add((BooleanSetting)new BooleanSetting("\u0424\u0440\u0430\u0437\u044b 18+", true).desc("\u0412\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u0435, \u0447\u0442\u043e\u0431\u044b \u043d\u0435 \u0437\u0432\u0443\u0447\u0430\u043b\u0438 \u0444\u0440\u0430\u0437\u044b \u0441 \u043c\u0430\u0442\u043e\u043c \u0438 \u043f\u043e\u0448\u043b\u043e\u0441\u0442\u044f\u043c\u0438"));
-    private final BooleanSetting noOverlap = this.add((BooleanSetting)((Setting)new BooleanSetting("\u041d\u0435 \u043d\u0430\u043a\u043b\u0430\u0434\u044b\u0432\u0430\u0442\u044c \u0444\u0440\u0430\u0437\u044b", true).desc("\u041e\u0434\u043d\u043e\u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e \u0437\u0432\u0443\u0447\u0438\u0442 \u043e\u0434\u043d\u0430 \u0444\u0440\u0430\u0437\u0430: \u0432\u0430\u0436\u043d\u044b\u0435 (\u0441\u043c\u0435\u0440\u0442\u044c, \u0442\u043e\u0442\u0435\u043c, \u0443\u0431\u0438\u0439\u0441\u0442\u0432\u043e) \u043f\u0435\u0440\u0435\u0431\u0438\u0432\u0430\u044e\u0442 \u043e\u0441\u0442\u0430\u043b\u044c\u043d\u044b\u0435")).onChange(v -> {
+    private final BooleanSetting noOverlap = this.add((BooleanSetting)(new BooleanSetting("\u041d\u0435 \u043d\u0430\u043a\u043b\u0430\u0434\u044b\u0432\u0430\u0442\u044c \u0444\u0440\u0430\u0437\u044b", true).desc("\u041e\u0434\u043d\u043e\u0432\u0440\u0435\u043c\u0435\u043d\u043d\u043e \u0437\u0432\u0443\u0447\u0438\u0442 \u043e\u0434\u043d\u0430 \u0444\u0440\u0430\u0437\u0430: \u0432\u0430\u0436\u043d\u044b\u0435 (\u0441\u043c\u0435\u0440\u0442\u044c, \u0442\u043e\u0442\u0435\u043c, \u0443\u0431\u0438\u0439\u0441\u0442\u0432\u043e) \u043f\u0435\u0440\u0435\u0431\u0438\u0432\u0430\u044e\u0442 \u043e\u0441\u0442\u0430\u043b\u044c\u043d\u044b\u0435")).onChange(v -> {
         AstraSounds.singleVoice = v;
     }));
     private static final String NO_PACK = "\u0411\u0435\u0437 \u043f\u0430\u043a\u0430";
     private static final String ALL_PACKS = "\u0412\u0441\u0435 \u043f\u0430\u043a\u0438";
     private final ModeSetting pack = this.add((ModeSetting)new ModeSetting("\u0417\u0432\u0443\u043a\u043e\u0432\u043e\u0439 \u043f\u0430\u043a", "\u0412\u0441\u0435 \u043f\u0430\u043a\u0438", "\u0411\u0435\u0437 \u043f\u0430\u043a\u0430", "\u0412\u0441\u0435 \u043f\u0430\u043a\u0438").dynamic(SoundsModule::packModes).desc("\u0427\u044c\u0438 \u0437\u0432\u0443\u043a\u0438 \u0438\u0433\u0440\u0430\u044e\u0442 \u043d\u0430 \u0441\u043e\u0431\u044b\u0442\u0438\u044f: \u0444\u0430\u0439\u043b\u044b \u0438\u0437 \u043f\u0430\u043f\u043e\u043a \u0441\u043e\u0431\u044b\u0442\u0438\u0439 \u043f\u0430\u043a\u0430 (\u00ab\u0423\u0434\u0430\u0440\u00bb, \u00ab\u0423\u0431\u0438\u0439\u0441\u0442\u0432\u043e\u00bb\u2026)"));
-    private final ModeSetting packMode = this.add((ModeSetting)((Setting)new ModeSetting("\u0420\u0435\u0436\u0438\u043c \u043f\u0430\u043a\u0430", "\u0417\u0430\u043c\u0435\u043d\u044f\u0442\u044c", "\u0417\u0430\u043c\u0435\u043d\u044f\u0442\u044c", "\u0421\u043c\u0435\u0448\u0438\u0432\u0430\u0442\u044c").desc("\u0417\u0430\u043c\u0435\u043d\u044f\u0442\u044c \u2014 \u0435\u0441\u043b\u0438 \u0432 \u043f\u0430\u043a\u0435 \u0435\u0441\u0442\u044c \u0437\u0432\u0443\u043a \u0434\u043b\u044f \u0441\u043e\u0431\u044b\u0442\u0438\u044f, \u0437\u0432\u0443\u0447\u0438\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u043d. \u0421\u043c\u0435\u0448\u0438\u0432\u0430\u0442\u044c \u2014 \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u043e \u0438\u0437 \u043e\u0431\u043e\u0438\u0445")).visibleWhen(() -> !this.pack.is(NO_PACK)));
+    private final ModeSetting packMode = this.add((ModeSetting)(new ModeSetting("\u0420\u0435\u0436\u0438\u043c \u043f\u0430\u043a\u0430", "\u0417\u0430\u043c\u0435\u043d\u044f\u0442\u044c", "\u0417\u0430\u043c\u0435\u043d\u044f\u0442\u044c", "\u0421\u043c\u0435\u0448\u0438\u0432\u0430\u0442\u044c").desc("\u0417\u0430\u043c\u0435\u043d\u044f\u0442\u044c \u2014 \u0435\u0441\u043b\u0438 \u0432 \u043f\u0430\u043a\u0435 \u0435\u0441\u0442\u044c \u0437\u0432\u0443\u043a \u0434\u043b\u044f \u0441\u043e\u0431\u044b\u0442\u0438\u044f, \u0437\u0432\u0443\u0447\u0438\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u043d. \u0421\u043c\u0435\u0448\u0438\u0432\u0430\u0442\u044c \u2014 \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u043e \u0438\u0437 \u043e\u0431\u043e\u0438\u0445")).visibleWhen(() -> !this.pack.is(NO_PACK)));
     private final ButtonSetting openPacks = this.add(new ButtonSetting("\u0421\u0432\u043e\u0438 \u0437\u0432\u0443\u043a\u0438", "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043f\u0430\u043f\u043a\u0443 \u043f\u0430\u043a\u043e\u0432", () -> SoundPacks.open(SoundPacks.root())).label(() -> "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u043f\u0430\u043f\u043a\u0443 \u043f\u0430\u043a\u043e\u0432 (" + SoundPacks.packs().size() + ")"));
     private final ButtonSetting newPack = this.add(new ButtonSetting("\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u043a", "\uff0b \u0421\u043e\u0437\u0434\u0430\u0442\u044c \u043f\u0430\u043a \u0441 \u043f\u0430\u043f\u043a\u0430\u043c\u0438 \u0441\u043e\u0431\u044b\u0442\u0438\u0439", () -> {
         Path dir = SoundPacks.createPack();
@@ -120,7 +120,7 @@ extends Module {
     private final SoundSlot zoom = this.slot(new SoundSlot("\u0417\u0443\u043c", "zoom", new String[]{"zoom_1", "zoom_2", "zoom_3"}, 60, this::masterVolume));
     private final SoundSlot respawn = this.slot(new SoundSlot("\u0412\u043e\u0437\u0440\u043e\u0436\u0434\u0435\u043d\u0438\u0435", "death", new String[]{"respawn_1", "respawn_2"}, 80, this::masterVolume));
     private final SoundSlot totem = this.slot(new SoundSlot("\u0422\u043e\u0442\u0435\u043c \u0443 \u043f\u0440\u043e\u0442\u0438\u0432\u043d\u0438\u043a\u0430", "totem", new String[]{"totem_1", "totem_2", "totem_3"}, 85, this::masterVolume));
-    private final BooleanSetting totemSelf = this.add((BooleanSetting)((Setting)new BooleanSetting("\u0422\u043e\u0442\u0435\u043c: \u0438 \u043d\u0430 \u0441\u0432\u043e\u0439 \u0442\u043e\u0436\u0435", false).desc("\u0424\u0440\u0430\u0437\u0430 \u0437\u0432\u0443\u0447\u0438\u0442, \u0434\u0430\u0436\u0435 \u043a\u043e\u0433\u0434\u0430 \u0442\u043e\u0442\u0435\u043c \u0441\u0440\u0430\u0431\u043e\u0442\u0430\u043b \u0443 \u0432\u0430\u0441")).visibleWhen(() -> (Boolean)this.totem.enabled.get()));
+    private final BooleanSetting totemSelf = this.add((BooleanSetting)(new BooleanSetting("\u0422\u043e\u0442\u0435\u043c: \u0438 \u043d\u0430 \u0441\u0432\u043e\u0439 \u0442\u043e\u0436\u0435", false).desc("\u0424\u0440\u0430\u0437\u0430 \u0437\u0432\u0443\u0447\u0438\u0442, \u0434\u0430\u0436\u0435 \u043a\u043e\u0433\u0434\u0430 \u0442\u043e\u0442\u0435\u043c \u0441\u0440\u0430\u0431\u043e\u0442\u0430\u043b \u0443 \u0432\u0430\u0441")).visibleWhen(() -> (Boolean)this.totem.enabled.get()));
     private final SoundSlot itemBreak = this.slot(new SoundSlot("\u041f\u043e\u043b\u043e\u043c\u043a\u0430 \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0430", "break", new String[]{"break_1"}, 80, this::masterVolume));
     private final SoundSlot weaponLow = this.slot(new SoundSlot("\u041c\u0435\u0447 \u0441\u043a\u043e\u0440\u043e \u0441\u043b\u043e\u043c\u0430\u0435\u0442\u0441\u044f", "break", new String[]{"weapon_low_1"}, 80, this::masterVolume));
     private final NumberSetting weaponThreshold = this.add((NumberSetting)new NumberSetting("\u041f\u043e\u0440\u043e\u0433 \u043f\u0440\u043e\u0447\u043d\u043e\u0441\u0442\u0438 \u043c\u0435\u0447\u0430", 10.0, 3.0, 30.0, 1.0).unit("%").visibleWhen(() -> (Boolean)this.weaponLow.enabled.get()));
@@ -384,7 +384,7 @@ extends Module {
         this.lastHurtTime = ht;
     }
 
-    public void renderHud(GuiGraphics ctx) {
+    public void renderHud(GuiGraphicsExtractor ctx) {
         long life;
         if (this.caption == null) {
             return;
@@ -484,7 +484,7 @@ extends Module {
 
     private void checkSoundboard() {
         boolean down;
-        boolean bl = down = SoundsModule.mc.screen == null && this.boardKey.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.boardKey.getKey());
+        boolean bl = down = SoundsModule.mc.gui.screen() == null && this.boardKey.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.boardKey.getKey());
         if (down && !this.boardWasDown) {
             this.board.play(this::masterVolume);
         }
@@ -499,7 +499,7 @@ extends Module {
             return;
         }
         LocalPlayer p = SoundsModule.mc.player;
-        boolean bl = moved = Math.abs(p.getX() - this.idleX) > 0.05 || Math.abs(p.getY() - this.idleY) > 0.05 || Math.abs(p.getZ() - this.idleZ) > 0.05 || Math.abs(p.getYRot() - this.idleYaw) > 0.5f || Math.abs(p.getXRot() - this.idlePitch) > 0.5f || SoundsModule.mc.screen != null || p.swinging;
+        boolean bl = moved = Math.abs(p.getX() - this.idleX) > 0.05 || Math.abs(p.getY() - this.idleY) > 0.05 || Math.abs(p.getZ() - this.idleZ) > 0.05 || Math.abs(p.getYRot() - this.idleYaw) > 0.5f || Math.abs(p.getXRot() - this.idlePitch) > 0.5f || SoundsModule.mc.gui.screen() != null || p.swinging;
         if (moved) {
             this.idleX = p.getX();
             this.idleY = p.getY();

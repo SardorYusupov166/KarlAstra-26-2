@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.module.modules.pvp;
 
@@ -17,7 +17,7 @@ import astra.render.Render2D;
 import astra.settings.ModeSetting;
 import astra.theme.Theme;
 import astra.utils.ClickTracker;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class CpsHud
 extends HudModule {
@@ -48,7 +48,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = CpsHud.theme();
         switch ((String)this.style.get()) {
             case "\u0420\u0430\u0437\u0434\u0435\u043b\u044c\u043d\u043e": {
@@ -68,7 +68,7 @@ extends HudModule {
         }
     }
 
-    private void box(GuiGraphics ctx, Theme t, float x, float y, float w, float h, String label, int cps) {
+    private void box(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, float h, String label, int cps) {
         this.drawPanel(ctx, x, y, w, h, 5.0f);
         Fonts.drawCentered(ctx, label, x + w / 2.0f, y + 5.0f, 7.0f, this.accentColor(), true);
         Fonts.drawCentered(ctx, cps + " CPS", x + w / 2.0f, y + 16.0f, 7.0f, t.text(), true);
@@ -76,7 +76,7 @@ extends HudModule {
 
     @Override
     public CardPreview getPreview() {
-        return new CardPreview(this){
+        return new CardPreview(){
 
             @Override
             public float height(float width) {

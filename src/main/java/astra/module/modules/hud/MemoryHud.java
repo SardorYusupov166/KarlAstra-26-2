@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.module.modules.hud;
 
@@ -15,7 +15,7 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.theme.Theme;
 import java.util.Locale;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class MemoryHud
 extends HudModule {
@@ -47,11 +47,11 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         MemoryHud.drawBar(ctx, 6.0f, 5.0f, w - 12.0f, this.accentColor(), MemoryHud.theme(), 6.5f);
     }
 
-    public static void drawBar(GuiGraphics ctx, float x, float y, float w, int accent, Theme t, float textSize) {
+    public static void drawBar(GuiGraphicsExtractor ctx, float x, float y, float w, int accent, Theme t, float textSize) {
         long used = MemoryHud.usedBytes();
         long max = MemoryHud.maxBytes();
         float pct = max > 0L ? (float)used / (float)max : 0.0f;

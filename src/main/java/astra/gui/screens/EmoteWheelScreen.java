@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.input.KeyEvent
  *  net.minecraft.client.input.MouseButtonEvent
@@ -18,7 +18,7 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.theme.Theme;
 import astra.theme.ThemeManager;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -44,13 +44,13 @@ extends Screen {
         return false;
     }
 
-    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         Theme t = ThemeManager.get();
         ctx.fillGradient(0, 0, this.width, this.height, ColorUtil.withAlpha(t.bg(), 0.25f), ColorUtil.withAlpha(t.bg(), 0.45f));
     }
 
-    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        super.render(ctx, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(ctx, mouseX, mouseY, delta);
         Theme t = ThemeManager.get();
         float open = AnimationUtils.easeOutBack(Math.min(1.0f, (float)(System.currentTimeMillis() - this.openedAt) / 220.0f));
         float cx = (float)this.width / 2.0f;

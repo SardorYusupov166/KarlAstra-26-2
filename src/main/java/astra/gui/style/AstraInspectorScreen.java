@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.input.CharacterEvent
  *  net.minecraft.client.input.KeyEvent
@@ -26,7 +26,7 @@ import astra.theme.Theme;
 import astra.theme.ThemeManager;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -54,7 +54,7 @@ implements PopupHost {
 
     protected abstract List<Setting<?>> properties();
 
-    protected abstract void workspace(GuiGraphics var1, int var2, int var3, float var4);
+    protected abstract void workspace(GuiGraphicsExtractor var1, int var2, int var3, float var4);
 
     protected abstract boolean workspaceClick(double var1, double var3, int var5);
 
@@ -98,15 +98,15 @@ implements PopupHost {
         return 240.0f * this.s;
     }
 
-    public void renderBackground(GuiGraphics ctx, int mx, int my, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
         if (this.minecraft.level == null) {
-            this.renderPanorama(ctx, delta);
+            this.extractPanorama(ctx, delta);
         } else {
             ctx.fill(0, 0, this.width, this.height, 0x20000000);
         }
     }
 
-    public void render(GuiGraphics ctx, int mx, int my, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
         this.scale();
         this.workspace(ctx, mx, my, delta);
         Theme t = ThemeManager.get();
@@ -296,7 +296,7 @@ implements PopupHost {
     public boolean charTyped(CharacterEvent c) {
         boolean used = false;
         for (char ch : c.codepointAsString().toCharArray()) {
-            used |= this.inputChar(ch, c.modifiers());
+            used |= this.inputChar(ch, 0);
         }
         return used;
     }

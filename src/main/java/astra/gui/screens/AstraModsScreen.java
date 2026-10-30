@@ -12,7 +12,7 @@
  *  net.fabricmc.loader.api.metadata.ModMetadata
  *  net.fabricmc.loader.api.metadata.Person
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.input.CharacterEvent
  *  net.minecraft.client.input.KeyEvent
@@ -63,7 +63,7 @@ import net.fabricmc.loader.api.metadata.ModEnvironment;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.fabricmc.loader.api.metadata.Person;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -129,7 +129,7 @@ extends Screen {
     }
 
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     public boolean isPauseScreen() {
@@ -148,7 +148,7 @@ extends Screen {
                 if (NO_ICON.containsKey(id)) {
                     return null;
                 }
-                Optional path = c.getMetadata().getIconPath(64);
+                Optional<String> path = c.getMetadata().getIconPath(64);
                 Optional file = path.flatMap(arg_0 -> ((ModContainer)c).findPath(arg_0));
                 if (!file.isPresent()) break block10;
                 InputStream in = Files.newInputStream((Path)file.get(), new OpenOption[0]);
@@ -201,7 +201,7 @@ extends Screen {
                         configScreens.put(modId, f);
                     }
                     if (!((provided = api.getClass().getMethod("getProvidedConfigScreenFactories", new Class[0]).invoke(api, new Object[0])) instanceof Map)) continue;
-                    Map map = (Map)provided;
+                    Map<?, ?> map = (Map<?, ?>)provided;
                     for (Map.Entry e : map.entrySet()) {
                         Function<Screen, Screen> pf = AstraModsScreen.wrap(e.getValue());
                         if (pf == null) continue;
@@ -255,9 +255,9 @@ extends Screen {
         return String.join((CharSequence)", ", names);
     }
 
-    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         if (this.minecraft.level == null) {
-            this.renderPanorama(ctx, delta);
+            this.extractPanorama(ctx, delta);
         } else {
             if (this.minecraft.options.getMenuBackgroundBlurriness() >= 1) {
                 ctx.blurBeforeThisStratum();
@@ -267,9 +267,9 @@ extends Screen {
         }
     }
 
-    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         boolean ch;
-        super.render(ctx, mouseX, mouseY, delta);
+        super.extractRenderState(ctx, mouseX, mouseY, delta);
         long now = System.nanoTime();
         this.dt = this.lastFrame == 0L ? 0.016f : Math.min(0.1f, (float)(now - this.lastFrame) / 1.0E9f);
         this.lastFrame = now;
@@ -348,7 +348,7 @@ extends Screen {
         Render2D.alpha = prevA;
     }
 
-    private void drawRow(GuiGraphics ctx, Theme t, ModContainer c, float x, float y, float w, float h, int mx, int my, float clipTop, float clipBottom) {
+    private void drawRow(GuiGraphicsExtractor ctx, Theme t, ModContainer c, float x, float y, float w, float h, int mx, int my, float clipTop, float clipBottom) {
         ModMetadata m = c.getMetadata();
         boolean sel = c == this.selected;
         boolean hov = (float)mx >= x && (float)mx < x + w && (float)my >= y && (float)my < y + h && (float)my >= clipTop && (float)my < clipBottom;
@@ -370,7 +370,7 @@ extends Screen {
         this.hits.add(new float[]{x, Math.max(y, clipTop), w, Math.min(y + h, clipBottom) - Math.max(y, clipTop), 100 + this.shown.indexOf(c)});
     }
 
-    private void drawIcon(GuiGraphics ctx, Theme t, ModContainer c, float x, float y, float s) {
+    private void drawIcon(GuiGraphicsExtractor ctx, Theme t, ModContainer c, float x, float y, float s) {
         Identifier icon = AstraModsScreen.icon(c);
         if (icon != null) {
             Render2D.textureRoundRect(ctx, icon, 1.0f, x, y, s, s, s * 0.22f, -1);
@@ -381,7 +381,7 @@ extends Screen {
         }
     }
 
-    private void drawDetails(GuiGraphics ctx, Theme t, ModContainer c, float x, float y, float w, float h, int mx, int my) {
+    private void drawDetails(GuiGraphicsExtractor ctx, Theme t, ModContainer c, float x, float y, float w, float h, int mx, int my) {
         String[][] kinds;
         ModMetadata m = c.getMetadata();
         float s = 54.0f;
@@ -440,7 +440,7 @@ extends Screen {
         }
     }
 
-    private float chip(GuiGraphics ctx, Theme t, float x, float y, String text, int color) {
+    private float chip(GuiGraphicsExtractor ctx, Theme t, float x, float y, String text, int color) {
         float w = Fonts.width(text, 6.2f, true) + 10.0f;
         Render2D.roundRect(ctx, x, y, w, 11.0f, 5.5f, ColorUtil.withAlpha(color, 0.18f));
         Render2D.outline(ctx, x, y, w, 11.0f, 5.5f, 0.7f, ColorUtil.withAlpha(color, 0.7f));
@@ -449,7 +449,7 @@ extends Screen {
         return y + 14.0f;
     }
 
-    private void button(GuiGraphics ctx, Theme t, int id, float x, float y, float w, float h, String label, Icon icon, boolean primary, int mx, int my) {
+    private void button(GuiGraphicsExtractor ctx, Theme t, int id, float x, float y, float w, float h, String label, Icon icon, boolean primary, int mx, int my) {
         boolean hov;
         boolean bl = hov = (float)mx >= x && (float)mx < x + w && (float)my >= y && (float)my < y + h;
         float hv = id >= 0 && id < this.btnHover.length ? this.btnHover[id].update(hov ? 1.0f : 0.0f, this.dt) : (float)(hov ? 1 : 0);
@@ -494,7 +494,7 @@ extends Screen {
                         Function<Screen, Screen> f = this.selected != null ? AstraModsScreen.configScreens().get(this.selected.getMetadata().getId()) : null;
                         Screen screen = s = f != null ? f.apply(this) : null;
                         if (s == null) break;
-                        this.minecraft.setScreen(s);
+                        this.minecraft.gui.setScreen(s);
                         break;
                     }
                 }
@@ -566,7 +566,7 @@ extends Screen {
     public boolean charTyped(CharacterEvent input) {
         boolean handled = false;
         for (char ch : input.codepointAsString().toCharArray()) {
-            handled |= this.charTyped(ch, input.modifiers());
+            handled |= this.charTyped(ch, 0);
         }
         return handled;
     }

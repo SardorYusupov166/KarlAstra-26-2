@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.PauseScreen
  *  net.minecraft.client.gui.screens.Screen
  *  org.spongepowered.asm.mixin.Mixin
@@ -17,7 +17,7 @@ import astra.gui.screens.ClickGuiScreen;
 import astra.gui.style.NativeScreenLayouts;
 import astra.gui.vanilla.MenuStyle;
 import astra.theme.ThemeManager;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,21 +33,21 @@ public abstract class ScreenBackgroundMixin {
     @Shadow
     public int height;
 
-    @Inject(method={"renderPanorama"}, at={@At(value="TAIL")})
-    private void astra$menuBackground(GuiGraphics ctx, float delta, CallbackInfo ci) {
-        if (this instanceof ClickGuiScreen) {
+    @Inject(method={"renderPanorama"}, at=@At(value="TAIL"))
+    private void astra$menuBackground(GuiGraphicsExtractor ctx, float delta, CallbackInfo ci) {
+        if ((Object)this instanceof ClickGuiScreen) {
             return;
         }
         MenuStyle.drawMenuBackground(ctx, this.width, this.height);
     }
 
-    @Inject(method={"renderBackground"}, at={@At(value="TAIL")})
-    private void astra$pauseBackdrop(GuiGraphics ctx, int mx, int my, float delta, CallbackInfo ci) {
-        if (this instanceof PauseScreen) {
-            Screen screen = (Screen)this;
+    @Inject(method={"renderBackground"}, at=@At(value="TAIL"))
+    private void astra$pauseBackdrop(GuiGraphicsExtractor ctx, int mx, int my, float delta, CallbackInfo ci) {
+        if ((Object)this instanceof PauseScreen) {
+            Screen screen = (Screen)(Object)this;
             NativeScreenLayouts.backdrop(screen, ctx);
-            float aw = Math.min((float)this.width * 0.26f, (float)this.height * 0.5f);
-            NativeScreenLayouts.art(screen, ctx, ThemeManager.get(), (float)this.width - aw - 6.0f, this.height, aw, (float)this.height * 0.82f, 1.0f);
+            float aw = Math.min((float)(Object)this.width * 0.26f, (float)(Object)this.height * 0.5f);
+            NativeScreenLayouts.art(screen, ctx, ThemeManager.get(), (float)(Object)this.width - aw - 6.0f, this.height, aw, (float)(Object)this.height * 0.82f, 1.0f);
         }
     }
 }

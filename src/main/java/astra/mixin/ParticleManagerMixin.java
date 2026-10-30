@@ -37,14 +37,14 @@ public abstract class ParticleManagerMixin {
         return type == ParticleTypes.CRIT || type == ParticleTypes.ENCHANTED_HIT || type == ParticleTypes.SWEEP_ATTACK || type == ParticleTypes.DAMAGE_INDICATOR;
     }
 
-    @Inject(method={"createParticle(Lnet/minecraft/class_2394;DDDDDD)Lnet/minecraft/class_703;"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"createParticle(Lnet/minecraft/class_2394;DDDDDD)Lnet/minecraft/class_703;"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$hideHitParticle(ParticleOptions effect, double x, double y, double z, double vx, double vy, double vz, CallbackInfoReturnable<Particle> cir) {
         if (ParticleManagerMixin.astra$isHitParticle(effect) && TargetEffects.hidesVanillaHitParticles() || PvpTweaks.hideParticle(effect, x, y, z)) {
             cir.setReturnValue(null);
         }
     }
 
-    @Inject(method={"createTrackingEmitter(Lnet/minecraft/class_1297;Lnet/minecraft/class_2394;)V"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"createTrackingEmitter(Lnet/minecraft/class_1297;Lnet/minecraft/class_2394;)V"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$hideHitEmitter(Entity entity, ParticleOptions effect, CallbackInfo ci) {
         if (ParticleManagerMixin.astra$isHitParticle(effect) && TargetEffects.hidesVanillaHitParticles()) {
             ci.cancel();
@@ -53,7 +53,7 @@ public abstract class ParticleManagerMixin {
         }
     }
 
-    @Inject(method={"createTrackingEmitter(Lnet/minecraft/class_1297;Lnet/minecraft/class_2394;I)V"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"createTrackingEmitter(Lnet/minecraft/class_1297;Lnet/minecraft/class_2394;I)V"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$hideHitEmitterTimed(Entity entity, ParticleOptions effect, int maxAge, CallbackInfo ci) {
         if (ParticleManagerMixin.astra$isHitParticle(effect) && TargetEffects.hidesVanillaHitParticles()) {
             ci.cancel();

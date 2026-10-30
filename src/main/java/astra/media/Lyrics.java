@@ -164,7 +164,7 @@ public final class Lyrics {
             return "#none";
         }
         JsonArray arr = JsonParser.parseString((String)r.body()).getAsJsonArray();
-        Object plain = null;
+        String plain = null;
         for (JsonElement el : arr) {
             JsonObject o = el.getAsJsonObject();
             double d = o.has("duration") && !o.get("duration").isJsonNull() ? o.get("duration").getAsDouble() : 0.0;

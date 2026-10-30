@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.input.CharacterEvent
  *  net.minecraft.client.input.KeyEvent
@@ -48,7 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -120,7 +120,7 @@ implements PopupHost {
         DecorManager.editing = false;
         DecorManager.save();
         GuiStyle.save();
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     public void removed() {
@@ -185,22 +185,22 @@ implements PopupHost {
         return list;
     }
 
-    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         Theme t = ThemeManager.get();
         if ("menu".equals(this.target)) {
             if (this.minecraft.level == null) {
-                this.renderPanorama(ctx, delta);
+                this.extractPanorama(ctx, delta);
             } else if (this.minecraft.options.getMenuBackgroundBlurriness() >= 1) {
                 ctx.blurBeforeThisStratum();
             }
             ctx.fillGradient(0, 0, this.width, this.height, ColorUtil.withAlpha(t.bg(), 0.55f), ColorUtil.withAlpha(t.bg(), 0.75f));
         } else if (this.minecraft.level == null) {
-            this.renderPanorama(ctx, delta);
+            this.extractPanorama(ctx, delta);
         }
     }
 
-    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        super.render(ctx, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(ctx, mouseX, mouseY, delta);
         long now = System.nanoTime();
         float dt = this.lastFrame == 0L ? 0.016f : Math.min(0.1f, (float)(now - this.lastFrame) / 1.0E9f);
         this.lastFrame = now;
@@ -236,7 +236,7 @@ implements PopupHost {
         this.renderToast(ctx, t);
     }
 
-    private void renderSelection(GuiGraphics ctx, Theme t) {
+    private void renderSelection(GuiGraphicsExtractor ctx, Theme t) {
         if (this.selected == null || !this.selected.target.equals(this.target)) {
             return;
         }
@@ -282,7 +282,7 @@ implements PopupHost {
         return out;
     }
 
-    private void renderElementSelection(GuiGraphics ctx, Theme t) {
+    private void renderElementSelection(GuiGraphicsExtractor ctx, Theme t) {
         if (this.element == null || !"menu".equals(this.target)) {
             return;
         }
@@ -312,7 +312,7 @@ implements PopupHost {
     /*
      * WARNING - void declaration
      */
-    private void renderPanel(GuiGraphics ctx, Theme t) {
+    private void renderPanel(GuiGraphicsExtractor ctx, Theme t) {
         String[] hints;
         String sideImage;
         this.buttons.clear();
@@ -452,7 +452,7 @@ implements PopupHost {
         this.scroll = Math.max(0.0f, Math.min(this.scroll, f - (float)this.height));
     }
 
-    private void tab(GuiGraphics ctx, Theme t, float x, float y, float w, String label, String tgt) {
+    private void tab(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, String label, String tgt) {
         boolean active = this.target.equals(tgt);
         boolean hov = this.ui.hover(x, y, w, 17.0f);
         Render2D.roundRect(ctx, x, y, w, 17.0f, 5.0f, active ? Paint.horizontal(x, x + w, t.accent(), ColorUtil.lerp(t.accent(), t.accent2(), 0.7f)) : Paint.solid(ColorUtil.withAlpha(t.card(), hov ? 1.0f : 0.7f)));
@@ -460,13 +460,13 @@ implements PopupHost {
         this.buttons.add(new float[]{x, y, w, 17.0f, "menu".equals(tgt) ? 100.0f : 101.0f});
     }
 
-    private void button(GuiGraphics ctx, Theme t, int id, float x, float y, float w, String label, Icon icon, boolean primary) {
+    private void button(GuiGraphicsExtractor ctx, Theme t, int id, float x, float y, float w, String label, Icon icon, boolean primary) {
         float hv = this.btnHover[id].update(this.ui.hover(x, y, w, 17.0f) ? 1.0f : 0.0f, this.ui.dt);
         UiDraw.button(ctx, t, x, y, w, 17.0f, label, icon, hv, primary);
         this.buttons.add(new float[]{x, y, w, 17.0f, id});
     }
 
-    private void renderToast(GuiGraphics ctx, Theme t) {
+    private void renderToast(GuiGraphicsExtractor ctx, Theme t) {
         if (this.toast == null) {
             return;
         }
@@ -487,7 +487,7 @@ implements PopupHost {
     private void buildRows(DecorLayer l) {
         this.rowsFor = l;
         this.rows.clear();
-        ArrayList<Object> s = new ArrayList<Object>();
+        ArrayList<Setting<?>> s = new ArrayList<>();
         s.add(new ModeSetting("\u041a\u0430\u0440\u0442\u0438\u043d\u043a\u0430", l.image, l.image).dynamic(DecorManager::images).bind(() -> l.image, v -> {
             l.image = v;
         }));
@@ -582,17 +582,17 @@ implements PopupHost {
             o.opacity = v.floatValue();
         }));
         if (movable) {
-            s.add((Setting)new BooleanSetting("\u0421\u043a\u0440\u044b\u0442\u044c", false).bind(() -> o.hidden, v -> {
+            s.add(new BooleanSetting("\u0421\u043a\u0440\u044b\u0442\u044c", false).bind(() -> o.hidden, v -> {
                 o.hidden = v;
             }));
         }
-        s.add((Setting)new BooleanSetting("\u0421\u0432\u043e\u0438 \u0446\u0432\u0435\u0442\u0430", false).bind(() -> o.customColor, v -> {
+        s.add(new BooleanSetting("\u0421\u0432\u043e\u0438 \u0446\u0432\u0435\u0442\u0430", false).bind(() -> o.customColor, v -> {
             o.customColor = v;
         }));
-        s.add((Setting)((Setting)new ColorSetting("\u0426\u0432\u0435\u0442 1", o.color).bind(() -> o.color, v -> {
+        s.add((Setting)(new ColorSetting("\u0426\u0432\u0435\u0442 1", o.color).bind(() -> o.color, v -> {
             o.color = v;
         })).visibleWhen(() -> o.customColor));
-        s.add((Setting)((Setting)new ColorSetting("\u0426\u0432\u0435\u0442 2", o.color2).bind(() -> o.color2, v -> {
+        s.add((Setting)(new ColorSetting("\u0426\u0432\u0435\u0442 2", o.color2).bind(() -> o.color2, v -> {
             o.color2 = v;
         })).visibleWhen(() -> o.customColor));
         if (id.equals("style.card") || id.equals("style.button") || id.equals("style.dropdown")) {
@@ -602,7 +602,7 @@ implements PopupHost {
         }
         if (info != null && info.image()) {
             List<String> base = List.of("\u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u0430\u044f");
-            s.add((Setting)new ModeSetting("\u041a\u0430\u0440\u0442\u0438\u043d\u043a\u0430", "\u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u0430\u044f", "\u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u0430\u044f").dynamic(() -> {
+            s.add(new ModeSetting("\u041a\u0430\u0440\u0442\u0438\u043d\u043a\u0430", "\u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u0430\u044f", "\u0421\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u043d\u0430\u044f").dynamic(() -> {
                 ArrayList<String> l = new ArrayList<String>(base);
                 l.addAll(DecorManager.images());
                 return l;
@@ -676,11 +676,11 @@ implements PopupHost {
     }
 
     private static NumberSetting num(String name, double min, double max, double step, String unit, Supplier<Float> get, Consumer<Float> set) {
-        return (NumberSetting)new NumberSetting(name, get.get().floatValue(), min, max, step).unit(unit).bind(() -> ((Float)get.get()).floatValue(), v -> set.accept(Float.valueOf(v.floatValue())));
+        return (NumberSetting)new NumberSetting(name, get.get().floatValue(), min, max, step).unit(unit).bind(() -> get.get().doubleValue(), v -> set.accept(Float.valueOf(v.floatValue())));
     }
 
     private void pushUndo() {
-        this.undo.push((String)((Object)StringConcatFactory.makeConcatWithConstants("makeConcatWithConstants", new Object[]{"\u0001\u0002\u0001", "\u0001"}, (String)DecorManager.toJson(), GuiStyle.toJson())));
+        this.undo.push(DecorManager.toJson() + "\u0001" + GuiStyle.toJson());
         while (this.undo.size() > 60) {
             this.undo.removeLast();
         }
@@ -960,7 +960,7 @@ implements PopupHost {
             }
             return true;
         }
-        for (Object r : this.layerRows) {
+        for (float[] r : this.layerRows) {
             if (!(mx >= (double)r[0]) || !(mx < (double)(r[0] + r[2])) || !(my >= (double)r[1]) || !(my < (double)(r[1] + r[3]))) continue;
             DecorLayer l = DecorManager.layers().get((int)r[4]);
             if (mx >= (double)(r[0] + r[2] - 16.0f)) {
@@ -972,10 +972,9 @@ implements PopupHost {
             }
             return true;
         }
-        Iterator<Object> iterator = this.rows.iterator();
+        Iterator<Widget> iterator = this.rows.iterator();
         while (iterator.hasNext()) {
-            Object r;
-            r = (Widget)iterator.next();
+            Widget r = iterator.next();
             if (!r.isVisible() || !r.contains(mx, my)) continue;
             this.pushUndo();
             if (!r.mouseClicked(this.ui, mx, my, button)) continue;
@@ -1287,7 +1286,7 @@ implements PopupHost {
     public boolean charTyped(CharacterEvent input) {
         boolean handled = false;
         for (char ch : input.codepointAsString().toCharArray()) {
-            handled |= this.charTyped(ch, input.modifiers());
+            handled |= this.charTyped(ch, 0);
         }
         return handled;
     }

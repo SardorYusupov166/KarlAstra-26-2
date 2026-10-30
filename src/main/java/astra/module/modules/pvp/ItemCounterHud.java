@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.world.entity.player.Inventory
  *  net.minecraft.world.item.Item
  *  net.minecraft.world.item.ItemStack
@@ -23,7 +23,7 @@ import astra.settings.NumberSetting;
 import astra.theme.Theme;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -108,7 +108,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = ItemCounterHud.theme();
         List<int[]> list = this.rows(editor);
         float blink = 0.5f + 0.5f * (float)Math.sin((double)System.currentTimeMillis() / 130.0);
@@ -122,7 +122,7 @@ extends HudModule {
             if (low) {
                 Render2D.roundRect(ctx, x, y, this.vertical() ? w - 4.0f : 36.0f, 16.0f, 4.0f, ColorUtil.withAlpha(-770210, (n == 0 ? 0.18f : 0.1f) + 0.22f * blink));
             }
-            ctx.renderItem(new ItemStack((ItemLike)kind.icon), Math.round(x + 1.0f), Math.round(y));
+            ctx.item(new ItemStack((ItemLike)kind.icon), Math.round(x + 1.0f), Math.round(y));
             int col = n == 0 ? -770210 : (low ? ColorUtil.lerp(-340971, -770210, blink) : t.text());
             Fonts.draw(ctx, String.valueOf(n), x + 20.0f, y + 4.5f, 7.5f, col, true);
         }

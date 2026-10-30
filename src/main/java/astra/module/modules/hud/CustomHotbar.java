@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.player.LocalPlayer
  *  net.minecraft.world.entity.HumanoidArm
  *  net.minecraft.world.entity.player.Inventory
@@ -23,7 +23,7 @@ import astra.render.Render2D;
 import astra.settings.BooleanSetting;
 import astra.theme.Theme;
 import astra.utils.FrameStats;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Inventory;
@@ -69,7 +69,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         ItemStack off;
         float pos;
         Theme t = CustomHotbar.theme();
@@ -98,8 +98,8 @@ extends HudModule {
             if (!stack.isEmpty()) {
                 int ix = Math.round(sx + 2.0f);
                 int iy = Math.round(6.0f);
-                ctx.renderItem(stack, ix, iy);
-                ctx.renderItemDecorations(CustomHotbar.mc.font, stack, ix, iy);
+                ctx.item(stack, ix, iy);
+                ctx.itemDecorations(CustomHotbar.mc.font, stack, ix, iy);
             }
             if (!((Boolean)this.numbers.get()).booleanValue()) continue;
             Fonts.draw(ctx, String.valueOf(i + 1), sx + 1.5f, 4.5f, 5.0f, ColorUtil.withAlpha(t.textDim(), 0.8f), true);
@@ -109,8 +109,8 @@ extends HudModule {
             float ox = left ? -26.0f : w + 6.0f;
             Render2D.roundRect(ctx, ox, 4.0f, 20.0f, 20.0f, 4.0f, ColorUtil.withAlpha(t.bg(), 0.75f));
             Render2D.outline(ctx, ox, 4.0f, 20.0f, 20.0f, 4.0f, 0.8f, ColorUtil.withAlpha(acc, 0.5f));
-            ctx.renderItem(off, Math.round(ox + 2.0f), 6);
-            ctx.renderItemDecorations(CustomHotbar.mc.font, off, Math.round(ox + 2.0f), 6);
+            ctx.item(off, Math.round(ox + 2.0f), 6);
+            ctx.itemDecorations(CustomHotbar.mc.font, off, Math.round(ox + 2.0f), 6);
         }
     }
 

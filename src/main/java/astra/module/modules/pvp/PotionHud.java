@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  net.minecraft.client.gui.Gui
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.renderer.RenderPipelines
  *  net.minecraft.core.Holder
  *  net.minecraft.network.chat.Component
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -109,14 +109,14 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = PotionHud.theme();
         float y = 3.0f;
         boolean small = (Boolean)this.compact.get();
         for (Entry e : this.entries(editor)) {
             float tx;
             int icon = small ? 10 : 16;
-            ctx.blitSprite(RenderPipelines.GUI_TEXTURED, Gui.getMobEffectSprite(e.type), 4, Math.round(y + (this.rowH() - (float)icon) / 2.0f), icon, icon);
+            ctx.blitSprite(RenderPipelines.GUI_TEXTURED, net.minecraft.client.gui.Hud.getMobEffectSprite(e.type), 4, Math.round(y + (this.rowH() - (float)icon) / 2.0f), icon, icon);
             float f = tx = small ? 18.0f : 25.0f;
             if (small) {
                 Fonts.draw(ctx, e.name, tx, y + 3.0f, 7.0f, t.text(), true);

@@ -7,7 +7,7 @@
  *  com.google.gson.reflect.TypeToken
  *  com.mojang.blaze3d.platform.NativeImage
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.renderer.texture.AbstractTexture
  *  net.minecraft.client.renderer.texture.DynamicTexture
  *  net.minecraft.resources.Identifier
@@ -41,7 +41,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
@@ -171,18 +171,18 @@ public final class DecorManager {
         }
     }
 
-    public static void renderMenu(GuiGraphics ctx, String depth, float designW) {
+    public static void renderMenu(GuiGraphicsExtractor ctx, String depth, float designW) {
         for (DecorLayer l : DecorManager.layers()) {
             if (!l.visible || !l.isMenu() || !depth.equals(l.depth)) continue;
             DecorManager.draw(ctx, l, l.x * designW, l.y, l.w, l.h, 1.0f);
         }
     }
 
-    public static void renderScreen(GuiGraphics ctx, String depth, float sw, float sh) {
+    public static void renderScreen(GuiGraphicsExtractor ctx, String depth, float sw, float sh) {
         DecorManager.renderScreen(ctx, depth, sw, sh, false);
     }
 
-    public static void renderScreen(GuiGraphics ctx, String depth, float sw, float sh, boolean fromEditor) {
+    public static void renderScreen(GuiGraphicsExtractor ctx, String depth, float sw, float sh, boolean fromEditor) {
         if (editing && !fromEditor) {
             return;
         }
@@ -192,7 +192,7 @@ public final class DecorManager {
         }
     }
 
-    public static void draw(GuiGraphics ctx, DecorLayer l, float cx, float cy, float w, float h, float alphaMul) {
+    public static void draw(GuiGraphicsExtractor ctx, DecorLayer l, float cx, float cy, float w, float h, float alphaMul) {
         boolean neon;
         Tex tex = DecorManager.texture(l.image);
         float t = AnimationUtils.time() * l.animSpeed / 100.0f + l.phase;

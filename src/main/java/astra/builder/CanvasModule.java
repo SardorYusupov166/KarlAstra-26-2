@@ -5,13 +5,13 @@
  *  com.mojang.blaze3d.vertex.PoseStack
  *  com.mojang.blaze3d.vertex.VertexConsumer
  *  com.mojang.brigadier.builder.LiteralArgumentBuilder
- *  net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+ *  net.fabricmc.fabric.api.client.command.v2.ClientCommands
  *  net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
  *  net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
- *  net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
- *  net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
+ *  net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
+ *  net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
  *  net.minecraft.client.gui.screens.Screen
- *  net.minecraft.client.renderer.MultiBufferSource$BufferSource
+ *  astra.render.WorldBuffers$BufferSource
  *  net.minecraft.client.renderer.rendertype.RenderType
  *  net.minecraft.resources.Identifier
  *  net.minecraft.world.phys.Vec3
@@ -33,13 +33,13 @@ import astra.settings.NumberSetting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.MultiBufferSource;
+import astra.render.WorldBuffers;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
@@ -55,7 +55,7 @@ extends Module {
 
     public CanvasModule() {
         super("builder_canvas", "\u0425\u043e\u043b\u0441\u0442 Astra", "\u041e\u0431\u0449\u0438\u0435 \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0438-\u0440\u0435\u0444\u0435\u0440\u0435\u043d\u0441\u044b \u0432 \u043c\u0438\u0440\u0435. /canvas \u2014 \u0440\u0435\u0434\u0430\u043a\u0442\u043e\u0440.", Category.MINIMAP, Icon.PIN);
-        this.add(new ButtonSetting("\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u0445\u043e\u043b\u0441\u0442\u043e\u0432", "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0445\u043e\u043b\u0441\u0442\u044b", () -> mc.setScreen((Screen)new CanvasScreen(CanvasModule.mc.screen))));
+        this.add(new ButtonSetting("\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u0445\u043e\u043b\u0441\u0442\u043e\u0432", "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0445\u043e\u043b\u0441\u0442\u044b", () -> mc.gui.setScreen((Screen)new CanvasScreen(CanvasModule.mc.gui.screen()))));
         this.add(new ButtonSetting("\u0421\u0435\u0440\u0432\u0435\u0440 \u0445\u043e\u043b\u0441\u0442\u043e\u0432", "\u0410\u0434\u0440\u0435\u0441 \u0441\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u044f", () -> {}).label(() -> CanvasBoard.scope().isEmpty() ? "\u041d\u0435\u0442 \u0438\u0433\u0440\u043e\u0432\u043e\u0433\u043e \u0441\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u044f" : CanvasBoard.scope()));
         this.setDefaultEnabled(true);
     }
@@ -63,11 +63,11 @@ extends Module {
     public static void init() {
         CanvasRender.init();
         ClientTickEvents.END_CLIENT_TICK.register(client -> CanvasBoard.tick());
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> dispatcher.register((LiteralArgumentBuilder)ClientCommandManager.literal((String)"canvas").executes(c -> {
-            mc.execute(() -> mc.setScreen((Screen)new CanvasScreen(null)));
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> dispatcher.register((LiteralArgumentBuilder)ClientCommands.literal((String)"canvas").executes(c -> {
+            mc.execute(() -> mc.gui.setScreen((Screen)new CanvasScreen(null)));
             return 1;
         })));
-        WorldRenderEvents.END_MAIN.register(ctx -> {
+        LevelRenderEvents.COLLECT_SUBMITS.register(ctx -> {
             CanvasModule m = ModuleManager.get(CanvasModule.class);
             if (m != null && m.isEnabled()) {
                 m.draw(ctx);
@@ -75,12 +75,12 @@ extends Module {
         });
     }
 
-    private void draw(WorldRenderContext ctx) {
-        if (CanvasModule.mc.level == null || CanvasModule.mc.player == null || !((Boolean)this.show.get()).booleanValue() || CanvasModule.mc.options.hideGui) {
+    private void draw(LevelRenderContext ctx) {
+        if (CanvasModule.mc.level == null || CanvasModule.mc.player == null || !((Boolean)this.show.get()).booleanValue() || CanvasModule.mc.gui.hud.isHidden()) {
             return;
         }
-        Vec3 cam = CanvasModule.mc.gameRenderer.getMainCamera().position();
-        MultiBufferSource.BufferSource imm = mc.renderBuffers().bufferSource();
+        Vec3 cam = CanvasModule.mc.gameRenderer.mainCamera().position();
+        WorldBuffers.BufferSource imm = WorldBuffers.forContext(ctx);
         for (CanvasBoard.Canvas c : CanvasBoard.all()) {
             float[] p;
             int j;

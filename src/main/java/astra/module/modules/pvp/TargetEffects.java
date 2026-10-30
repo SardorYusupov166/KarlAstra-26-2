@@ -3,11 +3,11 @@
  * 
  * Could not load the following classes:
  *  com.mojang.blaze3d.vertex.VertexConsumer
- *  net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+ *  net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
  *  net.minecraft.client.Camera
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
- *  net.minecraft.client.renderer.MultiBufferSource$BufferSource
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
+ *  astra.render.WorldBuffers$BufferSource
  *  net.minecraft.client.renderer.rendertype.RenderType
  *  net.minecraft.client.renderer.rendertype.RenderTypes
  *  net.minecraft.resources.Identifier
@@ -43,11 +43,11 @@ import astra.utils.CombatTracker;
 import astra.utils.FrameStats;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.BiFunction;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import astra.render.WorldBuffers;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
@@ -148,7 +148,7 @@ extends Module {
         }
     }
 
-    public void renderWorld(WorldRenderContext ctx) {
+    public void renderWorld(LevelRenderContext ctx) {
         VertexConsumer vc;
         if (this.target == null || TargetEffects.mc.player == null) {
             return;
@@ -156,11 +156,11 @@ extends Module {
         if (!this.visible(this.target)) {
             return;
         }
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
         Vec3 cam = camera.position();
         Quaternionf camRot = camera.rotation();
         float td = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        MultiBufferSource.BufferSource imm = mc.renderBuffers().bufferSource();
+        WorldBuffers.BufferSource imm = WorldBuffers.forContext(ctx);
         float time = AnimationUtils.time();
         float hitPulse = 1.0f - Math.min(1.0f, (float)(System.currentTimeMillis() - CombatTracker.lastComboHit()) / 250.0f);
         int c1 = this.color1.getColor();
@@ -310,7 +310,7 @@ extends Module {
         }
     }
 
-    public void renderHud(GuiGraphics ctx) {
+    public void renderHud(GuiGraphicsExtractor ctx) {
         if (!((Boolean)this.lock.get()).booleanValue() || !((Boolean)this.lockText.get()).booleanValue() || this.target == null) {
             return;
         }

@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.AbstractSliderButton
  *  net.minecraft.client.gui.components.AbstractWidget
  *  org.spongepowered.asm.mixin.Mixin
@@ -15,7 +15,7 @@ package astra.mixin;
 
 import astra.gui.vanilla.AstraWidgets;
 import astra.mixin.ClickableWidgetAccessor;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,12 +29,12 @@ public abstract class SliderWidgetMixin {
     @Shadow
     protected double value;
 
-    @Inject(method={"renderWidget"}, at={@At(value="HEAD")}, cancellable=true)
-    private void astra$render(GuiGraphics ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method={"renderWidget"}, at=@At(value="HEAD"), cancellable=true)
+    private void astra$render(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;
         }
-        AbstractWidget w = (AbstractWidget)this;
+        AbstractWidget w = (AbstractWidget)(Object)this;
         AstraWidgets.slider(ctx, this, w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getMessage(), this.value, w.active, w.isHoveredOrFocused(), ((ClickableWidgetAccessor)w).astra$getAlpha());
         ci.cancel();
     }

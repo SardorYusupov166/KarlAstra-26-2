@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.AbstractWidget
  *  net.minecraft.client.gui.screens.PauseScreen
  *  net.minecraft.client.gui.screens.Screen
@@ -42,7 +42,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -98,7 +98,7 @@ extends AstraInspectorScreen {
     }
 
     private Setting<?> number(String label, float min, float max, float step, Supplier<Float> get, Consumer<Float> put) {
-        return new NumberSetting(label, get.get().floatValue(), min, max, step).bind(() -> ((Float)get.get()).floatValue(), v -> {
+        return new NumberSetting(label, get.get().floatValue(), min, max, step).bind(() -> get.get().doubleValue(), v -> {
             put.accept(Float.valueOf(v.floatValue()));
             this.changed();
         });
@@ -215,10 +215,10 @@ extends AstraInspectorScreen {
         list.add((Setting<?>)new BooleanSetting("\u041f\u0440\u0438\u0432\u044f\u0437\u043a\u0430 \u043a \u0441\u0435\u0442\u043a\u0435", true).bind(() -> snapGrid, v -> {
             snapGrid = v;
         }));
-        list.add((Setting<?>)((Setting)new BooleanSetting("\u041f\u0440\u0438\u0432\u044f\u0437\u043a\u0430 \u043a \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u0430\u043c", true).bind(() -> snapElements, v -> {
+        list.add((Setting<?>)(new BooleanSetting("\u041f\u0440\u0438\u0432\u044f\u0437\u043a\u0430 \u043a \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u0430\u043c", true).bind(() -> snapElements, v -> {
             snapElements = v;
         })).desc("\u041a\u0440\u0430\u044f \u0438 \u0446\u0435\u043d\u0442\u0440\u044b \u0434\u0440\u0443\u0433\u0438\u0445 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432 \u0438 \u0446\u0435\u043d\u0442\u0440 \u044d\u043a\u0440\u0430\u043d\u0430"));
-        list.add((Setting<?>)new NumberSetting("\u0428\u0430\u0433 \u0441\u0435\u0442\u043a\u0438", gridSize, 4.0, 40.0, 1.0).bind(() -> gridSize, v -> {
+        list.add((Setting<?>)new NumberSetting("\u0428\u0430\u0433 \u0441\u0435\u0442\u043a\u0438", gridSize, 4.0, 40.0, 1.0).bind(() -> (double)gridSize, v -> {
             gridSize = v.floatValue();
         }));
         list.add(new ButtonSetting("\u0424\u043e\u043d \u044d\u0442\u043e\u0433\u043e \u044d\u043a\u0440\u0430\u043d\u0430", "\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0443", () -> this.picture("@background")));
@@ -273,7 +273,7 @@ extends AstraInspectorScreen {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     @Override
-    protected void workspace(GuiGraphics ctx, int mx, int my, float delta) {
+    protected void workspace(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
         this.ox = this.workspaceLeft() + 10.0f * this.s;
         this.oy = 54.0f * this.s;
         this.zoom = Math.min(((float)this.width - this.ox - 10.0f * this.s) / (float)this.source.width, ((float)this.height - this.oy - 20.0f * this.s) / (float)this.source.height);
@@ -289,7 +289,7 @@ extends AstraInspectorScreen {
                 float aw = Math.min((float)this.source.width * 0.26f, (float)this.source.height * 0.5f);
                 NativeScreenLayouts.art(this.source, ctx, ThemeManager.get(), (float)this.source.width - aw - 6.0f, this.source.height, aw, (float)this.source.height * 0.82f, 1.0f);
             }
-            this.source.render(ctx, -10000, -10000, delta);
+            this.source.extractRenderState(ctx, -10000, -10000, delta);
             if (this.source instanceof PauseScreen) {
                 MenuStyle.renderPausePreview(this.source, ctx);
             }
@@ -299,7 +299,7 @@ extends AstraInspectorScreen {
             if (r != null) {
                 float hs = 3.0f * this.s / this.zoom;
                 Render2D.outline(ctx, r[0] - 2.0f, r[1] - 2.0f, r[2] + 4.0f, r[3] + 4.0f, 2.0f, 1.1f * this.s / this.zoom, t.accent2());
-                for (Object c : (Object)NativeLayoutEditor.corners(r)) {
+                for (float[] c : NativeLayoutEditor.corners(r)) {
                     Render2D.roundRect(ctx, (float)(c[0] - hs), (float)(c[1] - hs), hs * 2.0f, hs * 2.0f, 1.0f, -1);
                     Render2D.outline(ctx, (float)(c[0] - hs), (float)(c[1] - hs), hs * 2.0f, hs * 2.0f, 1.0f, 0.8f * this.s / this.zoom, t.accent2());
                 }
@@ -326,7 +326,7 @@ extends AstraInspectorScreen {
         }
     }
 
-    private void renderGrid(GuiGraphics ctx, Theme t) {
+    private void renderGrid(GuiGraphicsExtractor ctx, Theme t) {
         float px = Render2D.pixel(ctx);
         if (showGrid) {
             Mesh mesh = Render2D.begin();
@@ -646,7 +646,7 @@ extends AstraInspectorScreen {
 
     public void onClose() {
         this.finishChange();
-        this.minecraft.setScreen(this.source);
+        this.minecraft.gui.setScreen(this.source);
     }
 
     public boolean editorClick(double x, double y, int b) {

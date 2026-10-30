@@ -74,10 +74,10 @@ extends PlayerCosmetic {
         ParticleSprite sprite;
         if (!this.isRemote()) {
             boolean down;
-            boolean bl = down = EmoteCosmetic.mc.screen == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
+            boolean bl = down = EmoteCosmetic.mc.gui.screen() == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
             if (down && !this.wasDown) {
                 if (((Boolean)this.wheel.get()).booleanValue()) {
-                    mc.setScreen((Screen)new EmoteWheelScreen(this, this.key.getKey()));
+                    mc.gui.setScreen((Screen)new EmoteWheelScreen(this, this.key.getKey()));
                 } else {
                     this.play();
                 }

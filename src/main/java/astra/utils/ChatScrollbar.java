@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.ChatComponent
  *  net.minecraft.world.entity.player.ChatVisiblity
  *  org.joml.Matrix3x2fStack
@@ -18,7 +18,7 @@ import astra.render.Render2D;
 import astra.theme.Theme;
 import astra.theme.ThemeManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import org.joml.Matrix3x2fStack;
@@ -32,7 +32,7 @@ public final class ChatScrollbar {
         if (!AnimeChatModule.chatStyled() || mc.gui == null || mc.options.chatVisibility().get() == ChatVisiblity.HIDDEN) {
             return null;
         }
-        ChatComponent hud = mc.gui.getChat();
+        ChatComponent hud = mc.gui.hud.getChat();
         ChatHudAccessor access = (ChatHudAccessor)hud;
         int total = access.astra$visibleMessages().size();
         int visible = Math.min(total, hud.getLinesPerPage());
@@ -79,7 +79,7 @@ public final class ChatScrollbar {
         }
         double thumbTop = ChatLayoutHud.unmapY(y) / g.scale - this.grab;
         int desired = g.travel() <= 0.0 ? 0 : (int)Math.round(Math.max(0.0, Math.min(1.0, (g.bottom - g.thumbHeight - thumbTop) / g.travel())) * (double)g.maxScroll);
-        ChatComponent hud = Minecraft.getInstance().gui.getChat();
+        ChatComponent hud = Minecraft.getInstance().gui.hud.getChat();
         hud.scrollChat(desired - ((ChatHudAccessor)hud).astra$scrolledLines());
         return true;
     }
@@ -90,7 +90,7 @@ public final class ChatScrollbar {
         return was;
     }
 
-    public static void render(GuiGraphics ctx, boolean focused) {
+    public static void render(GuiGraphicsExtractor ctx, boolean focused) {
         if (!focused) {
             return;
         }

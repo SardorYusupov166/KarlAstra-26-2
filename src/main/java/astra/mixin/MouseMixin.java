@@ -40,10 +40,10 @@ public abstract class MouseMixin {
     @Final
     private Minecraft minecraft;
 
-    @Inject(method={"onButton"}, at={@At(value="HEAD")})
+    @Inject(method={"onButton"}, at=@At(value="HEAD"))
     private void astra$countClicks(long window, MouseButtonInfo input, int action, CallbackInfo ci) {
         int button = input.button();
-        if (action == 1 && this.minecraft.screen == null && window == this.minecraft.getWindow().handle()) {
+        if (action == 1 && this.minecraft.gui.screen() == null && window == this.minecraft.getWindow().handle()) {
             SoundsModule sounds;
             ClickTracker.onClick(button);
             if (button == 0 && this.minecraft.player != null && this.minecraft.hitResult != null && this.minecraft.hitResult.getType() == HitResult.Type.MISS && (sounds = SoundsModule.get()) != null) {
@@ -52,9 +52,9 @@ public abstract class MouseMixin {
         }
     }
 
-    @Inject(method={"onScroll"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"onScroll"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$zoomScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
-        if (this.minecraft.screen != null || vertical == 0.0) {
+        if (this.minecraft.gui.screen() != null || vertical == 0.0) {
             return;
         }
         ZoomModule zoom = ModuleManager.get(ZoomModule.class);
@@ -63,7 +63,7 @@ public abstract class MouseMixin {
         }
     }
 
-    @ModifyArgs(method={"turnPlayer"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/player/LocalPlayer;turn(DD)V")})
+    @ModifyArgs(method={"turnPlayer"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"))
     private void astra$zoomSensitivity(Args args) {
         ZoomModule zoom = ModuleManager.get(ZoomModule.class);
         if (zoom == null) {

@@ -134,7 +134,7 @@ public final class Waypoints {
         if (key == null) {
             return null;
         }
-        List list = BY_WORLD.computeIfAbsent(key, k -> new ArrayList());
+        List<Waypoint> list = BY_WORLD.computeIfAbsent(key, k -> new ArrayList());
         list.removeIf(w -> w.name.equalsIgnoreCase(name) || death && w.death);
         Waypoint w2 = new Waypoint(name, x, y, z, Waypoints.dimension(), color, death);
         list.add(w2);

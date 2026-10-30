@@ -2,8 +2,8 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
- *  net.minecraft.client.gui.components.PlayerFaceRenderer
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
+ *  net.minecraft.client.gui.components.PlayerFaceExtractor
  *  net.minecraft.world.entity.player.PlayerSkin
  */
 package astra.module.modules.cosmetic;
@@ -22,8 +22,8 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.settings.ModeSetting;
 import astra.theme.Theme;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.world.entity.player.PlayerSkin;
 
 public class ProfileStyle
@@ -42,7 +42,7 @@ extends Module {
         return ModuleManager.get(ProfileStyle.class);
     }
 
-    public void drawAvatar(GuiGraphics ctx, Theme t, float x, float y, float size) {
+    public void drawAvatar(GuiGraphicsExtractor ctx, Theme t, float x, float y, float size) {
         float r = size / 2.0f;
         String f = (String)this.frame.get();
         if (!f.equals("\u0411\u0435\u0437 \u0440\u0430\u043c\u043a\u0438")) {
@@ -57,7 +57,7 @@ extends Module {
             ArtManager.drawAvatar(ctx, index, x + r, y + r, size * 0.42f);
         } else if (this.avatar.is("\u041b\u0438\u0446\u043e \u0441\u043a\u0438\u043d\u0430") && ProfileStyle.mc.player != null) {
             Render2D.roundRect(ctx, ix - 1.0f, iy - 1.0f, inner + 2.0f, inner + 2.0f, 3.0f, t.bg());
-            PlayerFaceRenderer.draw((GuiGraphics)ctx, (PlayerSkin)ProfileStyle.mc.player.getSkin(), (int)Math.round(ix), (int)Math.round(iy), (int)Math.round(inner));
+            PlayerFaceExtractor.extractRenderState((GuiGraphicsExtractor)ctx, (PlayerSkin)ProfileStyle.mc.player.getSkin(), (int)Math.round(ix), (int)Math.round(iy), (int)Math.round(inner));
         } else {
             Render2D.circle(ctx, x + r, y + r, size * 0.4f, t.bg2());
             String name = mc.getUser().getName();

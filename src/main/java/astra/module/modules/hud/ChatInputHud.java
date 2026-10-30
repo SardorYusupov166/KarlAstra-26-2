@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  com.mojang.blaze3d.platform.Window
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.EditBox
  *  org.joml.Matrix3x2fStack
  */
@@ -19,7 +19,7 @@ import astra.settings.ColorSetting;
 import astra.settings.ModeSetting;
 import astra.settings.NumberSetting;
 import com.mojang.blaze3d.platform.Window;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import org.joml.Matrix3x2fStack;
 
@@ -87,7 +87,7 @@ extends HudModule {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public void drawBackground(GuiGraphics ctx, int x, int y, int w, int h) {
+    public void drawBackground(GuiGraphicsExtractor ctx, int x, int y, int w, int h) {
         if (!((Boolean)this.background.get()).booleanValue() || this.style.is("\u0411\u0435\u0437 \u0444\u043e\u043d\u0430")) {
             return;
         }
@@ -108,7 +108,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         if (!editor) {
             return;
         }
@@ -116,7 +116,7 @@ extends HudModule {
         m.pushMatrix();
         m.scale(1.0f / this.getScale(), 1.0f / this.getScale());
         this.drawBackground(ctx, 0, 0, Math.round(w * this.getScale()), Math.round(h * this.getScale()));
-        ctx.drawString(ChatInputHud.mc.font, "\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435\u2026 |", 4, (Math.round(h * this.getScale()) - 8) / 2, this.textColor.getColor(), true);
+        ctx.text(ChatInputHud.mc.font, "\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435\u2026 |", 4, (Math.round(h * this.getScale()) - 8) / 2, this.textColor.getColor(), true);
         m.popMatrix();
     }
 

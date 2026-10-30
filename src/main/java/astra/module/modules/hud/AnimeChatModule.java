@@ -5,10 +5,10 @@
  *  net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
  *  net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
  *  net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
- *  net.minecraft.client.GuiMessage$Line
+ *  net.minecraft.client.multiplayer.chat.GuiMessage$Line
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.Font
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.ChatComponent
  *  net.minecraft.network.chat.Component
  *  net.minecraft.world.entity.player.ChatVisiblity
@@ -38,10 +38,10 @@ import java.util.Locale;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.ChatVisiblity;
@@ -176,7 +176,7 @@ extends Module {
         return bg == 0 ? -16777216 : bg;
     }
 
-    public static void chatPanel(GuiGraphics ctx, int tick, boolean focused) {
+    public static void chatPanel(GuiGraphicsExtractor ctx, int tick, boolean focused) {
         if (!AnimeChatModule.chatStyled() || !AnimeChatModule.chatStyle().equals("\u0421\u0442\u0435\u043a\u043b\u043e")) {
             return;
         }
@@ -184,7 +184,7 @@ extends Module {
         if (mc.options.chatVisibility().get() == ChatVisiblity.HIDDEN) {
             return;
         }
-        ChatComponent hud = mc.gui.getChat();
+        ChatComponent hud = mc.gui.hud.getChat();
         ChatHudAccessor access = (ChatHudAccessor)hud;
         List<GuiMessage.Line> lines = access.astra$visibleMessages();
         int count = Math.min(hud.getLinesPerPage(), lines.size() - access.astra$scrolledLines());
@@ -221,14 +221,14 @@ extends Module {
         m.popMatrix();
     }
 
-    public static void drawGlass(GuiGraphics ctx, float x, float y, float w, float h, float alpha) {
+    public static void drawGlass(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float alpha) {
         Theme t = ThemeManager.get();
         int bg = AnimeChatModule.chatBackground(t);
         Render2D.roundRect(ctx, x, y, w, h, 4.0f, Paint.vertical(y, y + h, ColorUtil.withAlpha(ColorUtil.lerp(bg, t.accent(), 0.12f), alpha), ColorUtil.withAlpha(bg, alpha * 0.85f)));
         Render2D.outline(ctx, x, y, w, h, 4.0f, 0.65f, Paint.horizontal(x, x + w, ColorUtil.withAlpha(t.accent(), alpha), ColorUtil.withAlpha(t.accent2(), alpha * 0.4f)));
     }
 
-    public static void chatFill(GuiGraphics ctx, int x1, int y1, int x2, int y2, int color) {
+    public static void chatFill(GuiGraphicsExtractor ctx, int x1, int y1, int x2, int y2, int color) {
         float alpha = (float)(color >>> 24) / 255.0f;
         if (alpha <= 0.0f) {
             return;
@@ -262,7 +262,7 @@ extends Module {
         }
     }
 
-    public static void chatInput(GuiGraphics ctx, int x1, int y1, int x2, int y2) {
+    public static void chatInput(GuiGraphicsExtractor ctx, int x1, int y1, int x2, int y2) {
         switch (AnimeChatModule.chatStyle()) {
             case "\u041a\u043b\u0430\u0441\u0441\u0438\u043a\u0430": {
                 ctx.fill(x1, y1, x2, y2, Minecraft.getInstance().options.getBackgroundColor(Integer.MIN_VALUE));
@@ -286,7 +286,7 @@ extends Module {
         }
     }
 
-    public static void tabFill(GuiGraphics ctx, int x1, int y1, int x2, int y2, int color) {
+    public static void tabFill(GuiGraphicsExtractor ctx, int x1, int y1, int x2, int y2, int color) {
         float r;
         Theme t = ThemeManager.get();
         float w = x2 - x1;
@@ -307,7 +307,7 @@ extends Module {
         }
     }
 
-    public static void ping(GuiGraphics ctx, int width, int x, int y, int latency) {
+    public static void ping(GuiGraphicsExtractor ctx, int width, int x, int y, int latency) {
         int color = latency < 0 ? -7699815 : (latency < 80 ? -8585294 : (latency < 150 ? -2492003 : (latency < 250 ? -19641 : -41094)));
         String text = latency < 0 ? "?" : String.valueOf(Math.min(9999, latency));
         Font tr = Minecraft.getInstance().font;
@@ -316,7 +316,7 @@ extends Module {
         m.pushMatrix();
         m.translate((float)(x + width - 1) - (float)tr.width(text) * s, (float)y + 1.5f);
         m.scale(s, s);
-        ctx.drawString(tr, text, 0, 0, color, true);
+        ctx.text(tr, text, 0, 0, color, true);
         m.popMatrix();
     }
 }

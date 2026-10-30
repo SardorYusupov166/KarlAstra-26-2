@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  net.minecraft.client.gui.Font
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.SplashRenderer
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.gui.screens.TitleScreen
@@ -19,7 +19,7 @@ package astra.mixin;
 
 import astra.gui.style.NativeScreenLayouts;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.SplashRenderer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -37,8 +37,8 @@ public class NativeSplashMixin {
     @Final
     private Component splash;
 
-    @Inject(method={"render"}, at={@At(value="HEAD")}, cancellable=true)
-    private void astra$splash(GuiGraphics ctx, int width, Font renderer, float alpha, CallbackInfo ci) {
+    @Inject(method={"render"}, at=@At(value="HEAD"), cancellable=true)
+    private void astra$splash(GuiGraphicsExtractor ctx, int width, Font renderer, float alpha, CallbackInfo ci) {
         Screen screen = NativeScreenLayouts.current();
         if (screen instanceof TitleScreen) {
             NativeScreenLayouts.splash(screen, ctx, renderer, this.splash, alpha);

@@ -5,7 +5,7 @@
  *  com.google.gson.Gson
  *  com.google.gson.GsonBuilder
  *  com.google.gson.reflect.TypeToken
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  org.joml.Matrix3x2f
  *  org.joml.Matrix3x2fStack
  *  org.joml.Matrix3x2fc
@@ -33,7 +33,7 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 import org.joml.Matrix3x2fc;
@@ -135,7 +135,7 @@ public final class GuiStyle {
         return o == null || o.image.isEmpty() ? null : o.image;
     }
 
-    public static boolean begin(GuiGraphics ctx, UiContext ui, String id, float x, float y, float w, float h) {
+    public static boolean begin(GuiGraphicsExtractor ctx, UiContext ui, String id, float x, float y, float w, float h) {
         Override o = GuiStyle.get(id);
         if (o != null && o.hidden && !recording) {
             return false;
@@ -168,7 +168,7 @@ public final class GuiStyle {
         return true;
     }
 
-    public static void end(GuiGraphics ctx, UiContext ui) {
+    public static void end(GuiGraphicsExtractor ctx, UiContext ui) {
         Frame f = STACK.pop();
         Render2D.alpha = f.alpha();
         if (ui != null) {
@@ -196,7 +196,7 @@ public final class GuiStyle {
         return o != null && o.hidden && !recording;
     }
 
-    public static void record(GuiGraphics ctx, String id, float x, float y, float w, float h) {
+    public static void record(GuiGraphicsExtractor ctx, String id, float x, float y, float w, float h) {
         if (!recording) {
             return;
         }
