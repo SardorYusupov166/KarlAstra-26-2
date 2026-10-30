@@ -22,15 +22,15 @@ extends StatHud {
     }
 
     public static int ping() {
-        if (PingHud.mc.field_1724 == null) {
+        if (PingHud.mc.player == null) {
             return -1;
         }
-        ClientPacketListener handler = mc.method_1562();
+        ClientPacketListener handler = mc.getConnection();
         if (handler == null) {
             return -1;
         }
-        PlayerInfo entry = handler.method_2871(PingHud.mc.field_1724.method_5667());
-        return entry == null ? -1 : entry.method_2959();
+        PlayerInfo entry = handler.getPlayerInfo(PingHud.mc.player.getUUID());
+        return entry == null ? -1 : entry.getLatency();
     }
 
     @Override

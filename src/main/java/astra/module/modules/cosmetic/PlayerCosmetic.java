@@ -20,7 +20,7 @@ extends Module {
     }
 
     protected Player player() {
-        return this.owner != null ? this.owner : PlayerCosmetic.mc.field_1724;
+        return this.owner != null ? this.owner : PlayerCosmetic.mc.player;
     }
 
     public boolean isRemote() {

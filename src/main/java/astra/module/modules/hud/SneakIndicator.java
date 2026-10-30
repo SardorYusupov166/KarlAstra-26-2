@@ -14,7 +14,7 @@ extends StateIndicator {
 
     @Override
     protected boolean isActive() {
-        return SneakIndicator.mc.field_1724 != null && SneakIndicator.mc.field_1724.method_5715();
+        return SneakIndicator.mc.player != null && SneakIndicator.mc.player.isShiftKeyDown();
     }
 
     @Override

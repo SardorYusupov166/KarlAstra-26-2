@@ -110,7 +110,7 @@ extends Module {
         if (m == null || texture == null) {
             return false;
         }
-        String path = texture.method_12832();
+        String path = texture.getPath();
         if (((Boolean)m.pumpkin.get()).booleanValue() && path.contains("pumpkin")) {
             return true;
         }
@@ -119,12 +119,12 @@ extends Module {
 
     public static void applyHeldItem(PoseStack matrices, ItemStack item) {
         PvpTweaks m = PvpTweaks.active();
-        if (m == null || item == null || !item.method_31574(Items.field_8255)) {
+        if (m == null || item == null || !item.is(Items.SHIELD)) {
             return;
         }
         float lower = m.shieldLower.getFloat() / 100.0f;
         if (lower > 0.0f) {
-            matrices.method_46416(0.0f, -lower * 0.6f, 0.0f);
+            matrices.translate(0.0f, -lower * 0.6f, 0.0f);
         }
     }
 
@@ -133,17 +133,17 @@ extends Module {
         if (m == null) {
             return false;
         }
-        ParticleType type = effect.method_10295();
-        if (((Boolean)m.totemParticles.get()).booleanValue() && type == ParticleTypes.field_11220) {
+        ParticleType type = effect.getType();
+        if (((Boolean)m.totemParticles.get()).booleanValue() && type == ParticleTypes.TOTEM_OF_UNDYING) {
             return true;
         }
-        if (((Boolean)m.explosionParticles.get()).booleanValue() && (type == ParticleTypes.field_11236 || type == ParticleTypes.field_11221)) {
+        if (((Boolean)m.explosionParticles.get()).booleanValue() && (type == ParticleTypes.EXPLOSION || type == ParticleTypes.EXPLOSION_EMITTER)) {
             return true;
         }
-        if (((Boolean)m.ownEffectParticles.get()).booleanValue() && type == ParticleTypes.field_11226 && PvpTweaks.mc.field_1724 != null && PvpTweaks.mc.field_1690.method_31044().method_31034()) {
-            double dx = x - PvpTweaks.mc.field_1724.method_23317();
-            double dz = z - PvpTweaks.mc.field_1724.method_23321();
-            double dy = y - PvpTweaks.mc.field_1724.method_23318();
+        if (((Boolean)m.ownEffectParticles.get()).booleanValue() && type == ParticleTypes.ENTITY_EFFECT && PvpTweaks.mc.player != null && PvpTweaks.mc.options.getCameraType().isFirstPerson()) {
+            double dx = x - PvpTweaks.mc.player.getX();
+            double dz = z - PvpTweaks.mc.player.getZ();
+            double dy = y - PvpTweaks.mc.player.getY();
             return dx * dx + dz * dz < 1.0 && dy > -0.2 && dy < 2.2;
         }
         return false;
@@ -157,37 +157,37 @@ extends Module {
                 m = PvpTweaks.active();
                 if (m == null || !(entity instanceof Player)) break block4;
                 player = (Player)entity;
-                if (PvpTweaks.mc.field_1705 != null) break block5;
+                if (PvpTweaks.mc.gui != null) break block5;
             }
             return;
         }
-        boolean self = player == PvpTweaks.mc.field_1724;
-        int count = POPS.merge(player.method_5667(), 1, Integer::sum);
+        boolean self = player == PvpTweaks.mc.player;
+        int count = POPS.merge(player.getUUID(), 1, Integer::sum);
         if (!((Boolean)m.popCounter.get()).booleanValue() || self && !((Boolean)m.popSelf.get()).booleanValue()) {
             return;
         }
-        String name = self ? "\u0412\u044b" : player.method_5477().getString();
-        MutableComponent msg = Component.method_43470((String)"\u2726 ").method_54663(16731608).method_10852((Component)Component.method_43470((String)name).method_54663(0xFFFFFF)).method_10852((Component)Component.method_43470((String)(self ? " \u043f\u043e\u0442\u0435\u0440\u044f\u043b\u0438 \u0442\u043e\u0442\u0435\u043c " : " \u043f\u043e\u0442\u0435\u0440\u044f\u043b \u0442\u043e\u0442\u0435\u043c ")).method_54663(13220057)).method_10852((Component)Component.method_43470((String)("\u00d7" + count)).method_54663(16731608));
-        PvpTweaks.mc.field_1705.method_1743().method_1812((Component)msg);
+        String name = self ? "\u0412\u044b" : player.getName().getString();
+        MutableComponent msg = Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)name).withColor(0xFFFFFF)).append((Component)Component.literal((String)(self ? " \u043f\u043e\u0442\u0435\u0440\u044f\u043b\u0438 \u0442\u043e\u0442\u0435\u043c " : " \u043f\u043e\u0442\u0435\u0440\u044f\u043b \u0442\u043e\u0442\u0435\u043c ")).withColor(13220057)).append((Component)Component.literal((String)("\u00d7" + count)).withColor(16731608));
+        PvpTweaks.mc.gui.getChat().addMessage((Component)msg);
     }
 
     public static int pops(Entity entity) {
-        return entity == null ? 0 : POPS.getOrDefault(entity.method_5667(), 0);
+        return entity == null ? 0 : POPS.getOrDefault(entity.getUUID(), 0);
     }
 
     @Override
     public void onTick() {
-        if (PvpTweaks.mc.field_1687 != this.lastWorld) {
+        if (PvpTweaks.mc.level != this.lastWorld) {
             POPS.clear();
-            this.lastWorld = PvpTweaks.mc.field_1687;
+            this.lastWorld = PvpTweaks.mc.level;
         }
-        if (PvpTweaks.mc.field_1687 == null || POPS.isEmpty()) {
+        if (PvpTweaks.mc.level == null || POPS.isEmpty()) {
             return;
         }
-        for (Player p : PvpTweaks.mc.field_1687.method_18456()) {
+        for (Player p : PvpTweaks.mc.level.players()) {
             Integer popped;
-            if (!p.method_29504() || (popped = POPS.remove(p.method_5667())) == null || !((Boolean)this.popCounter.get()).booleanValue() || p == PvpTweaks.mc.field_1724) continue;
-            PvpTweaks.mc.field_1705.method_1743().method_1812((Component)Component.method_43470((String)"\u2726 ").method_54663(16731608).method_10852((Component)Component.method_43470((String)p.method_5477().getString()).method_54663(0xFFFFFF)).method_10852((Component)Component.method_43470((String)" \u0443\u043c\u0435\u0440, \u0441\u043d\u0435\u0441\u0435\u043d\u043e \u0442\u043e\u0442\u0435\u043c\u043e\u0432: ").method_54663(13220057)).method_10852((Component)Component.method_43470((String)String.valueOf(popped)).method_54663(16731608)));
+            if (!p.isDeadOrDying() || (popped = POPS.remove(p.getUUID())) == null || !((Boolean)this.popCounter.get()).booleanValue() || p == PvpTweaks.mc.player) continue;
+            PvpTweaks.mc.gui.getChat().addMessage((Component)Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)p.getName().getString()).withColor(0xFFFFFF)).append((Component)Component.literal((String)" \u0443\u043c\u0435\u0440, \u0441\u043d\u0435\u0441\u0435\u043d\u043e \u0442\u043e\u0442\u0435\u043c\u043e\u0432: ").withColor(13220057)).append((Component)Component.literal((String)String.valueOf(popped)).withColor(16731608)));
         }
     }
 }

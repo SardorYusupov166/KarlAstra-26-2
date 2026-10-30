@@ -25,9 +25,9 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 public abstract class ChatSuggestionWindowMixin {
     @ModifyArgs(method={"<init>"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/renderer/Rect2i;<init>(IIII)V")})
     private void astra$placeSuggestions(Args args) {
-        Minecraft mc = Minecraft.method_1551();
+        Minecraft mc = Minecraft.getInstance();
         ChatInputHud input = ChatInputHud.get();
-        if (!(mc.field_1755 instanceof ChatScreen) || input == null || !input.isEnabled()) {
+        if (!(mc.screen instanceof ChatScreen) || input == null || !input.isEnabled()) {
             return;
         }
         ChatInputHud.Bounds b = input.bounds();
@@ -38,8 +38,8 @@ public abstract class ChatSuggestionWindowMixin {
         if (y < 0) {
             y = b.y() + b.height() + 2;
         }
-        args.set(0, (Object)Math.max(0, Math.min(x, mc.method_22683().method_4486() - width)));
-        args.set(1, (Object)Math.max(0, Math.min(y, mc.method_22683().method_4502() - height)));
+        args.set(0, (Object)Math.max(0, Math.min(x, mc.getWindow().getGuiScaledWidth() - width)));
+        args.set(1, (Object)Math.max(0, Math.min(y, mc.getWindow().getGuiScaledHeight() - height)));
     }
 }
 

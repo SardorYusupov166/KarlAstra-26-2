@@ -28,14 +28,14 @@ public final class ChatScrollbar {
     private double grab;
 
     private static Geometry geometry() {
-        Minecraft mc = Minecraft.method_1551();
-        if (!AnimeChatModule.chatStyled() || mc.field_1705 == null || mc.field_1690.method_42539().method_41753() == ChatVisiblity.field_7536) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!AnimeChatModule.chatStyled() || mc.gui == null || mc.options.chatVisibility().get() == ChatVisiblity.HIDDEN) {
             return null;
         }
-        ChatComponent hud = mc.field_1705.method_1743();
+        ChatComponent hud = mc.gui.getChat();
         ChatHudAccessor access = (ChatHudAccessor)hud;
         int total = access.astra$visibleMessages().size();
-        int visible = Math.min(total, hud.method_1813());
+        int visible = Math.min(total, hud.getLinesPerPage());
         if (visible <= 0 || total <= visible) {
             return null;
         }
@@ -44,7 +44,7 @@ public final class ChatScrollbar {
             return null;
         }
         double height = visible * access.astra$lineHeight();
-        double bottom = Math.floor((double)(mc.method_22683().method_4502() - 40) / scale);
+        double bottom = Math.floor((double)(mc.getWindow().getGuiScaledHeight() - 40) / scale);
         double thumb = Math.min(height, Math.max(8.0, height * (double)visible / (double)total));
         int max = total - visible;
         double top = bottom - thumb - (height - thumb) * (double)access.astra$scrolledLines() / (double)max;
@@ -79,8 +79,8 @@ public final class ChatScrollbar {
         }
         double thumbTop = ChatLayoutHud.unmapY(y) / g.scale - this.grab;
         int desired = g.travel() <= 0.0 ? 0 : (int)Math.round(Math.max(0.0, Math.min(1.0, (g.bottom - g.thumbHeight - thumbTop) / g.travel())) * (double)g.maxScroll);
-        ChatComponent hud = Minecraft.method_1551().field_1705.method_1743();
-        hud.method_1802(desired - ((ChatHudAccessor)hud).astra$scrolledLines());
+        ChatComponent hud = Minecraft.getInstance().gui.getChat();
+        hud.scrollChat(desired - ((ChatHudAccessor)hud).astra$scrolledLines());
         return true;
     }
 
@@ -99,7 +99,7 @@ public final class ChatScrollbar {
             return;
         }
         Theme t = ThemeManager.get();
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.scale((float)g.scale, (float)g.scale);
         m.translate(4.0f, 0.0f);

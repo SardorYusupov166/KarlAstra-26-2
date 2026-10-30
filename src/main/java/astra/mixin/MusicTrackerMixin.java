@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={MusicManager.class})
 public abstract class MusicTrackerMixin {
-    @Inject(method={"method_18669"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"tick"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$replaceMusic(CallbackInfo ci) {
         if (MusicModule.replacesVanilla()) {
             ci.cancel();

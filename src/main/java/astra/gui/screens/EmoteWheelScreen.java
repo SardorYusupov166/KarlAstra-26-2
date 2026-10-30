@@ -35,26 +35,26 @@ extends Screen {
     private int hovered = -1;
 
     public EmoteWheelScreen(EmoteCosmetic emotes, int key) {
-        super((Component)Component.method_43470((String)"\u042d\u043c\u043e\u0446\u0438\u0438"));
+        super((Component)Component.literal((String)"\u042d\u043c\u043e\u0446\u0438\u0438"));
         this.emotes = emotes;
         this.key = key;
     }
 
-    public boolean method_25421() {
+    public boolean isPauseScreen() {
         return false;
     }
 
-    public void method_25420(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
         Theme t = ThemeManager.get();
-        ctx.method_25296(0, 0, this.field_22789, this.field_22790, ColorUtil.withAlpha(t.bg(), 0.25f), ColorUtil.withAlpha(t.bg(), 0.45f));
+        ctx.fillGradient(0, 0, this.width, this.height, ColorUtil.withAlpha(t.bg(), 0.25f), ColorUtil.withAlpha(t.bg(), 0.45f));
     }
 
-    public void method_25394(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        super.method_25394(ctx, mouseX, mouseY, delta);
+    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+        super.render(ctx, mouseX, mouseY, delta);
         Theme t = ThemeManager.get();
         float open = AnimationUtils.easeOutBack(Math.min(1.0f, (float)(System.currentTimeMillis() - this.openedAt) / 220.0f));
-        float cx = (float)this.field_22789 / 2.0f;
-        float cy = (float)this.field_22790 / 2.0f;
+        float cx = (float)this.width / 2.0f;
+        float cy = (float)this.height / 2.0f;
         float r = 78.0f * open;
         float inner = 26.0f * open;
         double dx = (float)mouseX - cx;
@@ -93,7 +93,7 @@ extends Screen {
         if (this.hovered >= 0) {
             this.emotes.playEmote(EMOTES[this.hovered]);
         }
-        this.method_25419();
+        this.onClose();
     }
 
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
@@ -101,7 +101,7 @@ extends Screen {
             this.choose();
             return true;
         }
-        return super.method_16803(new KeyEvent(keyCode, scanCode, modifiers));
+        return super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -109,12 +109,12 @@ extends Screen {
         return true;
     }
 
-    public boolean method_25402(MouseButtonEvent click, boolean doubled) {
-        return this.mouseClicked(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        return this.mouseClicked(click.x(), click.y(), click.button());
     }
 
-    public boolean method_16803(KeyEvent input) {
-        return this.keyReleased(input.comp_4795(), input.comp_4796(), input.comp_4797());
+    public boolean keyReleased(KeyEvent input) {
+        return this.keyReleased(input.key(), input.scancode(), input.modifiers());
     }
 }
 

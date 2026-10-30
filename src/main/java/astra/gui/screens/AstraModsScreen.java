@@ -98,7 +98,7 @@ extends Screen {
     private float lastChipEnd;
 
     public AstraModsScreen(Screen parent) {
-        super((Component)Component.method_43470((String)"\u041c\u043e\u0434\u044b"));
+        super((Component)Component.literal((String)"\u041c\u043e\u0434\u044b"));
         this.parent = parent;
         for (ModContainer c2 : FabricLoader.getInstance().getAllMods()) {
             if (c2.getContainingMod().isPresent()) continue;
@@ -128,11 +128,11 @@ extends Screen {
         this.scrollTarget = 0.0f;
     }
 
-    public void method_25419() {
-        this.field_22787.method_1507(this.parent);
+    public void onClose() {
+        this.minecraft.setScreen(this.parent);
     }
 
-    public boolean method_25421() {
+    public boolean isPauseScreen() {
         return true;
     }
 
@@ -153,9 +153,9 @@ extends Screen {
                 if (!file.isPresent()) break block10;
                 InputStream in = Files.newInputStream((Path)file.get(), new OpenOption[0]);
                 try {
-                    NativeImage img = NativeImage.method_4309((InputStream)in);
-                    Identifier tex = Identifier.method_60655((String)"astra", (String)("modicon/" + id.replaceAll("[^a-z0-9_.-]", "_")));
-                    Minecraft.method_1551().method_1531().method_4616(tex, (AbstractTexture)new DynamicTexture(() -> "astra_modicon", img));
+                    NativeImage img = NativeImage.read((InputStream)in);
+                    Identifier tex = Identifier.fromNamespaceAndPath((String)"astra", (String)("modicon/" + id.replaceAll("[^a-z0-9_.-]", "_")));
+                    Minecraft.getInstance().getTextureManager().register(tex, (AbstractTexture)new DynamicTexture(() -> "astra_modicon", img));
                     ICONS.put(id, tex);
                     identifier = tex;
                     if (in == null) break block11;
@@ -255,21 +255,21 @@ extends Screen {
         return String.join((CharSequence)", ", names);
     }
 
-    public void method_25420(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        if (this.field_22787.field_1687 == null) {
-            this.method_57728(ctx, delta);
+    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+        if (this.minecraft.level == null) {
+            this.renderPanorama(ctx, delta);
         } else {
-            if (this.field_22787.field_1690.method_57703() >= 1) {
-                ctx.method_71278();
+            if (this.minecraft.options.getMenuBackgroundBlurriness() >= 1) {
+                ctx.blurBeforeThisStratum();
             }
             Theme t = ThemeManager.get();
-            ctx.method_25296(0, 0, this.field_22789, this.field_22790, ColorUtil.withAlpha(t.bg(), 0.55f), ColorUtil.withAlpha(t.bg(), 0.75f));
+            ctx.fillGradient(0, 0, this.width, this.height, ColorUtil.withAlpha(t.bg(), 0.55f), ColorUtil.withAlpha(t.bg(), 0.75f));
         }
     }
 
-    public void method_25394(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
         boolean ch;
-        super.method_25394(ctx, mouseX, mouseY, delta);
+        super.render(ctx, mouseX, mouseY, delta);
         long now = System.nanoTime();
         this.dt = this.lastFrame == 0L ? 0.016f : Math.min(0.1f, (float)(now - this.lastFrame) / 1.0E9f);
         this.lastFrame = now;
@@ -279,9 +279,9 @@ extends Screen {
         float open = AnimationUtils.easeOutCubic(Math.min(1.0f, (float)(System.currentTimeMillis() - this.openedAt) / 260.0f));
         float prevA = Render2D.alpha;
         Render2D.alpha = open;
-        float W = Math.min(this.field_22789 - 24, 720);
-        float H = this.field_22790 - 24;
-        float X = ((float)this.field_22789 - W) / 2.0f;
+        float W = Math.min(this.width - 24, 720);
+        float H = this.height - 24;
+        float X = ((float)this.width - W) / 2.0f;
         float Y = 12.0f + (1.0f - open) * 12.0f;
         Render2D.glow(ctx, X, Y, W, H, 14.0f, 24.0f, ColorUtil.withAlpha(t.accent(), 0.25f));
         Render2D.roundRect(ctx, X, Y, W, H, 14.0f, Paint.linear(X, Y, X + W * 0.4f, Y + H, ColorUtil.withAlpha(ColorUtil.lerp(t.bg2(), t.accent(), 0.12f), 0.9f), ColorUtil.withAlpha(t.bg(), 0.94f)));
@@ -317,7 +317,7 @@ extends Screen {
         this.scroll += (this.scrollTarget - this.scroll) * Math.min(1.0f, this.dt * 14.0f);
         float maxScroll = Math.max(0.0f, (float)this.shown.size() * (rowH + 3.0f) - (listBottom - listTop));
         this.scrollTarget = Math.max(0.0f, Math.min(this.scrollTarget, maxScroll));
-        ctx.method_44379((int)lx - 2, (int)listTop, (int)(lx + lwid + 2.0f), (int)listBottom);
+        ctx.enableScissor((int)lx - 2, (int)listTop, (int)(lx + lwid + 2.0f), (int)listBottom);
         float ry = listTop - this.scroll;
         for (ModContainer c : this.shown) {
             if (ry + rowH >= listTop && ry <= listBottom) {
@@ -325,7 +325,7 @@ extends Screen {
             }
             ry += rowH + 3.0f;
         }
-        ctx.method_44380();
+        ctx.disableScissor();
         if (this.shown.isEmpty()) {
             Fonts.draw(ctx, "\u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", lx + 6.0f, listTop + 6.0f, 7.4f, t.textMuted(), false);
         }
@@ -461,7 +461,7 @@ extends Screen {
 
     public boolean mouseClicked(double mx, double my, int button) {
         if (button != 0) {
-            return super.method_25402(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
+            return super.mouseClicked(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
         }
         for (int i = this.hits.size() - 1; i >= 0; --i) {
             float[] r = this.hits.get(i);
@@ -481,12 +481,12 @@ extends Screen {
                         break;
                     }
                     case 1: {
-                        Util.method_668().method_672(FabricLoader.getInstance().getGameDir().resolve("mods").toFile());
+                        Util.getPlatform().openFile(FabricLoader.getInstance().getGameDir().resolve("mods").toFile());
                         break;
                     }
                     case 2: 
                     case 9: {
-                        this.method_25419();
+                        this.onClose();
                         break;
                     }
                     case 3: {
@@ -494,26 +494,26 @@ extends Screen {
                         Function<Screen, Screen> f = this.selected != null ? AstraModsScreen.configScreens().get(this.selected.getMetadata().getId()) : null;
                         Screen screen = s = f != null ? f.apply(this) : null;
                         if (s == null) break;
-                        this.field_22787.method_1507(s);
+                        this.minecraft.setScreen(s);
                         break;
                     }
                 }
             }
             return true;
         }
-        return super.method_25402(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
+        return super.mouseClicked(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
     }
 
     private void openLink(String url) {
         try {
-            Util.method_668().method_673(new URI(url));
+            Util.getPlatform().openUri(new URI(url));
         }
         catch (Exception e) {
             AstraClient.LOGGER.warn("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u0441\u0441\u044b\u043b\u043a\u0443 {}", (Object)url);
         }
     }
 
-    public boolean method_25401(double mx, double my, double h, double v) {
+    public boolean mouseScrolled(double mx, double my, double h, double v) {
         this.scrollTarget -= (float)v * 30.0f;
         return true;
     }
@@ -532,11 +532,11 @@ extends Screen {
             return true;
         }
         if (key == 86 && (mods & 2) != 0) {
-            this.query = this.query + this.field_22787.field_1774.method_1460().replaceAll("\\R", " ");
+            this.query = this.query + this.minecraft.keyboardHandler.getClipboard().replaceAll("\\R", " ");
             this.filter();
             return true;
         }
-        return super.method_25404(new KeyEvent(key, scan, mods));
+        return super.keyPressed(new KeyEvent(key, scan, mods));
     }
 
     public boolean charTyped(char chr, int modifiers) {
@@ -555,18 +555,18 @@ extends Screen {
         return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT;
     }
 
-    public boolean method_25402(MouseButtonEvent click, boolean doubled) {
-        return this.mouseClicked(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        return this.mouseClicked(click.x(), click.y(), click.button());
     }
 
-    public boolean method_25404(KeyEvent input) {
-        return this.keyPressed(input.comp_4795(), input.comp_4796(), input.comp_4797());
+    public boolean keyPressed(KeyEvent input) {
+        return this.keyPressed(input.key(), input.scancode(), input.modifiers());
     }
 
-    public boolean method_25400(CharacterEvent input) {
+    public boolean charTyped(CharacterEvent input) {
         boolean handled = false;
-        for (char ch : input.method_74226().toCharArray()) {
-            handled |= this.charTyped(ch, input.comp_4794());
+        for (char ch : input.codepointAsString().toCharArray()) {
+            handled |= this.charTyped(ch, input.modifiers());
         }
         return handled;
     }

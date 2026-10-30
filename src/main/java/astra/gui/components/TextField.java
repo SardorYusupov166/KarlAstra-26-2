@@ -74,7 +74,7 @@ extends Widget {
         Render2D.outline(ui.ctx, this.x, this.y, this.w, this.h, 5.0f, 0.8f, ColorUtil.withAlpha(t.accent(), 0.25f + 0.6f * f));
         float size = 7.2f;
         float ty = this.y + (this.h - size) / 2.0f + 0.4f;
-        ui.ctx.method_44379((int)this.x + 2, (int)this.y, (int)(this.x + this.w - 2.0f), (int)(this.y + this.h));
+        ui.ctx.enableScissor((int)this.x + 2, (int)this.y, (int)(this.x + this.w - 2.0f), (int)(this.y + this.h));
         if (this.text.isEmpty() && !this.isFocused()) {
             Fonts.draw(ui.ctx, this.placeholder, this.x + 6.0f, ty, size, t.textMuted(), false);
         } else {
@@ -85,7 +85,7 @@ extends Widget {
                 Render2D.rect(ui.ctx, this.x + 6.0f - shift + before, this.y + 4.0f, 0.8f, this.h - 8.0f, t.accent());
             }
         }
-        ui.ctx.method_44380();
+        ui.ctx.disableScissor();
     }
 
     @Override
@@ -147,7 +147,7 @@ extends Widget {
             }
             case 86: {
                 if (!ctrl) break;
-                this.insert(Minecraft.method_1551().field_1774.method_1460());
+                this.insert(Minecraft.getInstance().keyboardHandler.getClipboard());
                 break;
             }
             case 65: {

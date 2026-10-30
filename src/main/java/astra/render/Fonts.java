@@ -33,10 +33,10 @@ import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2fStack;
 
 public final class Fonts {
-    public static final Identifier REGULAR = Identifier.method_60655((String)"astra", (String)"regular");
-    public static final Identifier BOLD = Identifier.method_60655((String)"astra", (String)"bold");
-    private static final Style REGULAR_STYLE = Style.field_24360.method_27704((FontDescription)new FontDescription.Resource(REGULAR));
-    private static final Style BOLD_STYLE = Style.field_24360.method_27704((FontDescription)new FontDescription.Resource(BOLD));
+    public static final Identifier REGULAR = Identifier.fromNamespaceAndPath((String)"astra", (String)"regular");
+    public static final Identifier BOLD = Identifier.fromNamespaceAndPath((String)"astra", (String)"bold");
+    private static final Style REGULAR_STYLE = Style.EMPTY.withFont((FontDescription)new FontDescription.Resource(REGULAR));
+    private static final Style BOLD_STYLE = Style.EMPTY.withFont((FontDescription)new FontDescription.Resource(BOLD));
     private static final float BASE = 9.0f;
     private static final int CACHE_LIMIT = 4096;
     private static final HashMap<String, Component> TEXT_REGULAR = new HashMap();
@@ -48,7 +48,7 @@ public final class Fonts {
     }
 
     private static Font tr() {
-        return Minecraft.method_1551().field_1772;
+        return Minecraft.getInstance().font;
     }
 
     public static void clearCache() {
@@ -65,8 +65,8 @@ public final class Fonts {
             if (cache.size() >= 4096) {
                 cache.clear();
             }
-            MutableComponent m = Component.method_43470((String)s);
-            t = m.method_10862(bold ? BOLD_STYLE : REGULAR_STYLE);
+            MutableComponent m = Component.literal((String)s);
+            t = m.setStyle(bold ? BOLD_STYLE : REGULAR_STYLE);
             cache.put(s, t);
         }
         return t;
@@ -79,7 +79,7 @@ public final class Fonts {
             if (cache.size() >= 4096) {
                 cache.clear();
             }
-            w = Fonts.tr().method_27525((FormattedText)Fonts.text(s, bold));
+            w = Fonts.tr().width((FormattedText)Fonts.text(s, bold));
             cache.put(s, w);
         }
         return (float)w.intValue() * size / 9.0f;
@@ -114,12 +114,12 @@ public final class Fonts {
         if (ColorUtil.alpha(c) < 5) {
             return;
         }
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(x, y);
         float s = size / 9.0f;
         m.scale(s, s);
-        ctx.method_51439(Fonts.tr(), text, 0, 0, c, shadow);
+        ctx.drawString(Fonts.tr(), text, 0, 0, c, shadow);
         m.popMatrix();
     }
 
@@ -148,9 +148,9 @@ public final class Fonts {
         while (lo < hi) {
             int mid = lo + hi + 1 >>> 1;
             Font font = Fonts.tr();
-            MutableComponent mutableComponent = Component.method_43470((String)s.substring(0, mid));
+            MutableComponent mutableComponent = Component.literal((String)s.substring(0, mid));
             Style style = bold ? BOLD_STYLE : REGULAR_STYLE;
-            if ((float)font.method_27525((FormattedText)mutableComponent.method_10862(style)) * size / 9.0f + dw <= maxWidth) {
+            if ((float)font.width((FormattedText)mutableComponent.setStyle(style)) * size / 9.0f + dw <= maxWidth) {
                 lo = mid;
                 continue;
             }

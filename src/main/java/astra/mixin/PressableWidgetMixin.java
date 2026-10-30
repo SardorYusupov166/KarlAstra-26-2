@@ -35,19 +35,19 @@ public abstract class PressableWidgetMixin {
     @Unique
     private boolean astra$labelDrawn;
 
-    @Inject(method={"method_75794"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderDefaultSprite"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$background(GuiGraphics ctx, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;
         }
         AbstractWidget w = (AbstractWidget)this;
         boolean iconOnly = this instanceof SpriteIconButton.CenteredIcon;
-        AstraWidgets.button(ctx, this, w.method_46426(), w.method_46427(), w.method_25368(), w.method_25364(), (Component)(iconOnly ? Component.method_43473() : w.method_25369()), w.field_22763, w.method_25367(), ((ClickableWidgetAccessor)w).astra$getAlpha());
+        AstraWidgets.button(ctx, this, w.getX(), w.getY(), w.getWidth(), w.getHeight(), (Component)(iconOnly ? Component.empty() : w.getMessage()), w.active, w.isHoveredOrFocused(), ((ClickableWidgetAccessor)w).astra$getAlpha());
         this.astra$labelDrawn = true;
         ci.cancel();
     }
 
-    @Inject(method={"method_75793"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderDefaultLabel"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$label(ActiveTextCollector drawer, CallbackInfo ci) {
         if (this.astra$labelDrawn) {
             this.astra$labelDrawn = false;

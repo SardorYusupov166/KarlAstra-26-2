@@ -267,11 +267,11 @@ extends Module {
     }
 
     private void checkLowHealth() {
-        if (SoundsModule.mc.field_1724 == null || SoundsModule.mc.field_1724.method_29504() || SoundsModule.mc.field_1724.method_68878() || SoundsModule.mc.field_1724.method_7325()) {
+        if (SoundsModule.mc.player == null || SoundsModule.mc.player.isDeadOrDying() || SoundsModule.mc.player.isCreative() || SoundsModule.mc.player.isSpectator()) {
             this.lowHpArmed = true;
             return;
         }
-        float ratio = SoundsModule.mc.field_1724.method_6032() / Math.max(1.0f, SoundsModule.mc.field_1724.method_6063());
+        float ratio = SoundsModule.mc.player.getHealth() / Math.max(1.0f, SoundsModule.mc.player.getMaxHealth());
         float threshold = this.lowHpThreshold.getFloat() / 100.0f;
         if (this.lowHpArmed && ratio < threshold) {
             this.lowHp.play(this::masterVolume);
@@ -283,35 +283,35 @@ extends Module {
 
     private void checkWeapon() {
         boolean sword;
-        if (SoundsModule.mc.field_1724 == null) {
+        if (SoundsModule.mc.player == null) {
             return;
         }
-        Inventory inv = SoundsModule.mc.field_1724.method_31548();
-        int sel = inv.method_67532();
-        ItemStack hand = SoundsModule.mc.field_1724.method_6047();
+        Inventory inv = SoundsModule.mc.player.getInventory();
+        int sel = inv.getSelectedSlot();
+        ItemStack hand = SoundsModule.mc.player.getMainHandItem();
         float threshold = this.weaponThreshold.getFloat() / 100.0f;
-        boolean bl = sword = hand.method_31573(ItemTags.field_42611) && hand.method_7963();
-        if (!sword || sel != this.warnedSlot || hand.method_7909() != this.warnedItem) {
-            if (sword && SoundsModule.durability(hand) < threshold && (sel != this.warnedSlot || hand.method_7909() != this.warnedItem)) {
+        boolean bl = sword = hand.is(ItemTags.SWORDS) && hand.isDamageableItem();
+        if (!sword || sel != this.warnedSlot || hand.getItem() != this.warnedItem) {
+            if (sword && SoundsModule.durability(hand) < threshold && (sel != this.warnedSlot || hand.getItem() != this.warnedItem)) {
                 this.warnedSlot = sel;
-                this.warnedItem = hand.method_7909();
+                this.warnedItem = hand.getItem();
                 this.warn(this.weaponLow, new String[]{"\u0422\u0432\u043e\u0439 \u043c\u0435\u0447\u2026 \u043d\u044f!", "\u0441\u043a\u043e\u0440\u043e \u0441\u043b\u043e\u043c\u0430\u0435\u0442\u0441\u044f!"});
             }
         } else if (SoundsModule.durability(hand) > threshold + 0.05f) {
             this.warnedSlot = -1;
             this.warnedItem = null;
         }
-        EquipmentSlot[] slots = new EquipmentSlot[]{EquipmentSlot.field_6169, EquipmentSlot.field_6174, EquipmentSlot.field_6172, EquipmentSlot.field_6166};
+        EquipmentSlot[] slots = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
         float armorThreshold = this.armorThresholdSetting.getFloat() / 100.0f;
         for (int i = 0; i < 4; ++i) {
-            ItemStack piece = SoundsModule.mc.field_1724.method_6118(slots[i]);
-            if (piece.method_7960() || !piece.method_7963() || piece.method_7909() != this.armorWarnedItem[i]) {
+            ItemStack piece = SoundsModule.mc.player.getItemBySlot(slots[i]);
+            if (piece.isEmpty() || !piece.isDamageableItem() || piece.getItem() != this.armorWarnedItem[i]) {
                 this.armorWarnedItem[i] = null;
             }
-            if (piece.method_7960() || !piece.method_7963()) continue;
+            if (piece.isEmpty() || !piece.isDamageableItem()) continue;
             float left = SoundsModule.durability(piece);
             if (left < armorThreshold && this.armorWarnedItem[i] == null) {
-                this.armorWarnedItem[i] = piece.method_7909();
+                this.armorWarnedItem[i] = piece.getItem();
                 this.warn(this.armorLow, new String[]{"\u0422\u0432\u043e\u044f \u0431\u0440\u043e\u043d\u044f", "\u043d\u0430 \u0438\u0441\u0445\u043e\u0434\u0435!"});
                 continue;
             }
@@ -321,7 +321,7 @@ extends Module {
     }
 
     private static float durability(ItemStack stack) {
-        return (float)(stack.method_7936() - stack.method_7919()) / (float)Math.max(1, stack.method_7936());
+        return (float)(stack.getMaxDamage() - stack.getDamageValue()) / (float)Math.max(1, stack.getMaxDamage());
     }
 
     private void warn(SoundSlot slot, String[] text) {
@@ -332,35 +332,35 @@ extends Module {
     }
 
     private void checkBreak() {
-        if (SoundsModule.mc.field_1724 == null) {
+        if (SoundsModule.mc.player == null) {
             Arrays.fill(this.slotItems, null);
             return;
         }
-        Inventory inv = SoundsModule.mc.field_1724.method_31548();
-        int size = Math.min(inv.method_5439(), this.slotItems.length);
+        Inventory inv = SoundsModule.mc.player.getInventory();
+        int size = Math.min(inv.getContainerSize(), this.slotItems.length);
         boolean broke = false;
         for (int i = 0; i < size; ++i) {
             int max;
-            ItemStack stack = inv.method_5438(i);
+            ItemStack stack = inv.getItem(i);
             Item prev = this.slotItems[i];
-            if (prev != null && stack.method_7960() && this.slotLeft[i] >= 0 && this.slotLeft[i] <= Math.max(3, (max = prev.method_7854().method_7936()) / 50)) {
+            if (prev != null && stack.isEmpty() && this.slotLeft[i] >= 0 && this.slotLeft[i] <= Math.max(3, (max = prev.getDefaultInstance().getMaxDamage()) / 50)) {
                 broke = true;
             }
-            this.slotItems[i] = stack.method_7960() ? null : stack.method_7909();
-            this.slotLeft[i] = stack.method_7963() ? stack.method_7936() - stack.method_7919() : -1;
+            this.slotItems[i] = stack.isEmpty() ? null : stack.getItem();
+            this.slotLeft[i] = stack.isDamageableItem() ? stack.getMaxDamage() - stack.getDamageValue() : -1;
         }
-        if (broke && !SoundsModule.mc.field_1724.method_29504()) {
+        if (broke && !SoundsModule.mc.player.isDeadOrDying()) {
             this.itemBreak.play(this::masterVolume);
         }
     }
 
     private void checkDeath() {
         boolean dead;
-        if (SoundsModule.mc.field_1724 == null) {
+        if (SoundsModule.mc.player == null) {
             this.deadPlayed = false;
             return;
         }
-        boolean bl = dead = SoundsModule.mc.field_1724.method_29504() || SoundsModule.mc.field_1724.method_6032() <= 0.0f;
+        boolean bl = dead = SoundsModule.mc.player.isDeadOrDying() || SoundsModule.mc.player.getHealth() <= 0.0f;
         if (dead && !this.deadPlayed) {
             this.deadPlayed = true;
             this.death.play(this::masterVolume);
@@ -372,12 +372,12 @@ extends Module {
 
     private void checkHurt() {
         long now;
-        if (SoundsModule.mc.field_1724 == null) {
+        if (SoundsModule.mc.player == null) {
             this.lastHurtTime = 0;
             return;
         }
-        int ht = SoundsModule.mc.field_1724.field_6235;
-        if (ht > this.lastHurtTime && ht > 0 && !SoundsModule.mc.field_1724.method_29504() && SoundsModule.mc.field_1724.method_6032() > 0.0f && (double)((now = System.currentTimeMillis()) - this.lastHurtSound) > (Double)this.hurtCooldown.get() * 1000.0) {
+        int ht = SoundsModule.mc.player.hurtTime;
+        if (ht > this.lastHurtTime && ht > 0 && !SoundsModule.mc.player.isDeadOrDying() && SoundsModule.mc.player.getHealth() > 0.0f && (double)((now = System.currentTimeMillis()) - this.lastHurtSound) > (Double)this.hurtCooldown.get() * 1000.0) {
             this.lastHurtSound = now;
             this.hurt.play(this::masterVolume);
         }
@@ -404,7 +404,7 @@ extends Module {
         }
         float w = textW + 64.0f;
         float h = 44.0f;
-        float x = ((float)ctx.method_51421() - w) / 2.0f;
+        float x = ((float)ctx.guiWidth() - w) / 2.0f;
         float y = 14.0f - (1.0f - in) * 30.0f;
         float prev = Render2D.alpha;
         Render2D.alpha *= Math.min(1.0f, (float)age / 200.0f) * out;
@@ -426,24 +426,24 @@ extends Module {
 
     public void onTotemPop(Entity entity) {
         boolean self;
-        if (SoundsModule.mc.field_1724 == null || entity == null) {
+        if (SoundsModule.mc.player == null || entity == null) {
             return;
         }
-        boolean bl = self = entity == SoundsModule.mc.field_1724;
+        boolean bl = self = entity == SoundsModule.mc.player;
         if (self && !((Boolean)this.totemSelf.get()).booleanValue()) {
             return;
         }
-        if (!self && entity.method_5858((Entity)SoundsModule.mc.field_1724) > 1024.0) {
+        if (!self && entity.distanceToSqr((Entity)SoundsModule.mc.player) > 1024.0) {
             return;
         }
         this.totem.play(this::masterVolume);
     }
 
     public void onKill() {
-        if (SoundsModule.mc.field_1724 != null && ((Boolean)this.killNoWeapon.enabled.get()).booleanValue()) {
+        if (SoundsModule.mc.player != null && ((Boolean)this.killNoWeapon.enabled.get()).booleanValue()) {
             boolean weapon;
-            ItemStack hand = SoundsModule.mc.field_1724.method_6047();
-            boolean bl = weapon = hand.method_31573(ItemTags.field_42611) || hand.method_31573(ItemTags.field_42612) || hand.method_31574(Items.field_8547) || hand.method_31574(Items.field_49814);
+            ItemStack hand = SoundsModule.mc.player.getMainHandItem();
+            boolean bl = weapon = hand.is(ItemTags.SWORDS) || hand.is(ItemTags.AXES) || hand.is(Items.TRIDENT) || hand.is(Items.MACE);
             if (!weapon && this.killNoWeapon.play(this::masterVolume) != null) {
                 return;
             }
@@ -452,7 +452,7 @@ extends Module {
     }
 
     public void onTargetFound(LivingEntity target) {
-        if (!(target instanceof Player) || target == SoundsModule.mc.field_1724 || target == this.lastFound) {
+        if (!(target instanceof Player) || target == SoundsModule.mc.player || target == this.lastFound) {
             return;
         }
         long now = System.currentTimeMillis();
@@ -484,7 +484,7 @@ extends Module {
 
     private void checkSoundboard() {
         boolean down;
-        boolean bl = down = SoundsModule.mc.field_1755 == null && this.boardKey.isBound() && InputConstants.method_15987((Window)mc.method_22683(), (int)this.boardKey.getKey());
+        boolean bl = down = SoundsModule.mc.screen == null && this.boardKey.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.boardKey.getKey());
         if (down && !this.boardWasDown) {
             this.board.play(this::masterVolume);
         }
@@ -493,19 +493,19 @@ extends Module {
 
     private void checkIdle() {
         boolean moved;
-        if (SoundsModule.mc.field_1724 == null) {
+        if (SoundsModule.mc.player == null) {
             this.idleSince = System.currentTimeMillis();
             this.idlePlayed = false;
             return;
         }
-        LocalPlayer p = SoundsModule.mc.field_1724;
-        boolean bl = moved = Math.abs(p.method_23317() - this.idleX) > 0.05 || Math.abs(p.method_23318() - this.idleY) > 0.05 || Math.abs(p.method_23321() - this.idleZ) > 0.05 || Math.abs(p.method_36454() - this.idleYaw) > 0.5f || Math.abs(p.method_36455() - this.idlePitch) > 0.5f || SoundsModule.mc.field_1755 != null || p.field_6252;
+        LocalPlayer p = SoundsModule.mc.player;
+        boolean bl = moved = Math.abs(p.getX() - this.idleX) > 0.05 || Math.abs(p.getY() - this.idleY) > 0.05 || Math.abs(p.getZ() - this.idleZ) > 0.05 || Math.abs(p.getYRot() - this.idleYaw) > 0.5f || Math.abs(p.getXRot() - this.idlePitch) > 0.5f || SoundsModule.mc.screen != null || p.swinging;
         if (moved) {
-            this.idleX = p.method_23317();
-            this.idleY = p.method_23318();
-            this.idleZ = p.method_23321();
-            this.idleYaw = p.method_36454();
-            this.idlePitch = p.method_36455();
+            this.idleX = p.getX();
+            this.idleY = p.getY();
+            this.idleZ = p.getZ();
+            this.idleYaw = p.getYRot();
+            this.idlePitch = p.getXRot();
             this.idleSince = System.currentTimeMillis();
             this.idlePlayed = false;
             return;
@@ -569,7 +569,7 @@ extends Module {
         this.checkDeath();
         this.checkLowHealth();
         this.checkHurt();
-        if (this.joinDelay > 0 && --this.joinDelay == 0 && SoundsModule.mc.field_1724 != null) {
+        if (this.joinDelay > 0 && --this.joinDelay == 0 && SoundsModule.mc.player != null) {
             String played = this.join.play(this::masterVolume);
             if (((Boolean)this.joinCaption.get()).booleanValue()) {
                 this.caption = SoundsModule.captionFor(played);

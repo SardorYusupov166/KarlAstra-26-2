@@ -41,11 +41,11 @@ extends HudModule {
     }
 
     public static String biomeName() {
-        if (CoordinatesHud.mc.field_1687 == null || CoordinatesHud.mc.field_1724 == null) {
+        if (CoordinatesHud.mc.level == null || CoordinatesHud.mc.player == null) {
             return "\u0412\u0438\u0448\u043d\u0451\u0432\u044b\u0435 \u0445\u043e\u043b\u043c\u044b";
         }
-        BlockPos pos = CoordinatesHud.mc.field_1724.method_24515();
-        return CoordinatesHud.mc.field_1687.method_23753(pos).method_40230().map(ResourceKey::method_29177).map(id -> Component.method_43471((String)Util.method_646((String)"biome", (Identifier)id)).getString()).orElse("?");
+        BlockPos pos = CoordinatesHud.mc.player.blockPosition();
+        return CoordinatesHud.mc.level.getBiome(pos).unwrapKey().map(ResourceKey::identifier).map(id -> Component.translatable((String)Util.makeDescriptionId((String)"biome", (Identifier)id)).getString()).orElse("?");
     }
 
     private List<String> lines() {
@@ -53,10 +53,10 @@ extends HudModule {
         double x = 1236.0;
         double y = 98.0;
         double z = -452.0;
-        if (CoordinatesHud.mc.field_1724 != null) {
-            x = CoordinatesHud.mc.field_1724.method_23317();
-            y = CoordinatesHud.mc.field_1724.method_23318();
-            z = CoordinatesHud.mc.field_1724.method_23321();
+        if (CoordinatesHud.mc.player != null) {
+            x = CoordinatesHud.mc.player.getX();
+            y = CoordinatesHud.mc.player.getY();
+            z = CoordinatesHud.mc.player.getZ();
         }
         if (this.format.is("\u041e\u0434\u043d\u0430 \u0441\u0442\u0440\u043e\u043a\u0430")) {
             out.add(String.format("%d  %d  %d", (int)Math.floor(x), (int)Math.floor(y), (int)Math.floor(z)));
@@ -65,8 +65,8 @@ extends HudModule {
             out.add("Y: " + (int)Math.floor(y));
             out.add("Z: " + (int)Math.floor(z));
         }
-        if (((Boolean)this.nether.get()).booleanValue() && CoordinatesHud.mc.field_1687 != null) {
-            boolean inNether = CoordinatesHud.mc.field_1687.method_27983() == Level.field_25180;
+        if (((Boolean)this.nether.get()).booleanValue() && CoordinatesHud.mc.level != null) {
+            boolean inNether = CoordinatesHud.mc.level.dimension() == Level.NETHER;
             double k = inNether ? 8.0 : 0.125;
             out.add((inNether ? "\u041c\u0438\u0440: " : "\u041d\u0435\u0437\u0435\u0440: ") + (int)Math.floor(x * k) + ", " + (int)Math.floor(z * k));
         }

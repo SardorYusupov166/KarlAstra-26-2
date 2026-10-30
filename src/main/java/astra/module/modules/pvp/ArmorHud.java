@@ -28,7 +28,7 @@ import net.minecraft.world.level.ItemLike;
 
 public class ArmorHud
 extends HudModule {
-    private static final EquipmentSlot[] SLOTS = new EquipmentSlot[]{EquipmentSlot.field_6169, EquipmentSlot.field_6174, EquipmentSlot.field_6172, EquipmentSlot.field_6166};
+    private static final EquipmentSlot[] SLOTS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
     private final ModeSetting layout = this.add(new ModeSetting("\u0420\u0430\u0441\u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435", "\u0412\u0435\u0440\u0442\u0438\u043a\u0430\u043b\u044c\u043d\u043e", "\u0412\u0435\u0440\u0442\u0438\u043a\u0430\u043b\u044c\u043d\u043e", "\u0413\u043e\u0440\u0438\u0437\u043e\u043d\u0442\u0430\u043b\u044c\u043d\u043e"));
     private final BooleanSetting mainHand = this.add(new BooleanSetting("\u041f\u0440\u0435\u0434\u043c\u0435\u0442 \u0432 \u0440\u0443\u043a\u0435", true));
     private final ModeSetting value = this.add(new ModeSetting("\u0417\u043d\u0430\u0447\u0435\u043d\u0438\u0435", "\u041f\u0440\u043e\u0446\u0435\u043d\u0442\u044b", "\u041f\u0440\u043e\u0446\u0435\u043d\u0442\u044b", "\u041f\u0440\u043e\u0447\u043d\u043e\u0441\u0442\u044c", "\u041d\u0435\u0442"));
@@ -40,21 +40,21 @@ extends HudModule {
 
     private List<ItemStack> items(boolean editor) {
         ArrayList<ItemStack> list = new ArrayList<ItemStack>();
-        if (ArmorHud.mc.field_1724 != null) {
+        if (ArmorHud.mc.player != null) {
             for (EquipmentSlot slot : SLOTS) {
-                ItemStack s = ArmorHud.mc.field_1724.method_6118(slot);
-                if (s.method_7960()) continue;
+                ItemStack s = ArmorHud.mc.player.getItemBySlot(slot);
+                if (s.isEmpty()) continue;
                 list.add(s);
             }
-            if (((Boolean)this.mainHand.get()).booleanValue() && !ArmorHud.mc.field_1724.method_6047().method_7960()) {
-                list.add(ArmorHud.mc.field_1724.method_6047());
+            if (((Boolean)this.mainHand.get()).booleanValue() && !ArmorHud.mc.player.getMainHandItem().isEmpty()) {
+                list.add(ArmorHud.mc.player.getMainHandItem());
             }
         }
         if (list.isEmpty() && editor) {
-            list.add(new ItemStack((ItemLike)Items.field_22027));
-            list.add(new ItemStack((ItemLike)Items.field_22028));
-            list.add(new ItemStack((ItemLike)Items.field_22029));
-            list.add(new ItemStack((ItemLike)Items.field_22030));
+            list.add(new ItemStack((ItemLike)Items.NETHERITE_HELMET));
+            list.add(new ItemStack((ItemLike)Items.NETHERITE_CHESTPLATE));
+            list.add(new ItemStack((ItemLike)Items.NETHERITE_LEGGINGS));
+            list.add(new ItemStack((ItemLike)Items.NETHERITE_BOOTS));
         }
         return list;
     }
@@ -69,11 +69,11 @@ extends HudModule {
     }
 
     private String text(ItemStack s) {
-        if (!s.method_7963() || this.value.is("\u041d\u0435\u0442")) {
-            return this.value.is("\u041d\u0435\u0442") ? "" : (s.method_7947() > 1 ? "x" + s.method_7947() : "");
+        if (!s.isDamageableItem() || this.value.is("\u041d\u0435\u0442")) {
+            return this.value.is("\u041d\u0435\u0442") ? "" : (s.getCount() > 1 ? "x" + s.getCount() : "");
         }
-        int left = s.method_7936() - s.method_7919();
-        return this.value.is("\u041f\u0440\u043e\u0446\u0435\u043d\u0442\u044b") ? Math.round((float)left * 100.0f / (float)s.method_7936()) + "%" : String.valueOf(left);
+        int left = s.getMaxDamage() - s.getDamageValue();
+        return this.value.is("\u041f\u0440\u043e\u0446\u0435\u043d\u0442\u044b") ? Math.round((float)left * 100.0f / (float)s.getMaxDamage()) + "%" : String.valueOf(left);
     }
 
     private float cellW() {
@@ -100,12 +100,12 @@ extends HudModule {
             ItemStack s = list.get(i);
             float x = this.vertical() ? 3.0f : 3.0f + (float)i * this.cellW();
             float y = this.vertical() ? (float)(3 + i * 18) : 4.0f;
-            ctx.method_51427(s, Math.round(x + 1.0f), Math.round(y + 1.0f));
+            ctx.renderItem(s, Math.round(x + 1.0f), Math.round(y + 1.0f));
             String txt = this.text(s);
             if (txt.isEmpty()) continue;
             int col = t.text();
-            if (s.method_7963()) {
-                float pct = (float)(s.method_7936() - s.method_7919()) / (float)s.method_7936();
+            if (s.isDamageableItem()) {
+                float pct = (float)(s.getMaxDamage() - s.getDamageValue()) / (float)s.getMaxDamage();
                 col = pct > 0.5f ? ColorUtil.lerp(-340971, -11870592, (pct - 0.5f) * 2.0f) : ColorUtil.lerp(-770210, -340971, pct * 2.0f);
             }
             Fonts.draw(ctx, txt, x + 20.0f, y + 5.0f, 7.0f, col, true);

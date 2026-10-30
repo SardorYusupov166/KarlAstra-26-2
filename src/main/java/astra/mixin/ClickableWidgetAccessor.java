@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(value={AbstractWidget.class})
 public interface ClickableWidgetAccessor {
-    @Accessor(value="field_22765")
+    @Accessor(value="alpha")
     public float astra$getAlpha();
 }
 

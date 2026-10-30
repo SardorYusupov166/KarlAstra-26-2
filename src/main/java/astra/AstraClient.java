@@ -100,7 +100,7 @@ import org.slf4j.LoggerFactory;
 
 public class AstraClient
 implements ClientModInitializer {
-    private static final KeyMapping.Category ASTRA_KEYS = KeyMapping.Category.method_74698((Identifier)Identifier.method_60655((String)"astra", (String)"main"));
+    private static final KeyMapping.Category ASTRA_KEYS = KeyMapping.Category.register((Identifier)Identifier.fromNamespaceAndPath((String)"astra", (String)"main"));
     public static final String MOD_ID = "astra";
     public static final Logger LOGGER = LoggerFactory.getLogger((String)"Astra");
     public static KeyMapping openGuiKey;
@@ -112,11 +112,11 @@ implements ClientModInitializer {
         ModuleManager.init();
         CanvasModule.init();
         ConfigManager.init();
-        openGuiKey = KeyBindingHelper.registerKeyBinding((KeyMapping)new KeyMapping("key.astra.clickgui", InputConstants.Type.field_1668, 344, ASTRA_KEYS));
-        hudEditorKey = KeyBindingHelper.registerKeyBinding((KeyMapping)new KeyMapping("key.astra.hudeditor", InputConstants.Type.field_1668, -1, ASTRA_KEYS));
+        openGuiKey = KeyBindingHelper.registerKeyBinding((KeyMapping)new KeyMapping("key.astra.clickgui", InputConstants.Type.KEYSYM, 344, ASTRA_KEYS));
+        hudEditorKey = KeyBindingHelper.registerKeyBinding((KeyMapping)new KeyMapping("key.astra.hudeditor", InputConstants.Type.KEYSYM, -1, ASTRA_KEYS));
         ClientTickEvents.END_CLIENT_TICK.register(this::onTick);
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
-        HudElementRegistry.attachElementBefore((Identifier)VanillaHudElements.CHAT, (Identifier)Identifier.method_60655((String)MOD_ID, (String)"hud"), HudManager::render);
+        HudElementRegistry.attachElementBefore((Identifier)VanillaHudElements.CHAT, (Identifier)Identifier.fromNamespaceAndPath((String)MOD_ID, (String)"hud"), HudManager::render);
         HudElementRegistry.replaceElement((Identifier)VanillaHudElements.CROSSHAIR, vanilla -> (ctx, tick) -> {
             CrosshairModule crosshair = ModuleManager.get(CrosshairModule.class);
             if (crosshair != null && crosshair.isEnabled()) {
@@ -160,10 +160,10 @@ implements ClientModInitializer {
             }
         });
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (world.method_8608()) {
+            if (world.isClientSide()) {
                 CombatTracker.onAttack(entity);
             }
-            return InteractionResult.field_5811;
+            return InteractionResult.PASS;
         });
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             SoundsModule sounds = SoundsModule.get();
@@ -172,7 +172,7 @@ implements ClientModInitializer {
             }
             client.execute(CompanionHud::onJoin);
         });
-        FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> ResourceManagerHelper.registerBuiltinResourcePack((Identifier)Identifier.method_60655((String)MOD_ID, (String)"astra_pink_glint"), (ModContainer)container, (Component)Component.method_43470((String)"Astra: \u0440\u043e\u0437\u043e\u0432\u043e\u0435 \u0441\u0438\u044f\u043d\u0438\u0435 \u0437\u0430\u0447\u0430\u0440\u043e\u0432\u0430\u043d\u0438\u0439"), (ResourcePackActivationType)ResourcePackActivationType.DEFAULT_ENABLED));
+        FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> ResourceManagerHelper.registerBuiltinResourcePack((Identifier)Identifier.fromNamespaceAndPath((String)MOD_ID, (String)"astra_pink_glint"), (ModContainer)container, (Component)Component.literal((String)"Astra: \u0440\u043e\u0437\u043e\u0432\u043e\u0435 \u0441\u0438\u044f\u043d\u0438\u0435 \u0437\u0430\u0447\u0430\u0440\u043e\u0432\u0430\u043d\u0438\u0439"), (ResourcePackActivationType)ResourcePackActivationType.DEFAULT_ENABLED));
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             TargetEffects fx = TargetEffects.get();
             if (fx == null) {
@@ -220,13 +220,13 @@ implements ClientModInitializer {
         CosmeticRenderer.init();
         MenuStyle.init();
         NativeScreenLayouts.init();
-        ResourceManagerHelper.get((PackType)PackType.field_14188).registerReloadListener((IdentifiableResourceReloadListener)new SimpleSynchronousResourceReloadListener(this){
+        ResourceManagerHelper.get((PackType)PackType.CLIENT_RESOURCES).registerReloadListener((IdentifiableResourceReloadListener)new SimpleSynchronousResourceReloadListener(this){
 
             public Identifier getFabricId() {
-                return Identifier.method_60655((String)AstraClient.MOD_ID, (String)"font_cache");
+                return Identifier.fromNamespaceAndPath((String)AstraClient.MOD_ID, (String)"font_cache");
             }
 
-            public void method_14491(ResourceManager manager) {
+            public void onResourceManagerReload(ResourceManager manager) {
                 Fonts.clearCache();
             }
         });
@@ -237,13 +237,13 @@ implements ClientModInitializer {
     }
 
     private void onTick(Minecraft client) {
-        while (openGuiKey.method_1436()) {
-            if (client.field_1755 != null) continue;
-            client.method_1507((Screen)new ClickGuiScreen(null));
+        while (openGuiKey.consumeClick()) {
+            if (client.screen != null) continue;
+            client.setScreen((Screen)new ClickGuiScreen(null));
         }
-        while (hudEditorKey.method_1436()) {
-            if (client.field_1755 != null) continue;
-            client.method_1507((Screen)new HudEditorScreen(null));
+        while (hudEditorKey.consumeClick()) {
+            if (client.screen != null) continue;
+            client.setScreen((Screen)new HudEditorScreen(null));
         }
         this.handleModuleKeys(client);
         CombatTracker.tick(client);
@@ -261,11 +261,11 @@ implements ClientModInitializer {
     }
 
     private void handleModuleKeys(Minecraft client) {
-        Window window = client.method_22683();
-        boolean canUse = client.field_1755 == null;
+        Window window = client.getWindow();
+        boolean canUse = client.screen == null;
         for (Module module : ModuleManager.all()) {
             if (!module.hasToggleKey() || !module.isToggleable() || !module.usesToggleKey()) continue;
-            boolean down = canUse && InputConstants.method_15987((Window)window, (int)module.getKeybind().getKey());
+            boolean down = canUse && InputConstants.isKeyDown((Window)window, (int)module.getKeybind().getKey());
             boolean was = KEY_STATE.getOrDefault(module, false);
             if (down && !was) {
                 module.toggle();

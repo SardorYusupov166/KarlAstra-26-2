@@ -34,30 +34,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={ClientPacketListener.class})
 public abstract class ClientPlayNetworkHandlerMixin {
-    @Inject(method={"method_11146"}, at={@At(value="TAIL")})
+    @Inject(method={"handleSoundEvent"}, at={@At(value="TAIL")})
     private void astra$shieldBreak(ClientboundSoundPacket packet, CallbackInfo ci) {
-        if (packet.method_11894().comp_349() == SoundEvents.field_15239.comp_349()) {
-            ShieldStatus.onShieldBreakSound(packet.method_11890(), packet.method_11889(), packet.method_11893());
+        if (packet.getSound().value() == SoundEvents.SHIELD_BREAK.value()) {
+            ShieldStatus.onShieldBreakSound(packet.getX(), packet.getY(), packet.getZ());
         }
     }
 
-    @Inject(method={"method_11148"}, at={@At(value="TAIL")})
+    @Inject(method={"handleEntityEvent"}, at={@At(value="TAIL")})
     private void astra$totemPop(ClientboundEntityEventPacket packet, CallbackInfo ci) {
-        if (packet.method_11470() != 35) {
+        if (packet.getEventId() != 35) {
             return;
         }
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.field_1687 == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
             return;
         }
         SoundsModule sounds = SoundsModule.get();
         if (sounds != null) {
-            sounds.onTotemPop(packet.method_11469((Level)mc.field_1687));
+            sounds.onTotemPop(packet.getEntity((Level)mc.level));
         }
-        Entity popped = packet.method_11469((Level)mc.field_1687);
+        Entity popped = packet.getEntity((Level)mc.level);
         PvpTweaks.onTotemPop(popped);
-        if (popped != null && mc.field_1724 != null && (popped == mc.field_1724 || popped.method_5858((Entity)mc.field_1724) < 1024.0)) {
-            CompanionHud.onTotem(popped == mc.field_1724);
+        if (popped != null && mc.player != null && (popped == mc.player || popped.distanceToSqr((Entity)mc.player) < 1024.0)) {
+            CompanionHud.onTotem(popped == mc.player);
         }
     }
 }

@@ -17,14 +17,14 @@ extends Module {
 
     @Override
     protected void onEnable() {
-        CameraModule.mc.field_1690.field_1914 = true;
+        CameraModule.mc.options.smoothCamera = true;
     }
 
     @Override
     protected void onDisable() {
         ZoomModule zoom = ModuleManager.get(ZoomModule.class);
         if (zoom == null || !zoom.isZooming()) {
-            CameraModule.mc.field_1690.field_1914 = false;
+            CameraModule.mc.options.smoothCamera = false;
         }
     }
 }

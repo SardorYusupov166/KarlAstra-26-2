@@ -22,14 +22,14 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public final class WorldFx {
-    private static final PoseStack.Pose IDENTITY = new PoseStack().method_23760();
+    private static final PoseStack.Pose IDENTITY = new PoseStack().last();
     private static final int LIGHT = 0xF000F0;
 
     private WorldFx() {
     }
 
     public static void vertex(VertexConsumer vc, float x, float y, float z, float u, float v, int color) {
-        vc.method_56824(IDENTITY, x, y, z).method_39415(color).method_22913(u, v).method_22922(OverlayTexture.field_21444).method_60803(0xF000F0).method_60831(IDENTITY, 0.0f, 1.0f, 0.0f);
+        vc.addVertex(IDENTITY, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(0xF000F0).setNormal(IDENTITY, 0.0f, 1.0f, 0.0f);
     }
 
     public static void beam(VertexConsumer vc, Vector3f a, Vector3f b, float width, int colorA, int colorB) {

@@ -51,7 +51,7 @@ extends HudModule {
 
     @Override
     public float width() {
-        float available = Math.max(24, mc.method_22683().method_4486() - 4);
+        float available = Math.max(24, mc.getWindow().getGuiScaledWidth() - 4);
         return Math.max(24.0f, Math.min(available, available * this.width.getFloat() / 100.0f * this.getScale())) / this.getScale();
     }
 
@@ -71,17 +71,17 @@ extends HudModule {
     }
 
     public Bounds bounds() {
-        Window w = mc.method_22683();
-        return new Bounds(Math.round(this.getX(w.method_4486())), Math.round(this.getY(w.method_4502())), Math.round(this.scaledWidth()), Math.round(this.scaledHeight()));
+        Window w = mc.getWindow();
+        return new Bounds(Math.round(this.getX(w.getGuiScaledWidth())), Math.round(this.getY(w.getGuiScaledHeight())), Math.round(this.scaledWidth()), Math.round(this.scaledHeight()));
     }
 
     public void place(EditBox field) {
         Bounds b = this.bounds();
-        field.method_46421(b.x + 4);
-        field.method_46419(b.y + (b.height - 8) / 2);
-        field.method_25358(Math.max(16, b.width - 8));
-        field.method_53533(10);
-        field.method_1868(this.textColor.getColor());
+        field.setX(b.x + 4);
+        field.setY(b.y + (b.height - 8) / 2);
+        field.setWidth(Math.max(16, b.width - 8));
+        field.setHeight(10);
+        field.setTextColor(this.textColor.getColor());
     }
 
     /*
@@ -103,7 +103,7 @@ extends HudModule {
                 Render2D.alpha = previous;
             }
         } else {
-            ctx.method_25294(x, y, x + w, y + h, ChatInputHud.mc.field_1690.method_19344(Integer.MIN_VALUE));
+            ctx.fill(x, y, x + w, y + h, ChatInputHud.mc.options.getBackgroundColor(Integer.MIN_VALUE));
         }
     }
 
@@ -112,11 +112,11 @@ extends HudModule {
         if (!editor) {
             return;
         }
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.scale(1.0f / this.getScale(), 1.0f / this.getScale());
         this.drawBackground(ctx, 0, 0, Math.round(w * this.getScale()), Math.round(h * this.getScale()));
-        ctx.method_51433(ChatInputHud.mc.field_1772, "\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435\u2026 |", 4, (Math.round(h * this.getScale()) - 8) / 2, this.textColor.getColor(), true);
+        ctx.drawString(ChatInputHud.mc.font, "\u041d\u0430\u043f\u0438\u0441\u0430\u0442\u044c \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435\u2026 |", 4, (Math.round(h * this.getScale()) - 8) / 2, this.textColor.getColor(), true);
         m.popMatrix();
     }
 

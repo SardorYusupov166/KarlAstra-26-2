@@ -56,10 +56,10 @@ public final class CoverArt {
             }
             InputStream in = Files.newInputStream(file, new OpenOption[0]);
             try {
-                NativeImage img = NativeImage.method_4309((InputStream)in);
+                NativeImage img = NativeImage.read((InputStream)in);
                 int[] palette = CoverArt.palette(img);
-                Identifier id = Identifier.method_60655((String)"astra", (String)("media/cover_" + counter++));
-                Minecraft.method_1551().method_1531().method_4616(id, (AbstractTexture)new DynamicTexture(() -> "astra_cover", img));
+                Identifier id = Identifier.fromNamespaceAndPath((String)"astra", (String)("media/cover_" + counter++));
+                Minecraft.getInstance().getTextureManager().register(id, (AbstractTexture)new DynamicTexture(() -> "astra_cover", img));
                 c = new Cover(id, palette[0], palette[1]);
                 LOADED.put(path, c);
                 FAILED.remove(path);
@@ -94,7 +94,7 @@ public final class CoverArt {
         Iterator<Map.Entry<String, Cover>> it = LOADED.entrySet().iterator();
         while (LOADED.size() > 12 && it.hasNext()) {
             Cover old = it.next().getValue();
-            Minecraft.method_1551().method_1531().method_4615(old.id());
+            Minecraft.getInstance().getTextureManager().release(old.id());
             it.remove();
         }
     }
@@ -105,14 +105,14 @@ public final class CoverArt {
         float[] r = new float[bins];
         float[] g = new float[bins];
         float[] b = new float[bins];
-        int w = img.method_4307();
-        int h = img.method_4323();
+        int w = img.getWidth();
+        int h = img.getHeight();
         int step = Math.max(1, Math.min(w, h) / 48);
         float[] hsv = new float[3];
         for (int y = 0; y < h; y += step) {
             for (int x = 0; x < w; x += step) {
                 int bin;
-                int argb = img.method_61940(x, y);
+                int argb = img.getPixel(x, y);
                 int cr = argb >> 16 & 0xFF;
                 int cg = argb >> 8 & 0xFF;
                 int cb = argb & 0xFF;

@@ -96,13 +96,13 @@ public final class ChatPatches {
             repeat = 1;
         }
         lastPlain = plain;
-        MutableComponent out = Component.method_43473();
+        MutableComponent out = Component.empty();
         if (ChatPatches.m().timestamps()) {
-            out.method_10852((Component)Component.method_43470((String)("[" + LocalTime.now().format(TIME) + "] ")).method_10862(Style.field_24360.method_36139(-7700568)));
+            out.append((Component)Component.literal((String)("[" + LocalTime.now().format(TIME) + "] ")).setStyle(Style.EMPTY.withColor(-7700568)));
         }
-        out.method_10852(message);
+        out.append(message);
         if (repeat > 1) {
-            out.method_10852((Component)Component.method_43470((String)(" (x" + repeat + ")")).method_10862(Style.field_24360.method_36139(-5011201)));
+            out.append((Component)Component.literal((String)(" (x" + repeat + ")")).setStyle(Style.EMPTY.withColor(-5011201)));
         }
         return out;
     }
@@ -122,23 +122,23 @@ public final class ChatPatches {
      * WARNING - Removed try catching itself - possible behaviour change.
      */
     public static void onJoin() {
-        Minecraft mc = Minecraft.method_1551();
+        Minecraft mc = Minecraft.getInstance();
         if (!ChatPatches.active()) {
             return;
         }
-        ChatComponent hud = mc.field_1705.method_1743();
+        ChatComponent hud = mc.gui.getChat();
         raw = true;
         try {
             if (!restored && ChatPatches.keepChat()) {
                 restored = true;
                 for (Component t : ChatPatches.load()) {
-                    hud.method_1812(t);
+                    hud.addMessage(t);
                 }
             }
             if (ChatPatches.m().sessionDivider() && !((ChatHudAccessor)hud).astra$messages().isEmpty()) {
-                ServerData server = mc.method_1558();
-                String where = server != null ? (server.field_3752 == null || server.field_3752.isBlank() ? server.field_3761 : server.field_3752) : "\u041e\u0434\u0438\u043d\u043e\u0447\u043d\u0430\u044f \u0438\u0433\u0440\u0430";
-                hud.method_1812((Component)Component.method_43470((String)"\u2014\u2014\u2014\u2014 ").method_27692(ChatFormatting.field_1063).method_10852((Component)Component.method_43470((String)where).method_10862(Style.field_24360.method_36139(-28720).method_10982(Boolean.valueOf(true)))).method_10852((Component)Component.method_43470((String)("  \u00b7  " + LocalTime.now().format(TIME) + " \u2014\u2014\u2014\u2014")).method_27692(ChatFormatting.field_1063)));
+                ServerData server = mc.getCurrentServer();
+                String where = server != null ? (server.name == null || server.name.isBlank() ? server.ip : server.name) : "\u041e\u0434\u0438\u043d\u043e\u0447\u043d\u0430\u044f \u0438\u0433\u0440\u0430";
+                hud.addMessage((Component)Component.literal((String)"\u2014\u2014\u2014\u2014 ").withStyle(ChatFormatting.DARK_GRAY).append((Component)Component.literal((String)where).setStyle(Style.EMPTY.withColor(-28720).withBold(Boolean.valueOf(true)))).append((Component)Component.literal((String)("  \u00b7  " + LocalTime.now().format(TIME) + " \u2014\u2014\u2014\u2014")).withStyle(ChatFormatting.DARK_GRAY)));
             }
         }
         finally {
@@ -157,11 +157,11 @@ public final class ChatPatches {
             return;
         }
         try {
-            List<GuiMessage> lines = ((ChatHudAccessor)Minecraft.method_1551().field_1705.method_1743()).astra$messages();
+            List<GuiMessage> lines = ((ChatHudAccessor)Minecraft.getInstance().gui.getChat()).astra$messages();
             JsonArray arr = new JsonArray();
             int n = Math.min(500, lines.size());
             for (int i = n - 1; i >= 0; --i) {
-                arr.add((JsonElement)ChatPatches.toJson(lines.get(i).comp_893()));
+                arr.add((JsonElement)ChatPatches.toJson(lines.get(i).content()));
             }
             Files.createDirectories(ChatPatches.file().getParent(), new FileAttribute[0]);
             Files.writeString(ChatPatches.file(), (CharSequence)arr.toString(), StandardCharsets.UTF_8, new OpenOption[0]);
@@ -190,72 +190,72 @@ public final class ChatPatches {
 
     private static JsonArray toJson(Component text) {
         JsonArray parts = new JsonArray();
-        text.method_27658((style, str) -> {
+        text.visit((style, str) -> {
             if (str.isEmpty()) {
                 return Optional.empty();
             }
             JsonObject o = new JsonObject();
             o.addProperty("t", str);
-            if (style.method_10973() != null) {
-                o.addProperty("c", (Number)style.method_10973().method_27716());
+            if (style.getColor() != null) {
+                o.addProperty("c", (Number)style.getColor().getValue());
             }
-            if (style.method_10984()) {
+            if (style.isBold()) {
                 o.addProperty("b", Boolean.valueOf(true));
             }
-            if (style.method_10966()) {
+            if (style.isItalic()) {
                 o.addProperty("i", Boolean.valueOf(true));
             }
-            if (style.method_10965()) {
+            if (style.isUnderlined()) {
                 o.addProperty("u", Boolean.valueOf(true));
             }
-            if (style.method_10986()) {
+            if (style.isStrikethrough()) {
                 o.addProperty("s", Boolean.valueOf(true));
             }
             parts.add((JsonElement)o);
             return Optional.empty();
-        }, Style.field_24360);
+        }, Style.EMPTY);
         return parts;
     }
 
     private static Component fromJson(JsonArray parts) {
-        MutableComponent out = Component.method_43473();
+        MutableComponent out = Component.empty();
         for (JsonElement el : parts) {
             JsonObject o = el.getAsJsonObject();
-            Style st = Style.field_24360;
+            Style st = Style.EMPTY;
             if (o.has("c")) {
-                st = st.method_27703(TextColor.method_27717((int)o.get("c").getAsInt()));
+                st = st.withColor(TextColor.fromRgb((int)o.get("c").getAsInt()));
             }
             if (o.has("b")) {
-                st = st.method_10982(Boolean.valueOf(true));
+                st = st.withBold(Boolean.valueOf(true));
             }
             if (o.has("i")) {
-                st = st.method_10978(Boolean.valueOf(true));
+                st = st.withItalic(Boolean.valueOf(true));
             }
             if (o.has("u")) {
-                st = st.method_30938(Boolean.valueOf(true));
+                st = st.withUnderlined(Boolean.valueOf(true));
             }
             if (o.has("s")) {
-                st = st.method_36140(Boolean.valueOf(true));
+                st = st.withStrikethrough(Boolean.valueOf(true));
             }
-            out.method_10852((Component)Component.method_43470((String)o.get("t").getAsString()).method_10862(st));
+            out.append((Component)Component.literal((String)o.get("t").getAsString()).setStyle(st));
         }
         return out;
     }
 
     private static int lineAt(ChatComponent hud, ChatHudAccessor acc, int size, double mouseX, double mouseY) {
-        Minecraft mc = Minecraft.method_1551();
+        Minecraft mc = Minecraft.getInstance();
         double x = ChatLayoutHud.unmapX(mouseX);
         double y = ChatLayoutHud.unmapY(mouseY);
         double scale = acc.astra$chatScale();
         double cx = x / scale - 4.0;
         double cy = y / scale;
-        int bottom = (int)Math.floor((double)(mc.method_22683().method_4502() - 40) / scale);
+        int bottom = (int)Math.floor((double)(mc.getWindow().getGuiScaledHeight() - 40) / scale);
         int lineHeight = acc.astra$lineHeight();
         if (cx < -4.0 || cx > Math.ceil((double)acc.astra$width() / scale) + 4.0 || cy > (double)bottom) {
             return -1;
         }
         int k = (int)Math.floor(((double)bottom - cy) / (double)lineHeight);
-        int shown = Math.min(size - acc.astra$scrolledLines(), hud.method_1813());
+        int shown = Math.min(size - acc.astra$scrolledLines(), hud.getLinesPerPage());
         if (k < 0 || k >= shown) {
             return -1;
         }
@@ -268,18 +268,18 @@ public final class ChatPatches {
         if (!ChatPatches.active() || !ChatPatches.m().rightClickCopy()) {
             return false;
         }
-        Minecraft mc = Minecraft.method_1551();
-        ChatComponent hud = mc.field_1705.method_1743();
+        Minecraft mc = Minecraft.getInstance();
+        ChatComponent hud = mc.gui.getChat();
         int idx = ChatPatches.lineAt(hud, acc = (ChatHudAccessor)hud, (visible = acc.astra$visibleMessages()).size(), mouseX, mouseY);
         if (idx < 0 || idx >= visible.size()) {
             return false;
         }
-        int tick = visible.get(idx).comp_895();
+        int tick = visible.get(idx).addedTime();
         for (GuiMessage line : acc.astra$messages()) {
-            if (line.comp_892() != tick) continue;
-            String text = COUNT.matcher(STAMP.matcher(line.comp_893().getString()).replaceFirst("")).replaceFirst("").replaceAll("\u00a7.", "");
-            mc.field_1774.method_1455(text);
-            mc.field_1705.method_1758((Component)Component.method_43470((String)("\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e: " + (String)(text.length() > 40 ? text.substring(0, 40) + "\u2026" : text))).method_10862(Style.field_24360.method_36139(-28720)), false);
+            if (line.addedTime() != tick) continue;
+            String text = COUNT.matcher(STAMP.matcher(line.content().getString()).replaceFirst("")).replaceFirst("").replaceAll("\u00a7.", "");
+            mc.keyboardHandler.setClipboard(text);
+            mc.gui.setOverlayMessage((Component)Component.literal((String)("\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e: " + (String)(text.length() > 40 ? text.substring(0, 40) + "\u2026" : text))).setStyle(Style.EMPTY.withColor(-28720)), false);
             return true;
         }
         return false;

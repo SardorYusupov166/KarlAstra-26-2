@@ -32,13 +32,13 @@ import org.joml.Matrix3x2fStack;
 
 public class ChatLayoutHud
 extends HudModule {
-    private final NumberSetting width = this.add(ChatLayoutHud.option("\u0428\u0438\u0440\u0438\u043d\u0430", () -> ChatLayoutHud.mc.field_1690.method_42556()));
-    private final NumberSetting heightFocused = this.add(ChatLayoutHud.option("\u0412\u044b\u0441\u043e\u0442\u0430 (\u043e\u0442\u043a\u0440\u044b\u0442)", () -> ChatLayoutHud.mc.field_1690.method_41803()));
-    private final NumberSetting heightUnfocused = this.add(ChatLayoutHud.option("\u0412\u044b\u0441\u043e\u0442\u0430 (\u0437\u0430\u043a\u0440\u044b\u0442)", () -> ChatLayoutHud.mc.field_1690.method_41801()));
-    private final NumberSetting textScale = this.add(ChatLayoutHud.option("\u0420\u0430\u0437\u043c\u0435\u0440 \u0442\u0435\u043a\u0441\u0442\u0430", () -> ChatLayoutHud.mc.field_1690.method_42554()));
-    private final NumberSetting lineSpacing = this.add(ChatLayoutHud.option("\u041c\u0435\u0436\u0441\u0442\u0440\u043e\u0447\u043d\u044b\u0439 \u0438\u043d\u0442\u0435\u0440\u0432\u0430\u043b", () -> ChatLayoutHud.mc.field_1690.method_42546()));
-    private final NumberSetting textOpacity = this.add(ChatLayoutHud.option("\u041f\u0440\u043e\u0437\u0440\u0430\u0447\u043d\u043e\u0441\u0442\u044c \u0442\u0435\u043a\u0441\u0442\u0430", () -> ChatLayoutHud.mc.field_1690.method_42542()));
-    private final NumberSetting bgOpacity = this.add(ChatLayoutHud.option("\u041f\u0440\u043e\u0437\u0440\u0430\u0447\u043d\u043e\u0441\u0442\u044c \u0444\u043e\u043d\u0430", () -> ChatLayoutHud.mc.field_1690.method_42550()));
+    private final NumberSetting width = this.add(ChatLayoutHud.option("\u0428\u0438\u0440\u0438\u043d\u0430", () -> ChatLayoutHud.mc.options.chatWidth()));
+    private final NumberSetting heightFocused = this.add(ChatLayoutHud.option("\u0412\u044b\u0441\u043e\u0442\u0430 (\u043e\u0442\u043a\u0440\u044b\u0442)", () -> ChatLayoutHud.mc.options.chatHeightFocused()));
+    private final NumberSetting heightUnfocused = this.add(ChatLayoutHud.option("\u0412\u044b\u0441\u043e\u0442\u0430 (\u0437\u0430\u043a\u0440\u044b\u0442)", () -> ChatLayoutHud.mc.options.chatHeightUnfocused()));
+    private final NumberSetting textScale = this.add(ChatLayoutHud.option("\u0420\u0430\u0437\u043c\u0435\u0440 \u0442\u0435\u043a\u0441\u0442\u0430", () -> ChatLayoutHud.mc.options.chatScale()));
+    private final NumberSetting lineSpacing = this.add(ChatLayoutHud.option("\u041c\u0435\u0436\u0441\u0442\u0440\u043e\u0447\u043d\u044b\u0439 \u0438\u043d\u0442\u0435\u0440\u0432\u0430\u043b", () -> ChatLayoutHud.mc.options.chatLineSpacing()));
+    private final NumberSetting textOpacity = this.add(ChatLayoutHud.option("\u041f\u0440\u043e\u0437\u0440\u0430\u0447\u043d\u043e\u0441\u0442\u044c \u0442\u0435\u043a\u0441\u0442\u0430", () -> ChatLayoutHud.mc.options.chatOpacity()));
+    private final NumberSetting bgOpacity = this.add(ChatLayoutHud.option("\u041f\u0440\u043e\u0437\u0440\u0430\u0447\u043d\u043e\u0441\u0442\u044c \u0444\u043e\u043d\u0430", () -> ChatLayoutHud.mc.options.textBackgroundOpacity()));
     private final ModeSetting style = this.add(new ModeSetting("\u0421\u0442\u0438\u043b\u044c \u0447\u0430\u0442\u0430", "\u041d\u0435\u043e\u043d", "\u041d\u0435\u043e\u043d", "\u0421\u0442\u0435\u043a\u043b\u043e", "\u041f\u0443\u0437\u044b\u0440\u0438", "\u0413\u0440\u0430\u0434\u0438\u0435\u043d\u0442", "\u041c\u0438\u043d\u0438\u043c\u0430\u043b", "\u041a\u043b\u0430\u0441\u0441\u0438\u043a\u0430"));
     private final ModeSetting bgColor = this.add(new ModeSetting("\u0426\u0432\u0435\u0442 \u0444\u043e\u043d\u0430", "\u0422\u0435\u043c\u0430", "\u0422\u0435\u043c\u0430", "\u0421\u0432\u043e\u0439", "\u041a\u0430\u043a \u0432 Minecraft"));
     private final ColorSetting customBg = this.add((ColorSetting)new ColorSetting("\u0421\u0432\u043e\u0439 \u0446\u0432\u0435\u0442 \u0444\u043e\u043d\u0430", -15069133).visibleWhen(() -> this.bgColor.is("\u0421\u0432\u043e\u0439")));
@@ -56,14 +56,14 @@ extends HudModule {
     }
 
     private static NumberSetting option(String name, Supplier<OptionInstance<Double>> opt) {
-        return (NumberSetting)new NumberSetting(name, 50.0, 0.0, 100.0, 1.0).unit("%").bind(() -> mc == null || ChatLayoutHud.mc.field_1690 == null ? 50.0 : (Double)((OptionInstance)opt.get()).method_41753() * 100.0, v -> {
-            if (mc == null || ChatLayoutHud.mc.field_1690 == null) {
+        return (NumberSetting)new NumberSetting(name, 50.0, 0.0, 100.0, 1.0).unit("%").bind(() -> mc == null || ChatLayoutHud.mc.options == null ? 50.0 : (Double)((OptionInstance)opt.get()).get() * 100.0, v -> {
+            if (mc == null || ChatLayoutHud.mc.options == null) {
                 return;
             }
-            ((OptionInstance)opt.get()).method_41748((Object)Math.max(0.0, Math.min(1.0, v / 100.0)));
+            ((OptionInstance)opt.get()).set((Object)Math.max(0.0, Math.min(1.0, v / 100.0)));
             optionsDirty = true;
-            if (ChatLayoutHud.mc.field_1705 != null) {
-                ChatLayoutHud.mc.field_1705.method_1743().method_1817();
+            if (ChatLayoutHud.mc.gui != null) {
+                ChatLayoutHud.mc.gui.getChat().rescaleChat();
             }
         });
     }
@@ -73,12 +73,12 @@ extends HudModule {
         if (optionsDirty && ++this.saveTicks >= 20) {
             this.saveTicks = 0;
             optionsDirty = false;
-            ChatLayoutHud.mc.field_1690.method_1640();
+            ChatLayoutHud.mc.options.save();
         }
     }
 
     private static ChatComponent hud() {
-        return ChatLayoutHud.mc.field_1705.method_1743();
+        return ChatLayoutHud.mc.gui.getChat();
     }
 
     @Override
@@ -90,7 +90,7 @@ extends HudModule {
     @Override
     public float height() {
         ChatComponent h = ChatLayoutHud.hud();
-        return (float)((double)ChatComponent.method_1818((double)((Double)ChatLayoutHud.mc.field_1690.method_41803().method_41753())) * ((ChatHudAccessor)h).astra$chatScale());
+        return (float)((double)ChatComponent.getHeight((double)((Double)ChatLayoutHud.mc.options.chatHeightFocused().get())) * ((ChatHudAccessor)h).astra$chatScale());
     }
 
     private boolean untouched() {
@@ -129,12 +129,12 @@ extends HudModule {
     }
 
     public static boolean begin(GuiGraphics ctx) {
-        float sh = ctx.method_51443();
-        float[] t = ChatLayoutHud.transform(ctx.method_51421(), sh);
+        float sh = ctx.guiHeight();
+        float[] t = ChatLayoutHud.transform(ctx.guiWidth(), sh);
         if (t == null) {
             return false;
         }
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(t[0], t[1]);
         m.scale(t[2], t[2]);
@@ -143,15 +143,15 @@ extends HudModule {
     }
 
     public static double unmapX(double x) {
-        Window w = mc.method_22683();
-        float[] t = ChatLayoutHud.transform(w.method_4486(), w.method_4502());
+        Window w = mc.getWindow();
+        float[] t = ChatLayoutHud.transform(w.getGuiScaledWidth(), w.getGuiScaledHeight());
         return t == null ? x : (x - (double)t[0]) / (double)t[2];
     }
 
     public static double unmapY(double y) {
-        Window w = mc.method_22683();
-        float sh = w.method_4502();
-        float[] t = ChatLayoutHud.transform(w.method_4486(), sh);
+        Window w = mc.getWindow();
+        float sh = w.getGuiScaledHeight();
+        float[] t = ChatLayoutHud.transform(w.getGuiScaledWidth(), sh);
         return t == null ? y : (y - (double)t[1]) / (double)t[2] + (double)(sh - 40.0f);
     }
 
@@ -178,7 +178,7 @@ extends HudModule {
         }
         Theme t = ChatLayoutHud.theme();
         int bg = this.background(t);
-        float a = (float)((Double)ChatLayoutHud.mc.field_1690.method_42550().method_41753() * 0.9 + 0.1);
+        float a = (float)((Double)ChatLayoutHud.mc.options.textBackgroundOpacity().get() * 0.9 + 0.1);
         if (AnimeChatModule.chatStyled() && this.style.is("\u0421\u0442\u0435\u043a\u043b\u043e")) {
             AnimeChatModule.drawGlass(ctx, 0.0f, h - 44.0f, w, 44.0f, a);
         }
@@ -188,7 +188,7 @@ extends HudModule {
             if (AnimeChatModule.chatStyled()) {
                 AnimeChatModule.chatFill(ctx, 0, (int)y - 1, (int)w, (int)y + 9, ColorUtil.withAlpha(-16777216, a));
             } else {
-                ctx.method_25294(0, (int)y - 1, (int)w, (int)y + 9, ColorUtil.withAlpha(-16777216, a));
+                ctx.fill(0, (int)y - 1, (int)w, (int)y + 9, ColorUtil.withAlpha(-16777216, a));
             }
             Fonts.draw(ctx, sample[i], 4.0f, y, 7.0f, ColorUtil.withAlpha(t.text(), 0.9f), false);
         }

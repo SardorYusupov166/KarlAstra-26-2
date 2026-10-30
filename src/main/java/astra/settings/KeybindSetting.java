@@ -32,7 +32,7 @@ extends Setting<Integer> {
         if (key == -1) {
             return "\u2014";
         }
-        String name = InputConstants.Type.field_1668.method_1447(key).method_27445().getString();
+        String name = InputConstants.Type.KEYSYM.getOrCreate(key).getDisplayName().getString();
         if (key == 32) {
             return "\u041f\u0440\u043e\u0431\u0435\u043b";
         }

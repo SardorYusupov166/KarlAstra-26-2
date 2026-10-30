@@ -80,12 +80,12 @@ extends HudModule {
         if (m == null || !m.isEnabled() || m.untouched()) {
             return false;
         }
-        float sw = ctx.method_51421();
-        float sh = ctx.method_51443();
+        float sw = ctx.guiWidth();
+        float sh = ctx.guiHeight();
         float s = m.getScale();
         float ax = m.getX(sw) + m.scaledWidth() / 2.0f;
         float ay = m.getY(sh);
-        Matrix3x2fStack mat = ctx.method_51448();
+        Matrix3x2fStack mat = ctx.pose();
         mat.pushMatrix();
         mat.translate(ax, ay);
         mat.scale(s, s);

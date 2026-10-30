@@ -116,7 +116,7 @@ extends Module {
     }
 
     private boolean playing() {
-        return this.current != null && mc.method_1483().method_4877((SoundInstance)this.current);
+        return this.current != null && mc.getSoundManager().isActive((SoundInstance)this.current);
     }
 
     private void rebuildOrder() {
@@ -152,7 +152,7 @@ extends Module {
         this.currentIndex = index;
         this.currentTrack = this.list.get(index);
         this.current = this.currentTrack.own() ? new MusicTrackInstance(this.currentTrack.file(), this::targetVolume) : new MusicTrackInstance(this.currentTrack.id(), this::targetVolume);
-        mc.method_1483().method_4873((SoundInstance)this.current);
+        mc.getSoundManager().play((SoundInstance)this.current);
         AstraClient.LOGGER.info("\u041c\u0443\u0437\u044b\u043a\u0430 Astra: {} \u2014 {}", (Object)this.currentTrack.title(), (Object)this.currentTrack.author());
     }
 
@@ -166,7 +166,7 @@ extends Module {
 
     private void stopCurrent() {
         if (this.current != null) {
-            mc.method_1483().method_4870((SoundInstance)this.current);
+            mc.getSoundManager().stop((SoundInstance)this.current);
             this.current = null;
         }
     }
@@ -181,8 +181,8 @@ extends Module {
 
     @Override
     protected void onEnable() {
-        if (mc.method_1538() != null) {
-            mc.method_1538().method_4859();
+        if (mc.getMusicManager() != null) {
+            mc.getMusicManager().stopPlaying();
         }
         this.waitTicks = 40;
     }
@@ -195,7 +195,7 @@ extends Module {
     @Override
     public void onTick() {
         boolean allowed;
-        if (mc.method_1483() == null) {
+        if (mc.getSoundManager() == null) {
             return;
         }
         this.refreshList();
@@ -208,7 +208,7 @@ extends Module {
                 return;
             }
         }
-        boolean bl = allowed = MusicModule.mc.field_1687 != null || (Boolean)this.inMenu.get() != false;
+        boolean bl = allowed = MusicModule.mc.level != null || (Boolean)this.inMenu.get() != false;
         if (!allowed) {
             if (this.current != null) {
                 this.current.fadeOut();

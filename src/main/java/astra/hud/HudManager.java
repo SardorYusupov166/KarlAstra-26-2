@@ -27,15 +27,15 @@ public final class HudManager {
 
     public static void render(GuiGraphics ctx, DeltaTracker tickCounter) {
         TargetEffects fx;
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.field_1690.field_1842 || mc.field_1724 == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.hideGui || mc.player == null) {
             return;
         }
-        if (mc.field_1755 instanceof HudEditorScreen) {
+        if (mc.screen instanceof HudEditorScreen) {
             return;
         }
-        float w = ctx.method_51421();
-        float h = ctx.method_51443();
+        float w = ctx.guiWidth();
+        float h = ctx.guiHeight();
         DecorManager.renderScreen(ctx, "\u041f\u043e\u0434 HUD", w, h);
         VisualizerModule viz = VisualizerModule.get();
         if (viz != null && viz.isEnabled()) {

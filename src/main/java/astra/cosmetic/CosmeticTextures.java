@@ -21,15 +21,15 @@ import net.minecraft.resources.Identifier;
 
 public final class CosmeticTextures {
     private static final Map<String, Identifier> CACHE = new HashMap<String, Identifier>();
-    public static final Identifier WING_ART = Identifier.method_60655((String)"astra", (String)"textures/cosmetic/wing_astra.png");
+    public static final Identifier WING_ART = Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/cosmetic/wing_astra.png");
 
     private CosmeticTextures() {
     }
 
     private static Identifier register(String key, NativeImage image) {
         String safe = key.matches("[a-z0-9_]+") ? key : "c" + Integer.toHexString(key.hashCode());
-        Identifier id = Identifier.method_60655((String)"astra", (String)("cosmetic/" + safe));
-        Minecraft.method_1551().method_1531().method_4616(id, (AbstractTexture)new DynamicTexture(() -> "astra_" + key, image));
+        Identifier id = Identifier.fromNamespaceAndPath((String)"astra", (String)("cosmetic/" + safe));
+        Minecraft.getInstance().getTextureManager().register(id, (AbstractTexture)new DynamicTexture(() -> "astra_" + key, image));
         return id;
     }
 
@@ -84,31 +84,31 @@ public final class CosmeticTextures {
                 if (random.nextFloat() < 0.04f) {
                     c = CosmeticTextures.mix(c, accent, 0.6f);
                 }
-                img.method_61941(x, y, c);
+                img.setPixel(x, y, c);
             }
         }
         if (design.equals("\u0421\u0430\u043a\u0443\u0440\u0430")) {
             int[][] petals;
             for (int[] p : petals = new int[][]{{5, 6}, {3, 8}, {7, 8}, {4, 10}, {6, 10}}) {
-                img.method_61941(p[0], p[1], -1);
+                img.setPixel(p[0], p[1], -1);
             }
-            img.method_61941(5, 8, -8090);
+            img.setPixel(5, 8, -8090);
         } else if (design.equals("\u041d\u043e\u0447\u044c")) {
             for (int i = 0; i < 10; ++i) {
-                img.method_61941(1 + random.nextInt(10), 1 + random.nextInt(16), -2090);
+                img.setPixel(1 + random.nextInt(10), 1 + random.nextInt(16), -2090);
             }
         } else {
             int cx = 5;
             int cy = 7;
             for (int d = -3; d <= 3; ++d) {
-                img.method_61941(cx + d, cy, accent);
-                img.method_61941(cx, cy + d, accent);
+                img.setPixel(cx + d, cy, accent);
+                img.setPixel(cx, cy + d, accent);
             }
-            img.method_61941(cx - 1, cy - 1, accent);
-            img.method_61941(cx + 1, cy + 1, accent);
-            img.method_61941(cx + 1, cy - 1, accent);
-            img.method_61941(cx - 1, cy + 1, accent);
-            img.method_61941(cx, cy, -1);
+            img.setPixel(cx - 1, cy - 1, accent);
+            img.setPixel(cx + 1, cy + 1, accent);
+            img.setPixel(cx + 1, cy - 1, accent);
+            img.setPixel(cx - 1, cy + 1, accent);
+            img.setPixel(cx, cy, -1);
         }
         return img;
     }
@@ -131,7 +131,7 @@ public final class CosmeticTextures {
                 float feathers = 0.09f * (float)Math.abs(Math.sin((double)u * Math.PI * 6.5)) * (1.0f - u * 0.5f);
                 float bottomEdge = Math.min(0.98f, topEdge + thickness - feathers);
                 if (v < topEdge || v > bottomEdge || u < 0.02f) {
-                    img.method_61941(x, y, 0);
+                    img.setPixel(x, y, 0);
                     continue;
                 }
                 float inside = (v - topEdge) / Math.max(0.01f, bottomEdge - topEdge);
@@ -142,7 +142,7 @@ public final class CosmeticTextures {
                 float edgeGlow = Math.max(0.0f, 1.0f - Math.min(v - topEdge, bottomEdge - v) * 18.0f);
                 base = CosmeticTextures.mix(base, dark ? -45608 : -1, edgeGlow * 0.5f);
                 int alpha = crystal ? 200 : 235;
-                img.method_61941(x, y, alpha << 24 | base & 0xFFFFFF);
+                img.setPixel(x, y, alpha << 24 | base & 0xFFFFFF);
             }
         }
         return img;
@@ -151,7 +151,7 @@ public final class CosmeticTextures {
     public static Identifier white() {
         return CACHE.computeIfAbsent("white", k -> {
             NativeImage img = new NativeImage(4, 4, true);
-            img.method_4326(0, 0, 4, 4, -1);
+            img.fillRect(0, 0, 4, 4, -1);
             return CosmeticTextures.register(k, img);
         });
     }
@@ -182,7 +182,7 @@ public final class CosmeticTextures {
                         a += CosmeticTextures.lineDist(dx, dy, x1, y1 = (float)Math.sin(a1) * 0.8f, x2 = (float)Math.cos(a2) * 0.8f, y2 = (float)Math.sin(a2) * 0.8f) < 0.02f ? 0.7f : 0.0f;
                     }
                     int alpha = Math.min(255, Math.round((a += Math.max(0.0f, 0.25f - r) * 0.6f) * 255.0f));
-                    img.method_61941(x, y, alpha << 24 | 0xFFFFFF);
+                    img.setPixel(x, y, alpha << 24 | 0xFFFFFF);
                 }
             }
             return CosmeticTextures.register(k, img);

@@ -102,15 +102,15 @@ extends HudModule {
         float a;
         Theme t = TargetHud.theme();
         float f = a = editor ? 1.0f : this.appear.get();
-        LivingEntity e = editor ? (this.shown != null && !this.shown.method_31481() ? this.shown : TargetHud.mc.field_1724) : this.shown;
-        String name = e != null ? e.method_5477().getString() : "Sakura4ik_";
-        float hp = e != null ? e.method_6032() : 12.6f;
-        float max = e != null ? Math.max(1.0f, e.method_6063()) : 20.0f;
+        LivingEntity e = editor ? (this.shown != null && !this.shown.isRemoved() ? this.shown : TargetHud.mc.player) : this.shown;
+        String name = e != null ? e.getName().getString() : "Sakura4ik_";
+        float hp = e != null ? e.getHealth() : 12.6f;
+        float max = e != null ? Math.max(1.0f, e.getMaxHealth()) : 20.0f;
         float pct = Math.max(0.0f, Math.min(1.0f, hp / max));
         float bar = this.hpBar.update(pct, FrameStats.delta());
         float prev = Render2D.alpha;
         Render2D.alpha *= a;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         float sc = 0.9f + 0.1f * a;
         if (((Boolean)this.grow.get()).booleanValue() && !editor) {
@@ -130,7 +130,7 @@ extends HudModule {
             Render2D.roundRect(ctx, 4.0f, 4.0f, av + 2.0f, av + 2.0f, 4.0f, ColorUtil.withAlpha(this.accentColor(), 0.6f));
             if (e instanceof AbstractClientPlayer) {
                 AbstractClientPlayer player = (AbstractClientPlayer)e;
-                PlayerFaceRenderer.method_52722((GuiGraphics)ctx, (PlayerSkin)player.method_52814(), (int)5, (int)5, (int)Math.round(av));
+                PlayerFaceRenderer.draw((GuiGraphics)ctx, (PlayerSkin)player.getSkin(), (int)5, (int)5, (int)Math.round(av));
             } else {
                 Render2D.roundRect(ctx, 5.0f, 5.0f, av, av, 3.0f, Paint.linear(5.0f, 5.0f, 5.0f + av, 5.0f + av, t.accent(), t.accent2()));
                 Fonts.drawCentered(ctx, name.isEmpty() ? "?" : name.substring(0, 1).toUpperCase(Locale.ROOT), 5.0f + av / 2.0f, 5.0f + av / 2.0f - 6.0f, 12.0f, -1, true);

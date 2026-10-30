@@ -29,7 +29,7 @@ extends HudModule {
     }
 
     private float yaw() {
-        return DirectionHud.mc.field_1724 != null ? Mth.method_15393((float)DirectionHud.mc.field_1724.method_36454()) : -57.0f;
+        return DirectionHud.mc.player != null ? Mth.wrapDegrees((float)DirectionHud.mc.player.getYRot()) : -57.0f;
     }
 
     private float bearing() {
@@ -65,7 +65,7 @@ extends HudModule {
         }
         float b = this.bearing();
         float pxPerDeg = 1.6f;
-        ctx.method_44379(2, 0, (int)w - 2, (int)h);
+        ctx.enableScissor(2, 0, (int)w - 2, (int)h);
         for (int deg = -180; deg <= 540; deg += 15) {
             float x = w / 2.0f + ((float)deg - b) * pxPerDeg;
             if (x < -10.0f || x > w + 10.0f) continue;
@@ -112,7 +112,7 @@ extends HudModule {
             }
             Render2D.rect(ctx, x - 0.4f, 6.0f, 0.8f, 4.0f, ColorUtil.withAlpha(t.textDim(), 0.6f * edge));
         }
-        ctx.method_44380();
+        ctx.disableScissor();
         Render2D.roundRect(ctx, w / 2.0f - 0.75f, 13.5f, 1.5f, 5.0f, 0.75f, this.accentColor());
         String deg = Math.round(b) + "\u00b0";
         Fonts.drawCentered(ctx, deg, w / 2.0f, h - 7.5f, 5.5f, t.textDim(), true);

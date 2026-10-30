@@ -10,9 +10,9 @@ import astra.settings.BooleanSetting;
 
 public class AutoJump
 extends Module {
-    private final BooleanSetting autoJump = this.add((BooleanSetting)new BooleanSetting("\u0410\u0432\u0442\u043e\u043f\u0440\u044b\u0436\u043e\u043a", false).bind(() -> (Boolean)AutoJump.mc.field_1690.method_42423().method_41753(), v -> {
-        AutoJump.mc.field_1690.method_42423().method_41748(v);
-        AutoJump.mc.field_1690.method_1640();
+    private final BooleanSetting autoJump = this.add((BooleanSetting)new BooleanSetting("\u0410\u0432\u0442\u043e\u043f\u0440\u044b\u0436\u043e\u043a", false).bind(() -> (Boolean)AutoJump.mc.options.autoJump().get(), v -> {
+        AutoJump.mc.options.autoJump().set(v);
+        AutoJump.mc.options.save();
     }));
 
     public AutoJump() {

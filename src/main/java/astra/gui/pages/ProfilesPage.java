@@ -265,7 +265,7 @@ extends Page {
             if (style != null) {
                 style.drawAvatar(ui.ctx, t, this.x + 14.0f, this.y + 12.0f, 50.0f);
             }
-            String user = Minecraft.method_1551().method_1548().method_1676();
+            String user = Minecraft.getInstance().getUser().getName();
             Fonts.draw(ui.ctx, user, this.x + 76.0f, this.y + 16.0f, 12.0f, t.text(), true);
             String tag = style != null ? style.tag() : "";
             float tx = this.x + 76.0f + Fonts.width(user, 12.0f, true) + 8.0f;
@@ -286,7 +286,7 @@ extends Page {
             float bx = this.x + this.w - 136.0f;
             float by = this.y + this.h / 2.0f - 10.0f;
             if (mx >= (double)bx && mx < (double)(bx + 122.0f) && my >= (double)by && my < (double)(by + 20.0f)) {
-                Util.method_668().method_672(ConfigManager.profilesDir().toFile());
+                Util.getPlatform().openFile(ConfigManager.profilesDir().toFile());
             }
             return true;
         }

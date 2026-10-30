@@ -48,41 +48,41 @@ extends Screen {
     private final List<float[]> lineHits = new ArrayList<float[]>();
 
     public PlayerScreen(Screen parent) {
-        super((Component)Component.method_43470((String)"\u0421\u0435\u0439\u0447\u0430\u0441 \u0438\u0433\u0440\u0430\u0435\u0442"));
+        super((Component)Component.literal((String)"\u0421\u0435\u0439\u0447\u0430\u0441 \u0438\u0433\u0440\u0430\u0435\u0442"));
         this.parent = parent;
     }
 
-    public boolean method_25421() {
+    public boolean isPauseScreen() {
         return false;
     }
 
-    public void method_25419() {
-        this.field_22787.method_1507(this.parent);
+    public void onClose() {
+        this.minecraft.setScreen(this.parent);
     }
 
     private static NowPlayingModule module() {
         return NowPlayingModule.get();
     }
 
-    public void method_25420(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        if (this.field_22787.field_1687 == null) {
-            this.method_57728(ctx, delta);
+    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+        if (this.minecraft.level == null) {
+            this.renderPanorama(ctx, delta);
         }
-        if (this.field_22787.field_1690.method_57703() >= 1) {
-            ctx.method_71278();
+        if (this.minecraft.options.getMenuBackgroundBlurriness() >= 1) {
+            ctx.blurBeforeThisStratum();
         }
         Theme t = ThemeManager.get();
         float e = this.open();
-        ctx.method_25296(0, 0, this.field_22789, this.field_22790, ColorUtil.withAlpha(-16448759, 0.93f * e), ColorUtil.withAlpha(ColorUtil.lerp(t.bg(), -16777216, 0.4f), 0.97f * e));
+        ctx.fillGradient(0, 0, this.width, this.height, ColorUtil.withAlpha(-16448759, 0.93f * e), ColorUtil.withAlpha(ColorUtil.lerp(t.bg(), -16777216, 0.4f), 0.97f * e));
     }
 
     private float open() {
         return AnimationUtils.easeOutCubic(Math.min(1.0f, (float)(System.currentTimeMillis() - this.openedAt) / 260.0f));
     }
 
-    public void method_25394(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
         int[] nArray;
-        super.method_25394(ctx, mouseX, mouseY, delta);
+        super.render(ctx, mouseX, mouseY, delta);
         NowPlayingModule mod = PlayerScreen.module();
         if (mod == null) {
             return;
@@ -91,8 +91,8 @@ extends Screen {
         NowPlaying np = mod.track();
         float prevAlpha = Render2D.alpha;
         Render2D.alpha = this.open();
-        float W = this.field_22789;
-        float H = this.field_22790;
+        float W = this.width;
+        float H = this.height;
         boolean has = np.hasTrack();
         if (has) {
             nArray = mod.colors(np);
@@ -311,7 +311,7 @@ extends Screen {
         }
         List<Lyrics.Line> lines = Lyrics.lines();
         float lineH = 15.0f;
-        ctx.method_44379((int)x - 6, (int)top, (int)(x + w + 6.0f), (int)bottom);
+        ctx.enableScissor((int)x - 6, (int)top, (int)(x + w + 6.0f), (int)bottom);
         if (st == Lyrics.Status.PLAIN) {
             float yy = top + 4.0f - this.plainScroll;
             for (Lyrics.Line l : lines) {
@@ -322,7 +322,7 @@ extends Screen {
                     yy += 11.0f;
                 }
             }
-            ctx.method_44380();
+            ctx.disableScissor();
             return;
         }
         long pos = np.position() + mod.offsetMs();
@@ -368,7 +368,7 @@ extends Screen {
                 yy += size + 3.0f;
             }
         }
-        ctx.method_44380();
+        ctx.disableScissor();
         Render2D.rect(ctx, x - 6.0f, top, w + 12.0f, 14.0f, Paint.vertical(top, top + 14.0f, ColorUtil.withAlpha(-16317427, 0.9f), 0));
         Render2D.rect(ctx, x - 6.0f, bottom - 18.0f, w + 12.0f, 18.0f, Paint.vertical(bottom - 18.0f, bottom, 0, ColorUtil.withAlpha(-16317427, 0.9f)));
     }
@@ -384,11 +384,11 @@ extends Screen {
     public boolean mouseClicked(double mx, double my, int button) {
         NowPlaying np;
         if (button != 0) {
-            return super.method_25402(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
+            return super.mouseClicked(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
         }
         NowPlaying nowPlaying = np = PlayerScreen.module() != null ? PlayerScreen.module().track() : NowPlaying.NONE;
         if (!np.hasTrack()) {
-            return super.method_25402(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
+            return super.mouseClicked(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
         }
         if (PlayerScreen.inCircle(mx, my, this.playBtn)) {
             MediaBridge.togglePlay();
@@ -412,7 +412,7 @@ extends Screen {
             MediaBridge.seek((long)hit[4] - PlayerScreen.module().offsetMs() + 30L);
             return true;
         }
-        return super.method_25402(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
+        return super.mouseClicked(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), false);
     }
 
     public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
@@ -420,7 +420,7 @@ extends Screen {
             this.dragProgress = (float)Math.max(0.0, Math.min(1.0, (mx - (double)this.bar[0]) / (double)this.bar[2]));
             return true;
         }
-        return super.method_25403(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), dx, dy);
+        return super.mouseDragged(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)), dx, dy);
     }
 
     public boolean mouseReleased(double mx, double my, int button) {
@@ -430,15 +430,15 @@ extends Screen {
             MediaBridge.seek((long)(this.dragProgress * (float)np.durMs()));
             return true;
         }
-        return super.method_25406(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)));
+        return super.mouseReleased(new MouseButtonEvent(mx, my, new MouseButtonInfo(button, 0)));
     }
 
-    public boolean method_25401(double mx, double my, double h, double v) {
+    public boolean mouseScrolled(double mx, double my, double h, double v) {
         if (Lyrics.status() == Lyrics.Status.PLAIN) {
             this.plainScroll = Math.max(0.0f, this.plainScroll - (float)v * 22.0f);
             return true;
         }
-        return super.method_25401(mx, my, h, v);
+        return super.mouseScrolled(mx, my, h, v);
     }
 
     public boolean keyPressed(int key, int scan, int mods) {
@@ -466,27 +466,27 @@ extends Screen {
                 return true;
             }
             case 74: {
-                this.method_25419();
+                this.onClose();
                 return true;
             }
         }
-        return super.method_25404(new KeyEvent(key, scan, mods));
+        return super.keyPressed(new KeyEvent(key, scan, mods));
     }
 
-    public boolean method_25402(MouseButtonEvent click, boolean doubled) {
-        return this.mouseClicked(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        return this.mouseClicked(click.x(), click.y(), click.button());
     }
 
-    public boolean method_25406(MouseButtonEvent click) {
-        return this.mouseReleased(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseReleased(MouseButtonEvent click) {
+        return this.mouseReleased(click.x(), click.y(), click.button());
     }
 
-    public boolean method_25403(MouseButtonEvent click, double dx, double dy) {
-        return this.mouseDragged(click.comp_4798(), click.comp_4799(), click.method_74245(), dx, dy);
+    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
+        return this.mouseDragged(click.x(), click.y(), click.button(), dx, dy);
     }
 
-    public boolean method_25404(KeyEvent input) {
-        return this.keyPressed(input.comp_4795(), input.comp_4796(), input.comp_4797());
+    public boolean keyPressed(KeyEvent input) {
+        return this.keyPressed(input.key(), input.scancode(), input.modifiers());
     }
 }
 

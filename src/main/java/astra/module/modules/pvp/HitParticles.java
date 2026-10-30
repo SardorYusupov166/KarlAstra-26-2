@@ -31,17 +31,17 @@ extends Module {
     }
 
     public void onHit(LivingEntity target, boolean crit) {
-        if (HitParticles.mc.field_1687 == null) {
+        if (HitParticles.mc.level == null) {
             return;
         }
         int count = this.amount.getInt();
         if (crit && ((Boolean)this.critBoost.get()).booleanValue()) {
             count = Math.round((float)count * 1.8f);
         }
-        AABB box = target.method_5829();
-        double x = (box.field_1323 + box.field_1320) / 2.0;
-        double y = box.field_1322 + box.method_17940() * 0.6;
-        double z = (box.field_1321 + box.field_1324) / 2.0;
+        AABB box = target.getBoundingBox();
+        double x = (box.minX + box.maxX) / 2.0;
+        double y = box.minY + box.getYsize() * 0.6;
+        double z = (box.minZ + box.maxZ) / 2.0;
         int c = this.color.getColor();
         switch ((String)this.type.get()) {
             case "\u0418\u0441\u043a\u0440\u044b": {

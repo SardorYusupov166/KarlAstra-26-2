@@ -21,7 +21,7 @@ extends StatHud {
 
     @Override
     protected String value() {
-        return String.valueOf(mc.method_47599());
+        return String.valueOf(mc.getFps());
     }
 }
 

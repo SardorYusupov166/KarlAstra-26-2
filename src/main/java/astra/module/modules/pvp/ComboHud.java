@@ -81,7 +81,7 @@ extends HudModule {
         float cw = Fonts.width("Combo", 9.0f, true);
         float total = nw + 4.0f + cw;
         float x0 = (w - total) / 2.0f;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(x0 + nw / 2.0f, h / 2.0f);
         m.scale(pop, pop);
@@ -111,7 +111,7 @@ extends HudModule {
             public void render(UiContext ui, float x, float y, float w, float h) {
                 Render2D.roundRect(ui.ctx, x, y, w, h, 5.0f, ColorUtil.withAlpha(ui.theme.bg(), 0.6f));
                 Render2D.outline(ui.ctx, x, y, w, h, 5.0f, 0.7f, ColorUtil.withAlpha(ui.theme.accent(), 0.4f));
-                Matrix3x2fStack m = ui.ctx.method_51448();
+                Matrix3x2fStack m = ui.ctx.pose();
                 m.pushMatrix();
                 m.translate(x + (w - 74.0f) / 2.0f, y + 3.0f);
                 int combo = CombatTracker.combo() > 0 ? CombatTracker.combo() : 12;

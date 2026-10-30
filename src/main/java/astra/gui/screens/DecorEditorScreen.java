@@ -101,40 +101,40 @@ implements PopupHost {
     private final List<float[]> layerRows = new ArrayList<float[]>();
 
     public DecorEditorScreen(Screen parent) {
-        super((Component)Component.method_43470((String)"\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u043e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u044f"));
+        super((Component)Component.literal((String)"\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u043e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u044f"));
         this.parent = parent;
         for (int i = 0; i < this.btnHover.length; ++i) {
             this.btnHover[i] = new Animation(0.0f, 16.0f);
         }
     }
 
-    protected void method_25426() {
-        this.preview.method_25423(this.field_22789, this.field_22790);
+    protected void init() {
+        this.preview.init(this.width, this.height);
     }
 
-    public boolean method_25421() {
+    public boolean isPauseScreen() {
         return false;
     }
 
-    public void method_25419() {
+    public void onClose() {
         DecorManager.editing = false;
         DecorManager.save();
         GuiStyle.save();
-        this.field_22787.method_1507(this.parent);
+        this.minecraft.setScreen(this.parent);
     }
 
-    public void method_25432() {
+    public void removed() {
         DecorManager.editing = false;
         DecorManager.save();
         GuiStyle.save();
     }
 
     private float panelW() {
-        return this.panelShown ? Math.min(200.0f, (float)this.field_22789 * 0.34f) : 0.0f;
+        return this.panelShown ? Math.min(200.0f, (float)this.width * 0.34f) : 0.0f;
     }
 
     private float[] menuView() {
-        return this.preview.previewTransform(10.0f, 10.0f, (float)this.field_22789 - this.panelW() - 20.0f, this.field_22790 - 20);
+        return this.preview.previewTransform(10.0f, 10.0f, (float)this.width - this.panelW() - 20.0f, this.height - 20);
     }
 
     private float[] geom(DecorLayer l) {
@@ -143,7 +143,7 @@ implements PopupHost {
             float dw = this.preview.layoutDesignWidth();
             return new float[]{v[0] + l.x * dw * v[2], v[1] + l.y * v[2], l.w * v[2], l.h * v[2]};
         }
-        return new float[]{l.x * (float)this.field_22789, l.y * (float)this.field_22790, l.w * (float)this.field_22790, l.h * (float)this.field_22790};
+        return new float[]{l.x * (float)this.width, l.y * (float)this.height, l.w * (float)this.height, l.h * (float)this.height};
     }
 
     private void setGeom(DecorLayer l, float cx, float cy, float w, float h) {
@@ -157,10 +157,10 @@ implements PopupHost {
             l.w = w / v[2];
             l.h = h / v[2];
         } else {
-            l.x = cx / (float)this.field_22789;
-            l.y = cy / (float)this.field_22790;
-            l.w = w / (float)this.field_22790;
-            l.h = h / (float)this.field_22790;
+            l.x = cx / (float)this.width;
+            l.y = cy / (float)this.height;
+            l.w = w / (float)this.height;
+            l.h = h / (float)this.height;
         }
     }
 
@@ -185,22 +185,22 @@ implements PopupHost {
         return list;
     }
 
-    public void method_25420(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
         Theme t = ThemeManager.get();
         if ("menu".equals(this.target)) {
-            if (this.field_22787.field_1687 == null) {
-                this.method_57728(ctx, delta);
-            } else if (this.field_22787.field_1690.method_57703() >= 1) {
-                ctx.method_71278();
+            if (this.minecraft.level == null) {
+                this.renderPanorama(ctx, delta);
+            } else if (this.minecraft.options.getMenuBackgroundBlurriness() >= 1) {
+                ctx.blurBeforeThisStratum();
             }
-            ctx.method_25296(0, 0, this.field_22789, this.field_22790, ColorUtil.withAlpha(t.bg(), 0.55f), ColorUtil.withAlpha(t.bg(), 0.75f));
-        } else if (this.field_22787.field_1687 == null) {
-            this.method_57728(ctx, delta);
+            ctx.fillGradient(0, 0, this.width, this.height, ColorUtil.withAlpha(t.bg(), 0.55f), ColorUtil.withAlpha(t.bg(), 0.75f));
+        } else if (this.minecraft.level == null) {
+            this.renderPanorama(ctx, delta);
         }
     }
 
-    public void method_25394(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        super.method_25394(ctx, mouseX, mouseY, delta);
+    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+        super.render(ctx, mouseX, mouseY, delta);
         long now = System.nanoTime();
         float dt = this.lastFrame == 0L ? 0.016f : Math.min(0.1f, (float)(now - this.lastFrame) / 1.0E9f);
         this.lastFrame = now;
@@ -216,8 +216,8 @@ implements PopupHost {
             float[] v = this.menuView();
             this.preview.renderPreview(ctx, v[0], v[1], v[2], dt);
         } else {
-            float w = this.field_22789;
-            float h = this.field_22790;
+            float w = this.width;
+            float h = this.height;
             DecorManager.renderScreen(ctx, "\u041f\u043e\u0434 HUD", w, h, true);
             DecorManager.renderScreen(ctx, "\u041f\u043e\u0432\u0435\u0440\u0445 HUD", w, h, true);
             Render2D.outline(ctx, 1.0f, 1.0f, w - 2.0f, h - 2.0f, 0.0f, 1.0f, ColorUtil.withAlpha(t.accent(), 0.5f));
@@ -227,7 +227,7 @@ implements PopupHost {
         if (this.panelShown) {
             this.renderPanel(ctx, t);
         } else {
-            Fonts.draw(ctx, "Tab \u2014 \u043f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u0430\u043d\u0435\u043b\u044c", 8.0f, this.field_22790 - 14, 7.0f, ColorUtil.withAlpha(t.text(), 0.8f), true);
+            Fonts.draw(ctx, "Tab \u2014 \u043f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043f\u0430\u043d\u0435\u043b\u044c", 8.0f, this.height - 14, 7.0f, ColorUtil.withAlpha(t.text(), 0.8f), true);
         }
         if (this.popup != null) {
             this.ui.blocked = false;
@@ -241,7 +241,7 @@ implements PopupHost {
             return;
         }
         float[] g = this.geom(this.selected);
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(g[0], g[1]);
         m.rotate((float)Math.toRadians(this.selected.rotation));
@@ -265,10 +265,10 @@ implements PopupHost {
         if (this.drag == Drag.MOVE && (this.snapX || this.snapY)) {
             int c = ColorUtil.withAlpha(t.accent2(), 0.8f);
             if (this.snapX) {
-                Render2D.line(ctx, g[0], 0.0f, g[0], this.field_22790, 0.8f, c);
+                Render2D.line(ctx, g[0], 0.0f, g[0], this.height, 0.8f, c);
             }
             if (this.snapY) {
-                Render2D.line(ctx, 0.0f, g[1], this.field_22789, g[1], 0.8f, c);
+                Render2D.line(ctx, 0.0f, g[1], this.width, g[1], 0.8f, c);
             }
         }
     }
@@ -318,12 +318,12 @@ implements PopupHost {
         this.buttons.clear();
         this.layerRows.clear();
         float pw = this.panelW();
-        float px = (float)this.field_22789 - pw;
-        Render2D.rect(ctx, px, 0.0f, pw, (float)this.field_22790, Paint.horizontal(px, this.field_22789, ColorUtil.withAlpha(t.bg(), 0.93f), ColorUtil.withAlpha(t.bg2(), 0.96f)));
-        Render2D.rect(ctx, px, 0.0f, 1.0f, (float)this.field_22790, Paint.vertical(0.0f, this.field_22790, t.accent(), t.accent2()));
+        float px = (float)this.width - pw;
+        Render2D.rect(ctx, px, 0.0f, pw, (float)this.height, Paint.horizontal(px, this.width, ColorUtil.withAlpha(t.bg(), 0.93f), ColorUtil.withAlpha(t.bg2(), 0.96f)));
+        Render2D.rect(ctx, px, 0.0f, 1.0f, (float)this.height, Paint.vertical(0.0f, this.height, t.accent(), t.accent2()));
         float x = px + 9.0f;
         float w = pw - 18.0f;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(0.0f, -this.scroll);
         float my = this.ui.my;
@@ -450,7 +450,7 @@ implements PopupHost {
         float f = y + 6.0f;
         this.ui.my = my;
         m.popMatrix();
-        this.scroll = Math.max(0.0f, Math.min(this.scroll, f - (float)this.field_22790));
+        this.scroll = Math.max(0.0f, Math.min(this.scroll, f - (float)this.height));
     }
 
     private void tab(GuiGraphics ctx, Theme t, float x, float y, float w, String label, String tgt) {
@@ -478,8 +478,8 @@ implements PopupHost {
         }
         float a = Math.min(1.0f, Math.min((float)age / 150.0f, (float)(2200L - age) / 300.0f));
         float tw = Fonts.width(this.toast, 7.5f, true) + 20.0f;
-        float x = ((float)this.field_22789 - this.panelW() - tw) / 2.0f;
-        float y = this.field_22790 - 34;
+        float x = ((float)this.width - this.panelW() - tw) / 2.0f;
+        float y = this.height - 34;
         Render2D.roundRect(ctx, x, y, tw, 18.0f, 9.0f, ColorUtil.withAlpha(t.bg2(), 0.95f * a));
         Render2D.outline(ctx, x, y, tw, 18.0f, 9.0f, 0.8f, ColorUtil.withAlpha(t.accent2(), 0.8f * a));
         Fonts.drawCentered(ctx, this.toast, x + tw / 2.0f, y + 5.5f, 7.5f, ColorUtil.withAlpha(t.text(), a), true);
@@ -659,7 +659,7 @@ implements PopupHost {
             apply.accept((String)v);
             this.closePopup();
         }, this::closePopup));
-        this.popup.fit(this.field_22789, this.field_22790);
+        this.popup.fit(this.width, this.height);
     }
 
     private void buildGlobalRows() {
@@ -799,7 +799,7 @@ implements PopupHost {
     }
 
     private boolean overPanel(double mx) {
-        return this.panelShown && mx >= (double)((float)this.field_22789 - this.panelW());
+        return this.panelShown && mx >= (double)((float)this.width - this.panelW());
     }
 
     public boolean mouseClicked(double mx, double my, int button) {
@@ -937,12 +937,12 @@ implements PopupHost {
                 case 0: {
                     List<String> images = DecorManager.images();
                     this.openPopup(new DropdownPopup(b[0], b[1] + b[3] + 2.0f - this.scroll, Math.max(b[2], 150.0f), images, () -> "", this::addImage, this::closePopup));
-                    this.popup.fit(this.field_22789, this.field_22790);
+                    this.popup.fit(this.width, this.height);
                     break;
                 }
                 case 1: {
                     ArtManager.artDir().toFile().mkdirs();
-                    Util.method_668().method_672(ArtManager.artDir().toFile());
+                    Util.getPlatform().openFile(ArtManager.artDir().toFile());
                     break;
                 }
                 case 200: {
@@ -995,7 +995,7 @@ implements PopupHost {
             if (this.drag == Drag.ELEMENT_MOVE) {
                 o.dx = this.startDx + ((float)mx - this.startMx) / s;
                 o.dy = this.startDy + ((float)my - this.startMy) / s;
-                if (this.field_22787.method_74187()) {
+                if (this.minecraft.hasShiftDown()) {
                     if (Math.abs(o.dx - this.startDx) > Math.abs(o.dy - this.startDy)) {
                         o.dy = this.startDy;
                     } else {
@@ -1017,7 +1017,7 @@ implements PopupHost {
             return false;
         }
         float[] g = this.startGeom;
-        boolean shift = this.field_22787.method_74187();
+        boolean shift = this.minecraft.hasShiftDown();
         switch (this.drag.ordinal()) {
             case 1: {
                 float cx = g[0] + (float)mx - this.startMx;
@@ -1075,7 +1075,7 @@ implements PopupHost {
             float[] v = this.menuView();
             return new float[]{v[0] + this.preview.layoutDesignWidth() * v[2] / 2.0f, v[1] + 600.0f * v[2] / 2.0f};
         }
-        return new float[]{(float)this.field_22789 / 2.0f, (float)this.field_22790 / 2.0f};
+        return new float[]{(float)this.width / 2.0f, (float)this.height / 2.0f};
     }
 
     public boolean mouseReleased(double mx, double my, int button) {
@@ -1096,7 +1096,7 @@ implements PopupHost {
         return true;
     }
 
-    public boolean method_25401(double mx, double my, double h, double v) {
+    public boolean mouseScrolled(double mx, double my, double h, double v) {
         GuiStyle.Element info;
         if (this.popup != null && this.popup.mouseScrolled(mx, my, v)) {
             return true;
@@ -1132,7 +1132,7 @@ implements PopupHost {
                 if (this.popup != null) {
                     this.closePopup();
                 } else {
-                    this.method_25419();
+                    this.onClose();
                 }
                 return true;
             }
@@ -1203,7 +1203,7 @@ implements PopupHost {
                 return true;
             }
         }
-        return super.method_25404(new KeyEvent(key, scan, mods));
+        return super.keyPressed(new KeyEvent(key, scan, mods));
     }
 
     public boolean charTyped(char chr, int modifiers) {
@@ -1269,26 +1269,26 @@ implements PopupHost {
         return this.focus;
     }
 
-    public boolean method_25402(MouseButtonEvent click, boolean doubled) {
-        return this.mouseClicked(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        return this.mouseClicked(click.x(), click.y(), click.button());
     }
 
-    public boolean method_25406(MouseButtonEvent click) {
-        return this.mouseReleased(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseReleased(MouseButtonEvent click) {
+        return this.mouseReleased(click.x(), click.y(), click.button());
     }
 
-    public boolean method_25403(MouseButtonEvent click, double dx, double dy) {
-        return this.mouseDragged(click.comp_4798(), click.comp_4799(), click.method_74245(), dx, dy);
+    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
+        return this.mouseDragged(click.x(), click.y(), click.button(), dx, dy);
     }
 
-    public boolean method_25404(KeyEvent input) {
-        return this.keyPressed(input.comp_4795(), input.comp_4796(), input.comp_4797());
+    public boolean keyPressed(KeyEvent input) {
+        return this.keyPressed(input.key(), input.scancode(), input.modifiers());
     }
 
-    public boolean method_25400(CharacterEvent input) {
+    public boolean charTyped(CharacterEvent input) {
         boolean handled = false;
-        for (char ch : input.method_74226().toCharArray()) {
-            handled |= this.charTyped(ch, input.comp_4794());
+        for (char ch : input.codepointAsString().toCharArray()) {
+            handled |= this.charTyped(ch, input.modifiers());
         }
         return handled;
     }

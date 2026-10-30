@@ -37,16 +37,16 @@ extends Module {
     private static final String[] PARTICLES = new String[]{"\u0412\u0441\u0435", "\u041c\u0435\u043d\u044c\u0448\u0435", "\u041c\u0438\u043d\u0438\u043c\u0443\u043c"};
     private static final String[] CLOUDS = new String[]{"\u0412\u044b\u043a\u043b.", "\u0411\u044b\u0441\u0442\u0440\u044b\u0435", "\u0414\u0435\u0442\u0430\u043b\u044c\u043d\u044b\u0435"};
     private final ModeSetting preset = this.add((ModeSetting)((Setting)new ModeSetting("\u0420\u0435\u0436\u0438\u043c \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438", "\u0421\u0432\u043e\u0451", "\u0421\u0432\u043e\u0451", "\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e", "\u0421\u0431\u0430\u043b\u0430\u043d\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439", "\u041f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c").desc("\u0412\u044b\u0441\u0442\u0430\u0432\u043b\u044f\u0435\u0442 \u043d\u0430\u0431\u043e\u0440 \u0448\u0442\u0430\u0442\u043d\u044b\u0445 \u043e\u043f\u0446\u0438\u0439 \u0433\u0440\u0430\u0444\u0438\u043a\u0438")).onChange(this::applyPreset));
-    private final NumberSetting renderDistance = this.add((NumberSetting)new NumberSetting("\u0414\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u043f\u0440\u043e\u0440\u0438\u0441\u043e\u0432\u043a\u0438", 12.0, 2.0, 32.0, 1.0).unit(" \u0447\u0430\u043d\u043a\u043e\u0432").bind(() -> (double)((Integer)PerformanceModule.mc.field_1690.method_42503().method_41753()), v -> this.setOpt(PerformanceModule.mc.field_1690.method_42503(), (int)Math.round(v))));
-    private final NumberSetting simulation = this.add((NumberSetting)new NumberSetting("\u0414\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0441\u0438\u043c\u0443\u043b\u044f\u0446\u0438\u0438", 12.0, 5.0, 32.0, 1.0).unit(" \u0447\u0430\u043d\u043a\u043e\u0432").bind(() -> (double)((Integer)PerformanceModule.mc.field_1690.method_42510().method_41753()), v -> this.setOpt(PerformanceModule.mc.field_1690.method_42510(), (int)Math.round(v))));
-    private final NumberSetting maxFps = this.add((NumberSetting)new NumberSetting("\u041c\u0430\u043a\u0441. FPS", 120.0, 10.0, 260.0, 10.0).format(v -> v >= 260.0 ? "\u0411\u0435\u0437 \u043e\u0433\u0440." : String.valueOf((int)Math.round(v))).bind(() -> (double)((Integer)PerformanceModule.mc.field_1690.method_42524().method_41753()), v -> this.setOpt(PerformanceModule.mc.field_1690.method_42524(), (int)Math.round(v))));
-    private final BooleanSetting vsync = this.add((BooleanSetting)new BooleanSetting("VSync", false).bind(() -> (Boolean)PerformanceModule.mc.field_1690.method_42433().method_41753(), v -> this.setOpt(PerformanceModule.mc.field_1690.method_42433(), v)));
-    private final ModeSetting graphics = this.add((ModeSetting)new ModeSetting("\u0413\u0440\u0430\u0444\u0438\u043a\u0430", "\u0414\u0435\u0442\u0430\u043b\u044c\u043d\u0430\u044f", GRAPHICS).bind(() -> GRAPHICS[Math.min(GRAPHICS.length - 1, ((GraphicsPreset)PerformanceModule.mc.field_1690.method_75329().method_41753()).ordinal())], v -> PerformanceModule.applyPreset(GraphicsPreset.values()[PerformanceModule.indexOf(GRAPHICS, v)])));
-    private final ModeSetting particles = this.add((ModeSetting)new ModeSetting("\u0427\u0430\u0441\u0442\u0438\u0446\u044b Minecraft", "\u0412\u0441\u0435", PARTICLES).bind(() -> PARTICLES[((ParticleStatus)PerformanceModule.mc.field_1690.method_42475().method_41753()).ordinal()], v -> this.setOpt(PerformanceModule.mc.field_1690.method_42475(), ParticleStatus.values()[PerformanceModule.indexOf(PARTICLES, v)])));
-    private final ModeSetting clouds = this.add((ModeSetting)new ModeSetting("\u041e\u0431\u043b\u0430\u043a\u0430", "\u0414\u0435\u0442\u0430\u043b\u044c\u043d\u044b\u0435", CLOUDS).bind(() -> CLOUDS[((CloudStatus)PerformanceModule.mc.field_1690.method_42528().method_41753()).ordinal()], v -> this.setOpt(PerformanceModule.mc.field_1690.method_42528(), CloudStatus.values()[PerformanceModule.indexOf(CLOUDS, v)])));
-    private final BooleanSetting shadows = this.add((BooleanSetting)new BooleanSetting("\u0422\u0435\u043d\u0438 \u0441\u0443\u0449\u043d\u043e\u0441\u0442\u0435\u0439", true).bind(() -> (Boolean)PerformanceModule.mc.field_1690.method_42435().method_41753(), v -> this.setOpt(PerformanceModule.mc.field_1690.method_42435(), v)));
-    private final BooleanSetting smoothLight = this.add((BooleanSetting)new BooleanSetting("\u041c\u044f\u0433\u043a\u043e\u0435 \u043e\u0441\u0432\u0435\u0449\u0435\u043d\u0438\u0435", true).bind(() -> (Boolean)PerformanceModule.mc.field_1690.method_41792().method_41753(), v -> this.setOpt(PerformanceModule.mc.field_1690.method_41792(), v)));
-    private final NumberSetting biomeBlend = this.add((NumberSetting)new NumberSetting("\u0421\u0433\u043b\u0430\u0436\u0438\u0432\u0430\u043d\u0438\u0435 \u0431\u0438\u043e\u043c\u043e\u0432", 2.0, 0.0, 7.0, 1.0).bind(() -> (double)((Integer)PerformanceModule.mc.field_1690.method_41805().method_41753()), v -> this.setOpt(PerformanceModule.mc.field_1690.method_41805(), (int)Math.round(v))));
+    private final NumberSetting renderDistance = this.add((NumberSetting)new NumberSetting("\u0414\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u043f\u0440\u043e\u0440\u0438\u0441\u043e\u0432\u043a\u0438", 12.0, 2.0, 32.0, 1.0).unit(" \u0447\u0430\u043d\u043a\u043e\u0432").bind(() -> (double)((Integer)PerformanceModule.mc.options.renderDistance().get()), v -> this.setOpt(PerformanceModule.mc.options.renderDistance(), (int)Math.round(v))));
+    private final NumberSetting simulation = this.add((NumberSetting)new NumberSetting("\u0414\u0430\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0441\u0438\u043c\u0443\u043b\u044f\u0446\u0438\u0438", 12.0, 5.0, 32.0, 1.0).unit(" \u0447\u0430\u043d\u043a\u043e\u0432").bind(() -> (double)((Integer)PerformanceModule.mc.options.simulationDistance().get()), v -> this.setOpt(PerformanceModule.mc.options.simulationDistance(), (int)Math.round(v))));
+    private final NumberSetting maxFps = this.add((NumberSetting)new NumberSetting("\u041c\u0430\u043a\u0441. FPS", 120.0, 10.0, 260.0, 10.0).format(v -> v >= 260.0 ? "\u0411\u0435\u0437 \u043e\u0433\u0440." : String.valueOf((int)Math.round(v))).bind(() -> (double)((Integer)PerformanceModule.mc.options.framerateLimit().get()), v -> this.setOpt(PerformanceModule.mc.options.framerateLimit(), (int)Math.round(v))));
+    private final BooleanSetting vsync = this.add((BooleanSetting)new BooleanSetting("VSync", false).bind(() -> (Boolean)PerformanceModule.mc.options.enableVsync().get(), v -> this.setOpt(PerformanceModule.mc.options.enableVsync(), v)));
+    private final ModeSetting graphics = this.add((ModeSetting)new ModeSetting("\u0413\u0440\u0430\u0444\u0438\u043a\u0430", "\u0414\u0435\u0442\u0430\u043b\u044c\u043d\u0430\u044f", GRAPHICS).bind(() -> GRAPHICS[Math.min(GRAPHICS.length - 1, ((GraphicsPreset)PerformanceModule.mc.options.graphicsPreset().get()).ordinal())], v -> PerformanceModule.applyPreset(GraphicsPreset.values()[PerformanceModule.indexOf(GRAPHICS, v)])));
+    private final ModeSetting particles = this.add((ModeSetting)new ModeSetting("\u0427\u0430\u0441\u0442\u0438\u0446\u044b Minecraft", "\u0412\u0441\u0435", PARTICLES).bind(() -> PARTICLES[((ParticleStatus)PerformanceModule.mc.options.particles().get()).ordinal()], v -> this.setOpt(PerformanceModule.mc.options.particles(), ParticleStatus.values()[PerformanceModule.indexOf(PARTICLES, v)])));
+    private final ModeSetting clouds = this.add((ModeSetting)new ModeSetting("\u041e\u0431\u043b\u0430\u043a\u0430", "\u0414\u0435\u0442\u0430\u043b\u044c\u043d\u044b\u0435", CLOUDS).bind(() -> CLOUDS[((CloudStatus)PerformanceModule.mc.options.cloudStatus().get()).ordinal()], v -> this.setOpt(PerformanceModule.mc.options.cloudStatus(), CloudStatus.values()[PerformanceModule.indexOf(CLOUDS, v)])));
+    private final BooleanSetting shadows = this.add((BooleanSetting)new BooleanSetting("\u0422\u0435\u043d\u0438 \u0441\u0443\u0449\u043d\u043e\u0441\u0442\u0435\u0439", true).bind(() -> (Boolean)PerformanceModule.mc.options.entityShadows().get(), v -> this.setOpt(PerformanceModule.mc.options.entityShadows(), v)));
+    private final BooleanSetting smoothLight = this.add((BooleanSetting)new BooleanSetting("\u041c\u044f\u0433\u043a\u043e\u0435 \u043e\u0441\u0432\u0435\u0449\u0435\u043d\u0438\u0435", true).bind(() -> (Boolean)PerformanceModule.mc.options.ambientOcclusion().get(), v -> this.setOpt(PerformanceModule.mc.options.ambientOcclusion(), v)));
+    private final NumberSetting biomeBlend = this.add((NumberSetting)new NumberSetting("\u0421\u0433\u043b\u0430\u0436\u0438\u0432\u0430\u043d\u0438\u0435 \u0431\u0438\u043e\u043c\u043e\u0432", 2.0, 0.0, 7.0, 1.0).bind(() -> (double)((Integer)PerformanceModule.mc.options.biomeBlendRadius().get()), v -> this.setOpt(PerformanceModule.mc.options.biomeBlendRadius(), (int)Math.round(v))));
     private final NumberSetting decorLimit = this.add((NumberSetting)new NumberSetting("\u041b\u0438\u043c\u0438\u0442 \u0447\u0430\u0441\u0442\u0438\u0446 Astra", 100.0, 0.0, 100.0, 5.0).unit("%").desc("\u0414\u0435\u043a\u043e\u0440\u0430\u0442\u0438\u0432\u043d\u044b\u0435 \u0447\u0430\u0441\u0442\u0438\u0446\u044b \u043a\u043b\u0438\u0435\u043d\u0442\u0430 (\u0430\u0442\u043c\u043e\u0441\u0444\u0435\u0440\u0430, \u0443\u0434\u0430\u0440\u044b, \u043a\u043e\u0441\u043c\u0435\u0442\u0438\u043a\u0430)"));
     private final BooleanSetting lightUi = this.add((BooleanSetting)((Setting)new BooleanSetting("\u041b\u0451\u0433\u043a\u0438\u0439 \u0438\u043d\u0442\u0435\u0440\u0444\u0435\u0439\u0441", false).desc("\u041e\u0442\u043a\u043b\u044e\u0447\u0430\u0435\u0442 \u0440\u0430\u0437\u043c\u044b\u0442\u0438\u0435 \u0438 \u0441\u0432\u0435\u0447\u0435\u043d\u0438\u0435 \u043c\u0435\u043d\u044e")).onChange(v -> {
         ClientSettings cs = ClientSettings.get();
@@ -70,44 +70,44 @@ extends Module {
     }
 
     private <T> void setOpt(OptionInstance<T> option, T value) {
-        option.method_41748(value);
-        PerformanceModule.mc.field_1690.method_1640();
+        option.set(value);
+        PerformanceModule.mc.options.save();
     }
 
     private void applyPreset(String name) {
         switch (name) {
             case "\u041a\u0430\u0447\u0435\u0441\u0442\u0432\u043e": {
-                PerformanceModule.applyPreset(GraphicsPreset.field_25428);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42475(), ParticleStatus.field_18197);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42528(), CloudStatus.field_18164);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42435(), true);
-                this.setOpt(PerformanceModule.mc.field_1690.method_41792(), true);
-                this.setOpt(PerformanceModule.mc.field_1690.method_41805(), 3);
+                PerformanceModule.applyPreset(GraphicsPreset.FANCY);
+                this.setOpt(PerformanceModule.mc.options.particles(), ParticleStatus.ALL);
+                this.setOpt(PerformanceModule.mc.options.cloudStatus(), CloudStatus.FANCY);
+                this.setOpt(PerformanceModule.mc.options.entityShadows(), true);
+                this.setOpt(PerformanceModule.mc.options.ambientOcclusion(), true);
+                this.setOpt(PerformanceModule.mc.options.biomeBlendRadius(), 3);
                 this.decorLimit.set(100.0);
                 break;
             }
             case "\u0421\u0431\u0430\u043b\u0430\u043d\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0439": {
-                PerformanceModule.applyPreset(GraphicsPreset.field_25428);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42475(), ParticleStatus.field_18198);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42528(), CloudStatus.field_18163);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42435(), true);
-                this.setOpt(PerformanceModule.mc.field_1690.method_41792(), true);
-                this.setOpt(PerformanceModule.mc.field_1690.method_41805(), 2);
-                if ((Integer)PerformanceModule.mc.field_1690.method_42503().method_41753() > 12) {
-                    this.setOpt(PerformanceModule.mc.field_1690.method_42503(), 12);
+                PerformanceModule.applyPreset(GraphicsPreset.FANCY);
+                this.setOpt(PerformanceModule.mc.options.particles(), ParticleStatus.DECREASED);
+                this.setOpt(PerformanceModule.mc.options.cloudStatus(), CloudStatus.FAST);
+                this.setOpt(PerformanceModule.mc.options.entityShadows(), true);
+                this.setOpt(PerformanceModule.mc.options.ambientOcclusion(), true);
+                this.setOpt(PerformanceModule.mc.options.biomeBlendRadius(), 2);
+                if ((Integer)PerformanceModule.mc.options.renderDistance().get() > 12) {
+                    this.setOpt(PerformanceModule.mc.options.renderDistance(), 12);
                 }
                 this.decorLimit.set(60.0);
                 break;
             }
             case "\u041f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c": {
-                PerformanceModule.applyPreset(GraphicsPreset.field_25427);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42475(), ParticleStatus.field_18199);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42528(), CloudStatus.field_18162);
-                this.setOpt(PerformanceModule.mc.field_1690.method_42435(), false);
-                this.setOpt(PerformanceModule.mc.field_1690.method_41792(), false);
-                this.setOpt(PerformanceModule.mc.field_1690.method_41805(), 0);
-                if ((Integer)PerformanceModule.mc.field_1690.method_42503().method_41753() > 8) {
-                    this.setOpt(PerformanceModule.mc.field_1690.method_42503(), 8);
+                PerformanceModule.applyPreset(GraphicsPreset.FAST);
+                this.setOpt(PerformanceModule.mc.options.particles(), ParticleStatus.MINIMAL);
+                this.setOpt(PerformanceModule.mc.options.cloudStatus(), CloudStatus.OFF);
+                this.setOpt(PerformanceModule.mc.options.entityShadows(), false);
+                this.setOpt(PerformanceModule.mc.options.ambientOcclusion(), false);
+                this.setOpt(PerformanceModule.mc.options.biomeBlendRadius(), 0);
+                if ((Integer)PerformanceModule.mc.options.renderDistance().get() > 8) {
+                    this.setOpt(PerformanceModule.mc.options.renderDistance(), 8);
                 }
                 this.decorLimit.set(25.0);
                 break;
@@ -148,12 +148,12 @@ extends Module {
     }
 
     private static void applyPreset(GraphicsPreset mode) {
-        if (PerformanceModule.mc.field_1690.method_75329().method_41753() == mode) {
+        if (PerformanceModule.mc.options.graphicsPreset().get() == mode) {
             return;
         }
-        PerformanceModule.mc.field_1690.method_75329().method_41748((Object)mode);
-        mode.method_75306(mc);
-        PerformanceModule.mc.field_1690.method_1640();
+        PerformanceModule.mc.options.graphicsPreset().set((Object)mode);
+        mode.apply(mc);
+        PerformanceModule.mc.options.save();
     }
 }
 

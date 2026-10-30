@@ -149,8 +149,8 @@ extends Module {
         }
         try {
             Class<?> screen = Class.forName("net.irisshaders.iris.gui.screen.ShaderPackScreen");
-            Object s = screen.getConstructor(Screen.class).newInstance(ShadersModule.mc.field_1755);
-            mc.method_1507((Screen)s);
+            Object s = screen.getConstructor(Screen.class).newInstance(ShadersModule.mc.screen);
+            mc.setScreen((Screen)s);
         }
         catch (ReflectiveOperationException | RuntimeException e) {
             AstraClient.LOGGER.warn("Iris: \u043d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u044d\u043a\u0440\u0430\u043d \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043a", (Throwable)e);
@@ -165,7 +165,7 @@ extends Module {
         catch (IOException iOException) {
             // empty catch block
         }
-        Util.method_668().method_672(this.packsDir().toFile());
+        Util.getPlatform().openFile(this.packsDir().toFile());
     }
 
     @Override

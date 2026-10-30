@@ -26,7 +26,7 @@ extends Module {
             this.lastSpeed = (Double)this.speed.get();
             this.anim = new Animation(this.anim.get(), (float)(3.0 / Math.max(0.1, (Double)this.speed.get())));
         }
-        boolean sprinting = SprintFov.mc.field_1724 != null && SprintFov.mc.field_1724.method_5624();
+        boolean sprinting = SprintFov.mc.player != null && SprintFov.mc.player.isSprinting();
         return this.anim.update(sprinting ? this.increase.getFloat() : 0.0f, FrameStats.delta());
     }
 }

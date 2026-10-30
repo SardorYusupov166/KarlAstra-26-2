@@ -94,7 +94,7 @@ implements PopupHost {
     }
 
     public ClickGuiScreen(Screen parent, boolean preview) {
-        super((Component)Component.method_43470((String)"Astra"));
+        super((Component)Component.literal((String)"Astra"));
         this.parent = parent;
         this.preview = preview;
         this.category = lastCategory;
@@ -127,7 +127,7 @@ implements PopupHost {
         this.ui.mx = -10000.0f;
         this.ui.my = -10000.0f;
         this.ui.blocked = true;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(ox, oy);
         m.scale(s, s);
@@ -189,18 +189,18 @@ implements PopupHost {
         return this.pages.computeIfAbsent(c, cat -> Pages.create(this, cat));
     }
 
-    protected void method_25426() {
+    protected void init() {
         this.page(this.category).onShow();
     }
 
-    public boolean method_25421() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     private void computeLayout() {
-        double gui = this.field_22787.method_22683().method_4495();
-        float screenPxW = (float)((double)this.field_22789 * gui);
-        float screenPxH = (float)((double)this.field_22790 * gui);
+        double gui = this.minecraft.getWindow().getGuiScale();
+        float screenPxW = (float)((double)this.width * gui);
+        float screenPxH = (float)((double)this.height * gui);
         float sizeMul = ClientSettings.get() != null ? ClientSettings.get().uiScale.getFloat() / 100.0f : 1.0f;
         float pxPerUnit = screenPxH * 0.86f / 600.0f * sizeMul;
         this.designW = Math.min(1180.0f, Math.max(880.0f, screenPxW * 0.9f / pxPerUnit));
@@ -208,8 +208,8 @@ implements PopupHost {
             pxPerUnit = screenPxW * 0.97f / this.designW;
         }
         this.scale = (float)((double)pxPerUnit / gui);
-        this.originX = ((float)this.field_22789 - this.designW * this.scale) / 2.0f;
-        this.originY = ((float)this.field_22790 - 600.0f * this.scale) / 2.0f;
+        this.originX = ((float)this.width - this.designW * this.scale) / 2.0f;
+        this.originY = ((float)this.height - 600.0f * this.scale) / 2.0f;
     }
 
     private double toDesignX(double guiX) {
@@ -222,26 +222,26 @@ implements PopupHost {
         return (guiY - cy) / (double)(this.scale * this.zoom) + 300.0;
     }
 
-    public void method_25420(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-        if (this.field_22787.field_1687 == null) {
-            this.method_57728(ctx, delta);
+    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+        if (this.minecraft.level == null) {
+            this.renderPanorama(ctx, delta);
         }
         float e = AnimationUtils.easeOutCubic(this.openProgress);
         ClientSettings cs = ClientSettings.get();
-        if ((cs == null || ((Boolean)cs.blur.get()).booleanValue()) && this.field_22787.field_1690.method_57703() >= 1) {
-            ctx.method_71278();
+        if ((cs == null || ((Boolean)cs.blur.get()).booleanValue()) && this.minecraft.options.getMenuBackgroundBlurriness() >= 1) {
+            ctx.blurBeforeThisStratum();
         }
         float dim = cs != null ? cs.dim.getFloat() / 100.0f : 0.45f;
         Theme t = ThemeManager.get();
         int top = ColorUtil.withAlpha(t.bg(), dim * 0.75f * e);
         int bottom = ColorUtil.withAlpha(ColorUtil.lerp(t.bg(), t.accent(), 0.12f), dim * e);
-        ctx.method_25296(0, 0, this.field_22789, this.field_22790, top, bottom);
+        ctx.fillGradient(0, 0, this.width, this.height, top, bottom);
     }
 
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public void method_25394(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
         long now = System.nanoTime();
         float dt = this.lastFrame == 0L ? 0.016f : Math.min(0.1f, (float)(now - this.lastFrame) / 1.0E9f);
         this.lastFrame = now;
@@ -259,8 +259,8 @@ implements PopupHost {
         float alpha = AnimationUtils.easeOutCubic(this.openProgress);
         this.computeLayout();
         this.zoom = 0.92f + 0.08f * e;
-        double gmx = this.field_22787.field_1729.method_1603() * (double)this.field_22789 / (double)this.field_22787.method_22683().method_4480();
-        double gmy = this.field_22787.field_1729.method_1604() * (double)this.field_22790 / (double)this.field_22787.method_22683().method_4507();
+        double gmx = this.minecraft.mouseHandler.xpos() * (double)this.width / (double)this.minecraft.getWindow().getScreenWidth();
+        double gmy = this.minecraft.mouseHandler.ypos() * (double)this.height / (double)this.minecraft.getWindow().getScreenHeight();
         this.ui.ctx = ctx;
         this.ui.dt = dt;
         this.ui.theme = ThemeManager.get();
@@ -268,7 +268,7 @@ implements PopupHost {
         this.ui.my = (float)this.toDesignY(gmy);
         this.ui.blocked = this.popup != null && this.popup.contains(this.ui.mx, this.ui.my);
         Render2D.alpha = alpha;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(this.originX + this.designW * this.scale / 2.0f, this.originY + 600.0f * this.scale / 2.0f);
         m.scale(this.scale * this.zoom, this.scale * this.zoom);
@@ -322,13 +322,13 @@ implements PopupHost {
         ArtManager.drawSidebarArt(ctx, t, 2.0f, H - 92.0f, 192.0f, H * 0.62f, 0.85f);
         if (ClientSettings.get() == null || ((Boolean)ClientSettings.get().petals.get()).booleanValue()) {
             this.petals.update(ui.dt, W, H);
-            ctx.method_44379(0, 0, (int)W, (int)H);
+            ctx.enableScissor(0, 0, (int)W, (int)H);
             this.petals.render(ctx, t, 1.0f);
-            ctx.method_44380();
+            ctx.disableScissor();
         }
-        ctx.method_44379(0, 0, (int)W, (int)H);
+        ctx.enableScissor(0, 0, (int)W, (int)H);
         DecorManager.renderMenu(ctx, "\u0424\u043e\u043d \u043e\u043a\u043d\u0430", W);
-        ctx.method_44380();
+        ctx.disableScissor();
         this.renderSidebar(ui);
         float cx = 196.0f;
         float cy = 12.0f;
@@ -366,7 +366,7 @@ implements PopupHost {
         if (GuiStyle.begin(ctx, ui, "content", hx, py, cw - 28.0f - 6.0f, cy + ch - py - 10.0f)) {
             float prev = Render2D.alpha;
             Render2D.alpha *= fade;
-            Matrix3x2fStack m = ctx.method_51448();
+            Matrix3x2fStack m = ctx.pose();
             m.pushMatrix();
             m.translate(0.0f, (1.0f - fade) * 10.0f);
             page.render(ui);
@@ -526,7 +526,7 @@ implements PopupHost {
             if (!(mx >= (double)ix) || !(mx < (double)(ix + size)) || !(my >= (double)iy) || !(my < (double)(iy + size))) continue;
             switch (i) {
                 case 0: {
-                    Util.method_668().method_672(ConfigManager.profilesDir().toFile());
+                    Util.getPlatform().openFile(ConfigManager.profilesDir().toFile());
                     break;
                 }
                 case 1: {
@@ -654,7 +654,7 @@ implements PopupHost {
         float closeY = cy + 10.0f;
         float[] cp = ClickGuiScreen.unmap("close", this.closeRect, mx, my);
         if (!GuiStyle.hidden("close") && cp[0] >= closeX - 3.0f && cp[0] < closeX + 17.0f && cp[1] >= closeY - 3.0f && cp[1] < closeY + 17.0f) {
-            this.method_25419();
+            this.onClose();
             return true;
         }
         float itemX = 12.0f;
@@ -710,7 +710,7 @@ implements PopupHost {
         return true;
     }
 
-    public boolean method_25401(double mouseX, double mouseY, double horizontal, double vertical) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double vertical) {
         this.updateMouse(mouseX, mouseY);
         if (this.popup != null && this.popup.mouseScrolled(this.ui.mx, this.ui.my, vertical)) {
             return true;
@@ -730,8 +730,8 @@ implements PopupHost {
             this.closePopup();
             return true;
         }
-        if (AstraClient.openGuiKey != null && AstraClient.openGuiKey.method_1417(new KeyEvent(keyCode, scanCode, modifiers))) {
-            this.method_25419();
+        if (AstraClient.openGuiKey != null && AstraClient.openGuiKey.matches(new KeyEvent(keyCode, scanCode, modifiers))) {
+            this.onClose();
             return true;
         }
         if (this.popup == null && (keyCode == 258 || keyCode == 264 || keyCode == 265) && (modifiers & 2) != 0) {
@@ -740,7 +740,7 @@ implements PopupHost {
             this.setCategory(cats[Math.floorMod(this.category.ordinal() + dir, cats.length)]);
             return true;
         }
-        return super.method_25404(new KeyEvent(keyCode, scanCode, modifiers));
+        return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
     }
 
     public boolean charTyped(char chr, int modifiers) {
@@ -750,7 +750,7 @@ implements PopupHost {
         return this.page(this.category).charTyped(chr, modifiers);
     }
 
-    public void method_25419() {
+    public void onClose() {
         if (this.closing) {
             return;
         }
@@ -766,7 +766,7 @@ implements PopupHost {
         }
     }
 
-    public void method_25432() {
+    public void removed() {
         ModuleCard.collapseAll();
         this.closePopup();
         this.setFocus(null);
@@ -774,33 +774,33 @@ implements PopupHost {
 
     private void finishClose() {
         ConfigManager.save();
-        this.field_22787.method_1507(this.parent);
+        this.minecraft.setScreen(this.parent);
     }
 
     public void openHudEditor() {
-        this.field_22787.method_1507((Screen)new HudEditorScreen(this));
+        this.minecraft.setScreen((Screen)new HudEditorScreen(this));
     }
 
-    public boolean method_25402(MouseButtonEvent click, boolean doubled) {
-        return this.mouseClicked(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        return this.mouseClicked(click.x(), click.y(), click.button());
     }
 
-    public boolean method_25406(MouseButtonEvent click) {
-        return this.mouseReleased(click.comp_4798(), click.comp_4799(), click.method_74245());
+    public boolean mouseReleased(MouseButtonEvent click) {
+        return this.mouseReleased(click.x(), click.y(), click.button());
     }
 
-    public boolean method_25403(MouseButtonEvent click, double dx, double dy) {
-        return this.mouseDragged(click.comp_4798(), click.comp_4799(), click.method_74245(), dx, dy);
+    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
+        return this.mouseDragged(click.x(), click.y(), click.button(), dx, dy);
     }
 
-    public boolean method_25404(KeyEvent input) {
-        return this.keyPressed(input.comp_4795(), input.comp_4796(), input.comp_4797());
+    public boolean keyPressed(KeyEvent input) {
+        return this.keyPressed(input.key(), input.scancode(), input.modifiers());
     }
 
-    public boolean method_25400(CharacterEvent input) {
+    public boolean charTyped(CharacterEvent input) {
         boolean handled = false;
-        for (char ch : input.method_74226().toCharArray()) {
-            handled |= this.charTyped(ch, input.comp_4794());
+        for (char ch : input.codepointAsString().toCharArray()) {
+            handled |= this.charTyped(ch, input.modifiers());
         }
         return handled;
     }

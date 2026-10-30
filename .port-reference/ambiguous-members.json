@@ -1,0 +1,34 @@
+{
+  "field_28859": {
+    "DEEPSLATE_BRICKS": 2,
+    "sleepStatus": 2
+  },
+  "field_28860": {
+    "DEEPSLATE_TILES": 2,
+    "textFilteringEnabled": 2
+  },
+  "field_28862": {
+    "COBBLED_DEEPSLATE_WALL": 2,
+    "DUMMY": 2
+  },
+  "field_28863": {
+    "EMPTY": 2,
+    "POLISHED_DEEPSLATE_WALL": 2
+  },
+  "field_28866": {
+    "DEEPSLATE": 2,
+    "activePlayers": 2
+  },
+  "field_28867": {
+    "COBBLED_DEEPSLATE_STAIRS": 2,
+    "sleepingPlayers": 2
+  },
+  "method_14452": {
+    "count": 2,
+    "getPositions": 2
+  },
+  "method_6001": {
+    "randomizeAttributes": 2,
+    "randomizeReinforcementsChance": 2
+  }
+}

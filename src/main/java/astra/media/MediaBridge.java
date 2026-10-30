@@ -67,7 +67,7 @@ public final class MediaBridge {
     }
 
     public static boolean supported() {
-        return Util.method_668() == Util.OS.field_1133;
+        return Util.getPlatform() == Util.OS.WINDOWS;
     }
 
     public static boolean running() {

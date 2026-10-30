@@ -132,7 +132,7 @@ extends AstraInspectorScreen {
         String label = choices.entrySet().stream().filter(e -> ((String)e.getValue()).equals(this.selected)).map(Map.Entry::getKey).findFirst().orElse("\u042d\u043b\u0435\u043c\u0435\u043d\u0442");
         list.add((Setting<?>)new ModeSetting("\u042d\u043b\u0435\u043c\u0435\u043d\u0442", label, (String[])choices.keySet().toArray(String[]::new)).bind(() -> choices.entrySet().stream().filter(e -> ((String)e.getValue()).equals(this.selected)).map(Map.Entry::getKey).findFirst().orElse(label), v -> {
             this.selected = (String)choices.get(v);
-            this.field_22787.execute(this::rebuildRows);
+            this.minecraft.execute(this::rebuildRows);
         }));
         list.add(this.number("\u041f\u043e\u0437\u0438\u0446\u0438\u044f X, %", -100.0f, 100.0f, 0.1f, () -> Float.valueOf(o.dx * 100.0f), v -> {
             o.dx = v.floatValue() / 100.0f;
@@ -246,7 +246,7 @@ extends AstraInspectorScreen {
             catch (Exception e) {
                 throw new CompletionException(e);
             }
-        }).whenComplete((image, error) -> this.field_22787.execute(() -> {
+        }).whenComplete((image, error) -> this.minecraft.execute(() -> {
             if (error != null) {
                 this.status = "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0443";
                 return;
@@ -276,9 +276,9 @@ extends AstraInspectorScreen {
     protected void workspace(GuiGraphics ctx, int mx, int my, float delta) {
         this.ox = this.workspaceLeft() + 10.0f * this.s;
         this.oy = 54.0f * this.s;
-        this.zoom = Math.min(((float)this.field_22789 - this.ox - 10.0f * this.s) / (float)this.source.field_22789, ((float)this.field_22790 - this.oy - 20.0f * this.s) / (float)this.source.field_22790);
-        ctx.method_44379((int)this.workspaceLeft(), (int)(40.0f * this.s), this.field_22789, this.field_22790);
-        Matrix3x2fStack m = ctx.method_51448();
+        this.zoom = Math.min(((float)this.width - this.ox - 10.0f * this.s) / (float)this.source.width, ((float)this.height - this.oy - 20.0f * this.s) / (float)this.source.height);
+        ctx.enableScissor((int)this.workspaceLeft(), (int)(40.0f * this.s), this.width, this.height);
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(this.ox, this.oy);
         m.scale(this.zoom, this.zoom);
@@ -286,10 +286,10 @@ extends AstraInspectorScreen {
         try {
             NativeScreenLayouts.backdrop(this.source, ctx);
             if (!(this.source instanceof TitleScreen)) {
-                float aw = Math.min((float)this.source.field_22789 * 0.26f, (float)this.source.field_22790 * 0.5f);
-                NativeScreenLayouts.art(this.source, ctx, ThemeManager.get(), (float)this.source.field_22789 - aw - 6.0f, this.source.field_22790, aw, (float)this.source.field_22790 * 0.82f, 1.0f);
+                float aw = Math.min((float)this.source.width * 0.26f, (float)this.source.height * 0.5f);
+                NativeScreenLayouts.art(this.source, ctx, ThemeManager.get(), (float)this.source.width - aw - 6.0f, this.source.height, aw, (float)this.source.height * 0.82f, 1.0f);
             }
-            this.source.method_25394(ctx, -10000, -10000, delta);
+            this.source.render(ctx, -10000, -10000, delta);
             if (this.source instanceof PauseScreen) {
                 MenuStyle.renderPausePreview(this.source, ctx);
             }
@@ -313,16 +313,16 @@ extends AstraInspectorScreen {
             int col = ColorUtil.withAlpha(t.accent3(), 0.95f);
             for (float[] g : this.guides) {
                 if (g[0] == 0.0f) {
-                    Render2D.dashedLine(ctx, g[1], 0.0f, g[1], this.source.field_22790, 0.8f * this.s / this.zoom, 5.0f, 3.0f, col);
+                    Render2D.dashedLine(ctx, g[1], 0.0f, g[1], this.source.height, 0.8f * this.s / this.zoom, 5.0f, 3.0f, col);
                     continue;
                 }
-                Render2D.dashedLine(ctx, 0.0f, g[1], this.source.field_22789, g[1], 0.8f * this.s / this.zoom, 5.0f, 3.0f, col);
+                Render2D.dashedLine(ctx, 0.0f, g[1], this.source.width, g[1], 0.8f * this.s / this.zoom, 5.0f, 3.0f, col);
             }
         }
         finally {
             NativeScreenLayouts.preview = null;
             m.popMatrix();
-            ctx.method_44380();
+            ctx.disableScissor();
         }
     }
 
@@ -334,23 +334,23 @@ extends AstraInspectorScreen {
             int major = ColorUtil.withAlpha(t.accent(), 0.16f);
             int i = 0;
             float x = 0.0f;
-            while (x <= (float)this.source.field_22789) {
-                mesh.rect(x, 0.0f, px, (float)this.source.field_22790, i % 5 == 0 ? major : minor);
+            while (x <= (float)this.source.width) {
+                mesh.rect(x, 0.0f, px, (float)this.source.height, i % 5 == 0 ? major : minor);
                 x += gridSize;
                 ++i;
             }
             i = 0;
             float y = 0.0f;
-            while (y <= (float)this.source.field_22790) {
-                mesh.rect(0.0f, y, (float)this.source.field_22789, px, i % 5 == 0 ? major : minor);
+            while (y <= (float)this.source.height) {
+                mesh.rect(0.0f, y, (float)this.source.width, px, i % 5 == 0 ? major : minor);
                 y += gridSize;
                 ++i;
             }
             Render2D.end(ctx);
         }
         int center = ColorUtil.withAlpha(t.accent3(), 0.45f);
-        Render2D.dashedLine(ctx, (float)this.source.field_22789 / 2.0f, 0.0f, (float)this.source.field_22789 / 2.0f, this.source.field_22790, 0.6f * this.s / this.zoom, 4.0f, 4.0f, center);
-        Render2D.dashedLine(ctx, 0.0f, (float)this.source.field_22790 / 2.0f, this.source.field_22789, (float)this.source.field_22790 / 2.0f, 0.6f * this.s / this.zoom, 4.0f, 4.0f, center);
+        Render2D.dashedLine(ctx, (float)this.source.width / 2.0f, 0.0f, (float)this.source.width / 2.0f, this.source.height, 0.6f * this.s / this.zoom, 4.0f, 4.0f, center);
+        Render2D.dashedLine(ctx, 0.0f, (float)this.source.height / 2.0f, this.source.width, (float)this.source.height / 2.0f, 0.6f * this.s / this.zoom, 4.0f, 4.0f, center);
     }
 
     private static float[][] corners(float[] r) {
@@ -371,7 +371,7 @@ extends AstraInspectorScreen {
         for (NativeScreenLayouts.Entry e : NativeScreenLayouts.entries(this.source)) {
             if (!e.id().equals(id)) continue;
             AbstractWidget w = e.widget();
-            return new float[]{w.method_46426(), w.method_46427(), w.method_25368(), w.method_25364()};
+            return new float[]{w.getX(), w.getY(), w.getWidth(), w.getHeight()};
         }
         return null;
     }
@@ -413,7 +413,7 @@ extends AstraInspectorScreen {
             for (int i = entries.size() - 1; i >= 0; --i) {
                 NativeScreenLayouts.Entry e = entries.get(i);
                 AbstractWidget w = e.widget();
-                if (!w.field_22764 || !NativeLayoutEditor.inside(p, new float[]{w.method_46426(), w.method_46427(), w.method_25368(), w.method_25364()})) continue;
+                if (!w.visible || !NativeLayoutEditor.inside(p, new float[]{w.getX(), w.getY(), w.getWidth(), w.getHeight()})) continue;
                 found = e.id();
                 break;
             }
@@ -465,8 +465,8 @@ extends AstraInspectorScreen {
         NativeScreenLayouts.Item o = NativeScreenLayouts.item(this.source, this.selected);
         float ddx = p[0] - this.startX;
         float ddy = p[1] - this.startY;
-        float W = Math.max(1, this.source.field_22789);
-        float H = Math.max(1, this.source.field_22790);
+        float W = Math.max(1, this.source.width);
+        float H = Math.max(1, this.source.height);
         this.guides.clear();
         if (this.corner != 0) {
             this.resize(o, ddx, ddy, W, H);
@@ -527,7 +527,7 @@ extends AstraInspectorScreen {
     }
 
     private boolean hasShift() {
-        long win = this.field_22787.method_22683().method_4490();
+        long win = this.minecraft.getWindow().handle();
         return GLFW.glfwGetKey((long)win, (int)340) == 1 || GLFW.glfwGetKey((long)win, (int)344) == 1;
     }
 
@@ -537,8 +537,8 @@ extends AstraInspectorScreen {
         }
         boolean sx = false;
         boolean sy = false;
-        float W = this.source.field_22789;
-        float H = this.source.field_22790;
+        float W = this.source.width;
+        float H = this.source.height;
         if (snapElements) {
             if (Math.abs(x + w / 2.0f - W / 2.0f) < 4.0f) {
                 x = W / 2.0f - w / 2.0f;
@@ -640,13 +640,13 @@ extends AstraInspectorScreen {
         this.rebuildRows();
     }
 
-    public boolean method_25421() {
-        return this.source.method_25421();
+    public boolean isPauseScreen() {
+        return this.source.isPauseScreen();
     }
 
-    public void method_25419() {
+    public void onClose() {
         this.finishChange();
-        this.field_22787.method_1507(this.source);
+        this.minecraft.setScreen(this.source);
     }
 
     public boolean editorClick(double x, double y, int b) {

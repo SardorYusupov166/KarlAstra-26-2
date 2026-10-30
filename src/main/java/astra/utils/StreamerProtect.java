@@ -77,8 +77,8 @@ public final class StreamerProtect {
             }
             hidden.append(c);
         }
-        MutableComponent t = Component.method_43470((String)open.toString()).method_10862(Style.field_24360.method_10977(ChatFormatting.field_1068)).method_10852((Component)Component.method_43470((String)hidden.toString()).method_10862(Style.field_24360.method_36139(-5011201)));
-        return t.method_30937();
+        MutableComponent t = Component.literal((String)open.toString()).setStyle(Style.EMPTY.withColor(ChatFormatting.WHITE)).append((Component)Component.literal((String)hidden.toString()).setStyle(Style.EMPTY.withColor(-5011201)));
+        return t.getVisualOrderText();
     }
 
     public static Component maskMessage(Component message) {
@@ -96,7 +96,7 @@ public final class StreamerProtect {
             m.appendReplacement(out, Matcher.quoteReplacement(m.group(1) + m.group(2).replaceAll("\\S", String.valueOf('\u2022'))));
         }
         m.appendTail(out);
-        return Component.method_43470((String)out.toString()).method_10862(message.method_10866());
+        return Component.literal((String)out.toString()).setStyle(message.getStyle());
     }
 }
 

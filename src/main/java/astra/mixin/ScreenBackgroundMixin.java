@@ -29,25 +29,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value={Screen.class})
 public abstract class ScreenBackgroundMixin {
     @Shadow
-    public int field_22789;
+    public int width;
     @Shadow
-    public int field_22790;
+    public int height;
 
-    @Inject(method={"method_57728"}, at={@At(value="TAIL")})
+    @Inject(method={"renderPanorama"}, at={@At(value="TAIL")})
     private void astra$menuBackground(GuiGraphics ctx, float delta, CallbackInfo ci) {
         if (this instanceof ClickGuiScreen) {
             return;
         }
-        MenuStyle.drawMenuBackground(ctx, this.field_22789, this.field_22790);
+        MenuStyle.drawMenuBackground(ctx, this.width, this.height);
     }
 
-    @Inject(method={"method_25420"}, at={@At(value="TAIL")})
+    @Inject(method={"renderBackground"}, at={@At(value="TAIL")})
     private void astra$pauseBackdrop(GuiGraphics ctx, int mx, int my, float delta, CallbackInfo ci) {
         if (this instanceof PauseScreen) {
             Screen screen = (Screen)this;
             NativeScreenLayouts.backdrop(screen, ctx);
-            float aw = Math.min((float)this.field_22789 * 0.26f, (float)this.field_22790 * 0.5f);
-            NativeScreenLayouts.art(screen, ctx, ThemeManager.get(), (float)this.field_22789 - aw - 6.0f, this.field_22790, aw, (float)this.field_22790 * 0.82f, 1.0f);
+            float aw = Math.min((float)this.width * 0.26f, (float)this.height * 0.5f);
+            NativeScreenLayouts.art(screen, ctx, ThemeManager.get(), (float)this.width - aw - 6.0f, this.height, aw, (float)this.height * 0.82f, 1.0f);
         }
     }
 }

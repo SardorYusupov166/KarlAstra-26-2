@@ -139,9 +139,9 @@ public final class DecorManager {
                 throw new IllegalStateException("\u043d\u0435\u0442 \u0444\u0430\u0439\u043b\u0430");
             }
             NativeImage img = ArtManager.readImage(f);
-            Identifier id = Identifier.method_60655((String)"astra", (String)("decor/" + counter++));
-            Minecraft.method_1551().method_1531().method_4616(id, (AbstractTexture)new DynamicTexture(() -> "astra_decor", img));
-            t = new Tex(id, img.method_4307(), img.method_4323());
+            Identifier id = Identifier.fromNamespaceAndPath((String)"astra", (String)("decor/" + counter++));
+            Minecraft.getInstance().getTextureManager().register(id, (AbstractTexture)new DynamicTexture(() -> "astra_decor", img));
+            t = new Tex(id, img.getWidth(), img.getHeight());
             TEXTURES.put(image, t);
             STAMPS.put(image, Files.getLastModifiedTime(f, new LinkOption[0]).toMillis());
             FAILED.remove(image);
@@ -164,7 +164,7 @@ public final class DecorManager {
                 Path f = ArtManager.artDir().resolve(name);
                 long m = Files.isRegularFile(f, new LinkOption[0]) ? Files.getLastModifiedTime(f, new LinkOption[0]).toMillis() : -1L;
                 if (m == STAMPS.getOrDefault(name, 0L)) continue;
-                Minecraft.method_1551().method_1531().method_4615(TEXTURES.remove(name).id());
+                Minecraft.getInstance().getTextureManager().release(TEXTURES.remove(name).id());
                 STAMPS.remove(name);
             }
             catch (Exception exception) {}
@@ -231,7 +231,7 @@ public final class DecorManager {
             return;
         }
         Theme theme = ThemeManager.get();
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(cx, cy + dy);
         if (rot != 0.0f) {
@@ -272,11 +272,11 @@ public final class DecorManager {
     }
 
     static {
-        BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u0430\u043d\u0438\u043c\u0435-\u0434\u0435\u0432\u0443\u0448\u043a\u0430", Identifier.method_60655((String)"astra", (String)"textures/gui/sidebar_girl.png"));
-        BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u0444\u043e\u043d \u0441 \u0441\u0430\u043a\u0443\u0440\u043e\u0439", Identifier.method_60655((String)"astra", (String)"textures/gui/background.png"));
-        BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u043b\u043e\u0433\u043e\u0442\u0438\u043f", Identifier.method_60655((String)"astra", (String)"textures/gui/logo.png"));
+        BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u0430\u043d\u0438\u043c\u0435-\u0434\u0435\u0432\u0443\u0448\u043a\u0430", Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/gui/sidebar_girl.png"));
+        BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u0444\u043e\u043d \u0441 \u0441\u0430\u043a\u0443\u0440\u043e\u0439", Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/gui/background.png"));
+        BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u043b\u043e\u0433\u043e\u0442\u0438\u043f", Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/gui/logo.png"));
         for (int i = 1; i <= 4; ++i) {
-            BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u0430\u0432\u0430\u0442\u0430\u0440 " + i, Identifier.method_60655((String)"astra", (String)("textures/gui/avatar_" + i + ".png")));
+            BUILTIN.put("\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439: \u0430\u0432\u0430\u0442\u0430\u0440 " + i, Identifier.fromNamespaceAndPath((String)"astra", (String)("textures/gui/avatar_" + i + ".png")));
         }
     }
 

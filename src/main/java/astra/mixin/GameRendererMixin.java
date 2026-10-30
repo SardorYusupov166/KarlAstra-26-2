@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value={GameRenderer.class})
 public abstract class GameRendererMixin {
-    @Inject(method={"method_3196"}, at={@At(value="RETURN")}, cancellable=true)
+    @Inject(method={"getFov"}, at={@At(value="RETURN")}, cancellable=true)
     private void astra$fov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cir) {
         float factor;
         ZoomModule zoom;
@@ -45,12 +45,12 @@ public abstract class GameRendererMixin {
         cir.setReturnValue((Object)Float.valueOf(Math.max(1.0f, Math.min(170.0f, fov))));
     }
 
-    @ModifyExpressionValue(method={"method_3186"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/entity/ClientAvatarState;method_74204(F)F")})
+    @ModifyExpressionValue(method={"bobView"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/entity/ClientAvatarState;getInterpolatedBob(F)F")})
     private float astra$bobIntensity(float stride) {
         return stride * ViewBobbing.factor();
     }
 
-    @ModifyExpressionValue(method={"method_3198"}, at={@At(value="INVOKE", target="Ljava/lang/Double;doubleValue()D")})
+    @ModifyExpressionValue(method={"bobHurt"}, at={@At(value="INVOKE", target="Ljava/lang/Double;doubleValue()D")})
     private double astra$hurtTilt(double strength) {
         return strength * (double)PvpTweaks.hurtTiltFactor();
     }

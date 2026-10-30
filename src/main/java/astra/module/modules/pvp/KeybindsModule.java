@@ -65,16 +65,16 @@ extends Module {
             KeybindsModule.send(this.queue.poll());
             this.sendDelay = 10;
         }
-        if (KeybindsModule.mc.field_1724 == null) {
+        if (KeybindsModule.mc.player == null) {
             return;
         }
-        Window window = mc.method_22683();
-        boolean canUse = KeybindsModule.mc.field_1755 == null;
+        Window window = mc.getWindow();
+        boolean canUse = KeybindsModule.mc.screen == null;
         int active = this.count.getInt();
         for (int i = 0; i < this.binds.size(); ++i) {
             boolean down;
             Bind b = this.binds.get(i);
-            boolean bl = down = canUse && i < active && b.key.isBound() && InputConstants.method_15987((Window)window, (int)b.key.getKey());
+            boolean bl = down = canUse && i < active && b.key.isBound() && InputConstants.isKeyDown((Window)window, (int)b.key.getKey());
             if (down && !b.wasDown) {
                 this.fire(b);
             }
@@ -120,24 +120,24 @@ extends Module {
     }
 
     private static String fill(String s) {
-        if (s.indexOf(123) < 0 || KeybindsModule.mc.field_1724 == null) {
+        if (s.indexOf(123) < 0 || KeybindsModule.mc.player == null) {
             return s;
         }
         LivingEntity target = CombatTracker.currentTarget(false);
-        return s.replace("{x}", String.valueOf(KeybindsModule.mc.field_1724.method_31477())).replace("{y}", String.valueOf(KeybindsModule.mc.field_1724.method_31478())).replace("{z}", String.valueOf(KeybindsModule.mc.field_1724.method_31479())).replace("{target}", target != null ? target.method_5477().getString() : "").replace("{hp}", String.format(Locale.ROOT, "%.1f", Float.valueOf(KeybindsModule.mc.field_1724.method_6032())));
+        return s.replace("{x}", String.valueOf(KeybindsModule.mc.player.getBlockX())).replace("{y}", String.valueOf(KeybindsModule.mc.player.getBlockY())).replace("{z}", String.valueOf(KeybindsModule.mc.player.getBlockZ())).replace("{target}", target != null ? target.getName().getString() : "").replace("{hp}", String.format(Locale.ROOT, "%.1f", Float.valueOf(KeybindsModule.mc.player.getHealth())));
     }
 
     private static void send(String msg) {
-        if (KeybindsModule.mc.field_1724 == null || mc.method_1562() == null) {
+        if (KeybindsModule.mc.player == null || mc.getConnection() == null) {
             return;
         }
         if (msg.length() > 256) {
             msg = msg.substring(0, 256);
         }
         if (msg.startsWith("/")) {
-            mc.method_1562().method_45730(msg.substring(1));
+            mc.getConnection().sendCommand(msg.substring(1));
         } else {
-            mc.method_1562().method_45729(msg);
+            mc.getConnection().sendChat(msg);
         }
     }
 

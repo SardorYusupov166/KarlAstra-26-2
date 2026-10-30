@@ -29,9 +29,9 @@ extends HudModule {
 
     private String infoText() {
         return switch ((String)this.info.get()) {
-            case "\u041d\u0438\u043a" -> mc.method_1548().method_1676();
+            case "\u041d\u0438\u043a" -> mc.getUser().getName();
             case "\u0412\u0440\u0435\u043c\u044f" -> LocalTime.now().format(TIME);
-            case "FPS" -> mc.method_47599() + " FPS";
+            case "FPS" -> mc.getFps() + " FPS";
             default -> "";
         };
     }

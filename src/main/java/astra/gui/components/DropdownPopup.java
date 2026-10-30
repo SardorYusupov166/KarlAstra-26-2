@@ -61,7 +61,7 @@ extends Popup {
         Render2D.shadow(ui.ctx, this.x, this.y + dy, this.w, this.h, 5.0f, 8.0f, Integer.MIN_VALUE);
         Render2D.roundRect(ui.ctx, this.x, this.y + dy, this.w, this.h, 5.0f, Paint.vertical(this.y, this.y + this.h, t.bg2(), t.bg()));
         Render2D.outline(ui.ctx, this.x, this.y + dy, this.w, this.h, 5.0f, 0.8f, ColorUtil.withAlpha(t.accent(), 0.6f));
-        ui.ctx.method_44379((int)Math.floor(this.x), (int)Math.floor(this.y + 3.0f), (int)Math.ceil(this.x + this.w), (int)Math.ceil(this.y + this.h - 3.0f));
+        ui.ctx.enableScissor((int)Math.floor(this.x), (int)Math.floor(this.y + 3.0f), (int)Math.ceil(this.x + this.w), (int)Math.ceil(this.y + this.h - 3.0f));
         String cur = this.current.get();
         for (int i = 0; i < this.options.size(); ++i) {
             float iy = this.y + 3.0f + (float)i * 14.0f - this.scroll + dy;
@@ -79,7 +79,7 @@ extends Popup {
             if (!sel) continue;
             Icons.draw(ui.ctx, Icon.CHECK, this.x + this.w - 14.0f, iy + 3.5f, 7.0f, t.text());
         }
-        ui.ctx.method_44380();
+        ui.ctx.disableScissor();
         if (this.maxScroll() > 0.0f) {
             float viewH = this.h - 6.0f;
             float barH = Math.max(12.0f, viewH * viewH / ((float)this.options.size() * 14.0f));

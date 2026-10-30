@@ -122,11 +122,11 @@ public final class Decoders {
             }
         }
 
-        public AudioFormat method_19719() {
+        public AudioFormat getFormat() {
             return this.format;
         }
 
-        public boolean method_59758(FloatConsumer consumer) throws IOException {
+        public boolean readChunk(FloatConsumer consumer) throws IOException {
             if (this.pending == null && !this.decodeFrame()) {
                 return false;
             }
@@ -170,11 +170,11 @@ public final class Decoders {
             }
         }
 
-        public AudioFormat method_19719() {
+        public AudioFormat getFormat() {
             return this.format;
         }
 
-        public boolean method_59758(FloatConsumer consumer) throws IOException {
+        public boolean readChunk(FloatConsumer consumer) throws IOException {
             int n = this.stream.read(this.buf, 0, this.buf.length & 0xFFFFFFFE);
             if (n <= 0) {
                 return false;

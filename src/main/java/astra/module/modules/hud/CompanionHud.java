@@ -161,40 +161,40 @@ extends HudModule {
     public void onTick() {
         long moodLife;
         boolean moved;
-        LocalPlayer p = CompanionHud.mc.field_1724;
+        LocalPlayer p = CompanionHud.mc.player;
         if (p == null) {
             return;
         }
         long now = System.currentTimeMillis();
-        float hp = p.method_6032();
-        if (this.lastHealth >= 0.0f && hp < this.lastHealth - 0.5f && !p.method_29504()) {
-            if (hp <= p.method_6063() * 0.3f && !this.warnedLow) {
+        float hp = p.getHealth();
+        if (this.lastHealth >= 0.0f && hp < this.lastHealth - 0.5f && !p.isDeadOrDying()) {
+            if (hp <= p.getMaxHealth() * 0.3f && !this.warnedLow) {
                 this.warnedLow = true;
                 CompanionHud.react(Mood.WORRIED, "\u041e\u0441\u0442\u043e\u0440\u043e\u0436\u043d\u043e! \u041c\u0430\u043b\u043e \u0437\u0434\u043e\u0440\u043e\u0432\u044c\u044f!", "\u0411\u0435\u0433\u0438 \u0438 \u043b\u0435\u0447\u0438\u0441\u044c!", "\u0410\u0439-\u0430\u0439, \u0431\u043e\u043b\u044c\u043d\u043e!");
-            } else if (hp > p.method_6063() * 0.3f) {
+            } else if (hp > p.getMaxHealth() * 0.3f) {
                 CompanionHud.react(Mood.WORRIED, "\u041e\u0439!", "\u0410\u0439!", "\u0411\u043e\u043b\u044c\u043d\u043e \u0436\u0435!");
             }
         }
-        if (hp > p.method_6063() * 0.5f) {
+        if (hp > p.getMaxHealth() * 0.5f) {
             this.warnedLow = false;
         }
         this.lastHealth = hp;
-        if (p.method_29504() && !this.wasDead) {
+        if (p.isDeadOrDying() && !this.wasDead) {
             CompanionHud.react(Mood.SAD, "\u041d\u0435\u0435\u0435\u0442\u2026", "\u042f \u0431\u0443\u0434\u0443 \u0436\u0434\u0430\u0442\u044c \u0442\u0435\u0431\u044f\u2026", "\u041c\u044b \u0435\u0449\u0451 \u043e\u0442\u043e\u043c\u0441\u0442\u0438\u043c!");
         }
-        if (!p.method_29504() && this.wasDead) {
+        if (!p.isDeadOrDying() && this.wasDead) {
             CompanionHud.react(Mood.HAPPY, "\u0422\u044b \u0432\u0435\u0440\u043d\u0443\u043b\u0441\u044f!", "\u0412\u043f\u0435\u0440\u0451\u0434, \u0432 \u0431\u043e\u0439!");
         }
-        this.wasDead = p.method_29504();
-        if (this.lastLevel >= 0 && p.field_7520 > this.lastLevel) {
-            CompanionHud.react(Mood.EXCITED, "\u041d\u043e\u0432\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c: " + p.field_7520 + "!", "\u0420\u0430\u0441\u0442\u0451\u043c!");
+        this.wasDead = p.isDeadOrDying();
+        if (this.lastLevel >= 0 && p.experienceLevel > this.lastLevel) {
+            CompanionHud.react(Mood.EXCITED, "\u041d\u043e\u0432\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c: " + p.experienceLevel + "!", "\u0420\u0430\u0441\u0442\u0451\u043c!");
         }
-        this.lastLevel = p.field_7520;
-        boolean bl = moved = Math.abs(p.method_23317() - this.idleX) > 0.1 || Math.abs(p.method_23321() - this.idleZ) > 0.1 || Math.abs(p.method_36454() - this.idleYaw) > 1.0f;
+        this.lastLevel = p.experienceLevel;
+        boolean bl = moved = Math.abs(p.getX() - this.idleX) > 0.1 || Math.abs(p.getZ() - this.idleZ) > 0.1 || Math.abs(p.getYRot() - this.idleYaw) > 1.0f;
         if (moved) {
-            this.idleX = p.method_23317();
-            this.idleZ = p.method_23321();
-            this.idleYaw = p.method_36454();
+            this.idleX = p.getX();
+            this.idleZ = p.getZ();
+            this.idleYaw = p.getYRot();
             this.idleSince = now;
             if (this.mood == Mood.SLEEPY) {
                 this.mood = Mood.NEUTRAL;
@@ -278,7 +278,7 @@ extends HudModule {
                 break;
             }
         }
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(cx + dx, cy + dy);
         m.rotate((float)Math.toRadians(rot));

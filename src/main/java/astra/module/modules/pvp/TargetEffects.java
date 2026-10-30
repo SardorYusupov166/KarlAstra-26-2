@@ -63,9 +63,9 @@ import org.joml.Vector3fc;
 
 public class TargetEffects
 extends Module {
-    private static final Identifier GLOW = Identifier.method_60655((String)"astra", (String)"textures/fx/glow_line.png");
-    private static final Identifier RING = Identifier.method_60655((String)"astra", (String)"textures/fx/target_ring.png");
-    private static final Identifier RETICLE = Identifier.method_60655((String)"astra", (String)"textures/fx/lock_reticle.png");
+    private static final Identifier GLOW = Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/fx/glow_line.png");
+    private static final Identifier RING = Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/fx/target_ring.png");
+    private static final Identifier RETICLE = Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/fx/lock_reticle.png");
     private final BooleanSetting mobs = this.add(new BooleanSetting("\u041c\u043e\u0431\u044b \u0442\u043e\u0436\u0435", false));
     private final ColorSetting color1 = this.add(new ColorSetting("\u041e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u0446\u0432\u0435\u0442", -45608));
     private final ColorSetting color2 = this.add(new ColorSetting("\u0412\u0442\u043e\u0440\u043e\u0439 \u0446\u0432\u0435\u0442", -5745153));
@@ -105,12 +105,12 @@ extends Module {
     }
 
     private boolean visible(LivingEntity e) {
-        return e != null && e.method_5805() && TargetEffects.mc.field_1724 != null && TargetEffects.mc.field_1724.method_6057((Entity)e);
+        return e != null && e.isAlive() && TargetEffects.mc.player != null && TargetEffects.mc.player.hasLineOfSight((Entity)e);
     }
 
     @Override
     public void onTick() {
-        if (TargetEffects.mc.field_1724 == null || TargetEffects.mc.field_1687 == null) {
+        if (TargetEffects.mc.player == null || TargetEffects.mc.level == null) {
             this.target = null;
             return;
         }
@@ -121,7 +121,7 @@ extends Module {
         this.target = this.visible(t) ? t : null;
         boolean fighting = this.target != null && System.currentTimeMillis() - CombatTracker.lastAttack() < 3000L;
         this.fight += ((fighting ? 1.0f : 0.0f) - this.fight) * 0.12f;
-        if (this.target == null || mc.method_1493()) {
+        if (this.target == null || mc.isPaused()) {
             return;
         }
         if (((Boolean)this.petals.get()).booleanValue() && fighting) {
@@ -132,10 +132,10 @@ extends Module {
                 double vx;
                 if (AstraParticles.random().nextFloat() > 0.5f) continue;
                 double a = AstraParticles.random().nextDouble() * Math.PI * 2.0;
-                double r = (double)this.target.method_17681() * 0.9 + 0.3;
-                double x = this.target.method_23317() + Math.cos(a) * r;
-                double z = this.target.method_23321() + Math.sin(a) * r;
-                double y = this.target.method_23318() + AstraParticles.random().nextDouble() * (double)this.target.method_17682();
+                double r = (double)this.target.getBbWidth() * 0.9 + 0.3;
+                double x = this.target.getX() + Math.cos(a) * r;
+                double z = this.target.getZ() + Math.sin(a) * r;
+                double y = this.target.getY() + AstraParticles.random().nextDouble() * (double)this.target.getBbHeight();
                 AstraParticle p = AstraParticles.spawn(ParticleSprite.PETAL, x, y, z, vx = -Math.sin(a) * 0.06, 0.01, vz = Math.cos(a) * 0.06, 0.09f, c = ColorUtil.lerp(-18466, this.color1.getColor(), AstraParticles.random().nextFloat() * 0.5f), 40);
                 if (p == null) continue;
                 p.gravity(8.0E-4f).spin(8.0f).drag(0.94f);
@@ -143,71 +143,71 @@ extends Module {
         }
         if (CombatTracker.lastComboHit() != this.lastHitSeen) {
             this.lastHitSeen = CombatTracker.lastComboHit();
-            AABB box = this.target.method_5829();
-            AstraParticles.burst(ParticleSprite.SPARKLE, (box.field_1323 + box.field_1320) / 2.0, box.field_1322 + box.method_17940() * 0.6, (box.field_1321 + box.field_1324) / 2.0, 5, 0.18f, 0.09f, -1, 10, 0.0f);
+            AABB box = this.target.getBoundingBox();
+            AstraParticles.burst(ParticleSprite.SPARKLE, (box.minX + box.maxX) / 2.0, box.minY + box.getYsize() * 0.6, (box.minZ + box.maxZ) / 2.0, 5, 0.18f, 0.09f, -1, 10, 0.0f);
         }
     }
 
     public void renderWorld(WorldRenderContext ctx) {
         VertexConsumer vc;
-        if (this.target == null || TargetEffects.mc.field_1724 == null) {
+        if (this.target == null || TargetEffects.mc.player == null) {
             return;
         }
         if (!this.visible(this.target)) {
             return;
         }
-        Camera camera = Minecraft.method_1551().field_1773.method_19418();
-        Vec3 cam = camera.method_71156();
-        Quaternionf camRot = camera.method_23767();
-        float td = Minecraft.method_1551().method_61966().method_60637(false);
-        MultiBufferSource.BufferSource imm = mc.method_22940().method_23000();
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Vec3 cam = camera.position();
+        Quaternionf camRot = camera.rotation();
+        float td = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        MultiBufferSource.BufferSource imm = mc.renderBuffers().bufferSource();
         float time = AnimationUtils.time();
         float hitPulse = 1.0f - Math.min(1.0f, (float)(System.currentTimeMillis() - CombatTracker.lastComboHit()) / 250.0f);
         int c1 = this.color1.getColor();
         int c2 = this.color2.getColor();
-        Vec3 pos = this.target.method_30950(td);
-        Vector3f base = new Vector3f((float)(pos.field_1352 - cam.field_1352), (float)(pos.field_1351 - cam.field_1351), (float)(pos.field_1350 - cam.field_1350));
+        Vec3 pos = this.target.getPosition(td);
+        Vector3f base = new Vector3f((float)(pos.x - cam.x), (float)(pos.y - cam.y), (float)(pos.z - cam.z));
         if (((Boolean)this.ring.get()).booleanValue()) {
-            RenderType layer = RenderTypes.method_76002((Identifier)RING);
-            vc = imm.method_73477(layer);
+            RenderType layer = RenderTypes.entityTranslucentEmissive((Identifier)RING);
+            vc = imm.getBuffer(layer);
             this.ringPhase += FrameStats.delta() * this.ringSpeed.getFloat() * (0.6f + this.fight);
-            float lift = (0.5f - 0.5f * (float)Math.cos(this.ringPhase * 2.2f)) * this.target.method_17682() * this.ringLift.getFloat() / 100.0f * this.fight;
-            float r = (this.target.method_17681() * 1.25f + 0.35f) * this.ringSize.getFloat() / 100.0f * (1.0f + hitPulse * 0.12f);
+            float lift = (0.5f - 0.5f * (float)Math.cos(this.ringPhase * 2.2f)) * this.target.getBbHeight() * this.ringLift.getFloat() / 100.0f * this.fight;
+            float r = (this.target.getBbWidth() * 1.25f + 0.35f) * this.ringSize.getFloat() / 100.0f * (1.0f + hitPulse * 0.12f);
             float a = 0.55f + 0.45f * this.fight;
             WorldFx.flat(vc, new Vector3f((Vector3fc)base).add(0.0f, 0.03f + lift, 0.0f), r, this.ringPhase * 1.4f, WorldFx.alpha(c1, a));
             WorldFx.flat(vc, new Vector3f((Vector3fc)base).add(0.0f, 0.035f + lift * 0.6f, 0.0f), r * 0.62f, -this.ringPhase * 2.1f, WorldFx.alpha(c2, a * 0.8f));
-            imm.method_22994(layer);
+            imm.endBatch(layer);
         }
-        this.surface = this.target.method_17681() * 0.55f + 0.12f;
-        RenderType glow = RenderTypes.method_76002((Identifier)GLOW);
-        vc = imm.method_73477(glow);
+        this.surface = this.target.getBbWidth() * 0.55f + 0.12f;
+        RenderType glow = RenderTypes.entityTranslucentEmissive((Identifier)GLOW);
+        vc = imm.getBuffer(glow);
         if (((Boolean)this.rig.get()).booleanValue()) {
             this.drawRig(vc, base, td, camRot, c1, c2, time, hitPulse);
         }
         if (((Boolean)this.frame.get()).booleanValue()) {
             this.drawFrame(vc, base, camRot, c1, c2, time, hitPulse);
         }
-        imm.method_22994(glow);
+        imm.endBatch(glow);
         if (((Boolean)this.lock.get()).booleanValue()) {
-            RenderType rl = RenderTypes.method_76002((Identifier)RETICLE);
-            VertexConsumer rv = imm.method_73477(rl);
+            RenderType rl = RenderTypes.entityTranslucentEmissive((Identifier)RETICLE);
+            VertexConsumer rv = imm.getBuffer(rl);
             float t = Math.min(1.0f, (float)(System.currentTimeMillis() - this.lockedAt) / 550.0f);
             float e = AnimationUtils.easeOutBack(t);
-            float size = this.target.method_17682() * (0.32f + 0.55f * (1.0f - e)) * (1.0f + hitPulse * 0.15f);
+            float size = this.target.getBbHeight() * (0.32f + 0.55f * (1.0f - e)) * (1.0f + hitPulse * 0.15f);
             float roll = (1.0f - e) * (float)Math.PI + time * 0.6f;
-            Vector3f chest = TargetEffects.toCamera(new Vector3f((Vector3fc)base).add(0.0f, this.target.method_17682() * 0.62f, 0.0f), this.surface + 0.05f);
+            Vector3f chest = TargetEffects.toCamera(new Vector3f((Vector3fc)base).add(0.0f, this.target.getBbHeight() * 0.62f, 0.0f), this.surface + 0.05f);
             WorldFx.billboard(rv, chest, size, roll, camRot, 0.0f, 0.0f, 1.0f, 1.0f, WorldFx.alpha(c1, 0.35f + 0.65f * t));
-            imm.method_22994(rl);
+            imm.endBatch(rl);
         }
         if (((Boolean)this.rig.get()).booleanValue()) {
-            RenderType jl = RenderTypes.method_76002((Identifier)AstraParticles.SHEET);
-            VertexConsumer jv = imm.method_73477(jl);
+            RenderType jl = RenderTypes.entityTranslucentEmissive((Identifier)AstraParticles.SHEET);
+            VertexConsumer jv = imm.getBuffer(jl);
             ParticleSprite orb = ParticleSprite.ORB;
             for (Vector3f j : this.lastJoints) {
                 if (j == null) continue;
                 WorldFx.billboard(jv, j, 0.07f * this.rigWidth.getFloat() * (1.0f + hitPulse * 0.5f), 0.0f, camRot, orb.u0, orb.v0, orb.u1, orb.v1, WorldFx.alpha(-1, 0.9f));
             }
-            imm.method_22994(jl);
+            imm.endBatch(jl);
         }
     }
 
@@ -223,16 +223,16 @@ extends Module {
     private void drawRig(VertexConsumer vc, Vector3f base, float td, Quaternionf camRot, int c1, int c2, float time, float hit) {
         float[][][] bones;
         LivingEntity e = this.target;
-        float s = e.method_17682() / 1.8f;
-        float yaw = (float)Math.toRadians(Mth.method_17821((float)td, (float)e.field_6220, (float)e.field_6283));
+        float s = e.getBbHeight() / 1.8f;
+        float yaw = (float)Math.toRadians(Mth.rotLerp((float)td, (float)e.yBodyRotO, (float)e.yBodyRot));
         Vector3f fwd = new Vector3f((float)(-Math.sin(yaw)), 0.0f, (float)Math.cos(yaw));
         Vector3f right = new Vector3f((float)(-Math.cos(yaw)), 0.0f, (float)(-Math.sin(yaw)));
-        float limbPos = e.field_42108.method_48572(td);
-        float limbAmp = Math.min(1.0f, e.field_42108.method_48570(td));
+        float limbPos = e.walkAnimation.position(td);
+        float limbAmp = Math.min(1.0f, e.walkAnimation.speed(td));
         float leg = (float)Math.cos(limbPos * 0.6662f) * 1.2f * limbAmp;
         float arm = (float)Math.cos((double)(limbPos * 0.6662f) + Math.PI) * 0.9f * limbAmp;
-        float swing = (float)Math.sin(Math.sqrt(e.method_6055(td)) * Math.PI) * 1.4f;
-        boolean sneak = e.method_18276();
+        float swing = (float)Math.sin(Math.sqrt(e.getAttackAnim(td)) * Math.PI) * 1.4f;
+        boolean sneak = e.isCrouching();
         float lean = sneak ? 0.22f : 0.0f;
         BiFunction<float[], Float, Vector3f> at = (p, unused) -> TargetEffects.toCamera(new Vector3f((Vector3fc)base).add((Vector3fc)new Vector3f((Vector3fc)right).mul(p[0] * s)).add(0.0f, p[1] * s, 0.0f).add((Vector3fc)new Vector3f((Vector3fc)fwd).mul(p[2] * s)), this.surface);
         float[] pelvis = new float[]{0.0f, 0.78f, 0.0f};
@@ -287,10 +287,10 @@ extends Module {
         int sx;
         Vector3f camR = new Vector3f(1.0f, 0.0f, 0.0f).rotate((Quaternionfc)camRot);
         Vector3f camU = new Vector3f(0.0f, 1.0f, 0.0f).rotate((Quaternionfc)camRot);
-        float h = this.target.method_17682();
+        float h = this.target.getBbHeight();
         Vector3f center = TargetEffects.toCamera(new Vector3f((Vector3fc)base).add(0.0f, h / 2.0f, 0.0f), this.surface);
         float breathe = 1.0f + 0.03f * (float)Math.sin(time * 3.0f);
-        float hw = (this.target.method_17681() * 0.9f + 0.25f) * breathe * (1.0f + hit * 0.18f);
+        float hw = (this.target.getBbWidth() * 0.9f + 0.25f) * breathe * (1.0f + hit * 0.18f);
         float hh = (h * 0.58f + 0.1f) * breathe * (1.0f + hit * 0.18f);
         float len = Math.min(hw, hh) * 0.45f;
         float w = 0.045f;
@@ -320,8 +320,8 @@ extends Module {
         }
         float a = Math.min(1.0f, (float)age / 200.0f) * Math.min(1.0f, (float)(1800L - age) / 400.0f);
         float slide = (1.0f - AnimationUtils.easeOutCubic(Math.min(1.0f, (float)age / 350.0f))) * 12.0f;
-        float cx = (float)ctx.method_51421() / 2.0f + 26.0f + slide;
-        float cy = (float)ctx.method_51443() / 2.0f - 8.0f;
+        float cx = (float)ctx.guiWidth() / 2.0f + 26.0f + slide;
+        float cy = (float)ctx.guiHeight() / 2.0f - 8.0f;
         String text = "\u0426\u0435\u043b\u044c \u0437\u0430\u0445\u0432\u0430\u0447\u0435\u043d\u0430";
         float tw = Fonts.width(text, 8.0f, true) + 26.0f;
         float prev = Render2D.alpha;

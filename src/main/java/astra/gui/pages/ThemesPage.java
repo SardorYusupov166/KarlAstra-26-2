@@ -180,12 +180,12 @@ extends ModulesPage {
             if (my >= (double)(this.y + 34.0f) && my < (double)(this.y + 51.0f)) {
                 if (mx >= (double)(this.x + 34.0f) && mx < (double)(this.x + 154.0f)) {
                     ArtManager.artDir().toFile().mkdirs();
-                    Util.method_668().method_672(ArtManager.artDir().toFile());
+                    Util.getPlatform().openFile(ArtManager.artDir().toFile());
                     return true;
                 }
                 if (mx >= (double)(this.x + 266.0f) && mx < (double)(this.x + 436.0f)) {
-                    Minecraft mc = Minecraft.method_1551();
-                    mc.method_1507((Screen)new DecorEditorScreen(mc.field_1755));
+                    Minecraft mc = Minecraft.getInstance();
+                    mc.setScreen((Screen)new DecorEditorScreen(mc.screen));
                     return true;
                 }
                 if (mx >= (double)(this.x + 160.0f) && mx < (double)(this.x + 260.0f)) {

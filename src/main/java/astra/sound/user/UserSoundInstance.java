@@ -37,31 +37,31 @@ extends AbstractSoundInstance {
     }
 
     protected UserSoundInstance(Identifier id, SoundSource category, float volume, boolean stream) {
-        super(id, category, SoundInstance.method_43221());
+        super(id, category, SoundInstance.createUnseededRandom());
         this.stream = stream;
-        this.field_5442 = volume;
-        this.field_5441 = 1.0f;
-        this.field_18936 = true;
-        this.field_5440 = SoundInstance.Attenuation.field_5478;
+        this.volume = volume;
+        this.pitch = 1.0f;
+        this.relative = true;
+        this.attenuation = SoundInstance.Attenuation.NONE;
     }
 
     public static WeighedSoundEvents soundSet(Identifier id, boolean stream) {
         WeighedSoundEvents set = new WeighedSoundEvents(id, null);
-        set.method_4885((Weighted)UserSoundInstance.sound(id, stream));
+        set.addSound((Weighted)UserSoundInstance.sound(id, stream));
         return set;
     }
 
     static Sound sound(Identifier id, boolean stream) {
-        return new Sound(id, r -> 1.0f, r -> 1.0f, 1, Sound.Type.field_5474, stream, false, 16);
+        return new Sound(id, r -> 1.0f, r -> 1.0f, 1, Sound.Type.FILE, stream, false, 16);
     }
 
-    public WeighedSoundEvents method_4783(SoundManager manager) {
-        WeighedSoundEvents set = UserSoundInstance.soundSet(this.field_5448, this.stream);
-        this.field_5444 = set.method_4887(RandomSource.method_43047());
+    public WeighedSoundEvents resolve(SoundManager manager) {
+        WeighedSoundEvents set = UserSoundInstance.soundSet(this.identifier, this.stream);
+        this.sound = set.getSound(RandomSource.create());
         return set;
     }
 
-    public boolean method_4785() {
+    public boolean canStartSilent() {
         return true;
     }
 }

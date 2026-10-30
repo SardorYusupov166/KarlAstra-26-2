@@ -32,7 +32,7 @@ import org.joml.Matrix3x2fStack;
 
 public class CooldownHud
 extends HudModule {
-    private static final Item[] ITEMS = new Item[]{Items.field_8634, Items.field_8233, Items.field_49098, Items.field_8255, Items.field_39057, Items.field_8547, Items.field_49814};
+    private static final Item[] ITEMS = new Item[]{Items.ENDER_PEARL, Items.CHORUS_FRUIT, Items.WIND_CHARGE, Items.SHIELD, Items.GOAT_HORN, Items.TRIDENT, Items.MACE};
     private static final float CELL = 22.0f;
     private final BooleanSetting attack = this.add(new BooleanSetting("\u0417\u0430\u0440\u044f\u0434\u043a\u0430 \u0443\u0434\u0430\u0440\u0430", true));
     private final BooleanSetting attackOnlyCharging = this.add(new BooleanSetting("\u0423\u0434\u0430\u0440 \u2014 \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u0440\u0438 \u0437\u0430\u0440\u044f\u0434\u043a\u0435", true));
@@ -46,26 +46,26 @@ extends HudModule {
 
     private List<Entry> entries(boolean editor) {
         ArrayList<Entry> list = new ArrayList<Entry>();
-        if (CooldownHud.mc.field_1724 != null) {
+        if (CooldownHud.mc.player != null) {
             if (((Boolean)this.attack.get()).booleanValue()) {
-                float charge = CooldownHud.mc.field_1724.method_7261(0.0f);
+                float charge = CooldownHud.mc.player.getAttackStrengthScale(0.0f);
                 if (!((Boolean)this.attackOnlyCharging.get()).booleanValue() || charge < 1.0f) {
-                    list.add(new Entry(CooldownHud.mc.field_1724.method_6047(), 1.0f - charge, true));
+                    list.add(new Entry(CooldownHud.mc.player.getMainHandItem(), 1.0f - charge, true));
                 }
             }
             if (((Boolean)this.items.get()).booleanValue()) {
-                ItemCooldowns cd = CooldownHud.mc.field_1724.method_7357();
+                ItemCooldowns cd = CooldownHud.mc.player.getCooldowns();
                 for (Item item : ITEMS) {
                     ItemStack stack = new ItemStack((ItemLike)item);
-                    float p = cd.method_7905(stack, mc.method_61966().method_60637(true));
+                    float p = cd.getCooldownPercent(stack, mc.getDeltaTracker().getGameTimeDeltaPartialTick(true));
                     if (!(p > 0.0f)) continue;
                     list.add(new Entry(stack, p, false));
                 }
             }
         }
         if (list.isEmpty() && editor) {
-            list.add(new Entry(new ItemStack((ItemLike)Items.field_22022), 0.45f, true));
-            list.add(new Entry(new ItemStack((ItemLike)Items.field_8634), 0.7f, false));
+            list.add(new Entry(new ItemStack((ItemLike)Items.NETHERITE_SWORD), 0.45f, true));
+            list.add(new Entry(new ItemStack((ItemLike)Items.ENDER_PEARL), 0.7f, false));
         }
         return list;
     }
@@ -97,14 +97,14 @@ extends HudModule {
             int col = e.attack ? ColorUtil.lerp(this.accentColor(), -770210, e.progress) : this.accentColor();
             Render2D.ring(ctx, cx, cy, r, 2.0f, ColorUtil.withAlpha(t.track(), 0.8f));
             Render2D.arc(ctx, cx, cy, r, 2.0f, -90.0f, 360.0f * e.progress, col);
-            if (e.stack.method_7960()) {
+            if (e.stack.isEmpty()) {
                 Render2D.circle(ctx, cx, cy, 3.0f, col);
             } else {
-                Matrix3x2fStack m = ctx.method_51448();
+                Matrix3x2fStack m = ctx.pose();
                 m.pushMatrix();
                 m.translate(cx - 6.0f, cy - 6.0f);
                 m.scale(0.75f, 0.75f);
-                ctx.method_51427(e.stack, 0, 0);
+                ctx.renderItem(e.stack, 0, 0);
                 m.popMatrix();
             }
             if (!((Boolean)this.percent.get()).booleanValue()) continue;

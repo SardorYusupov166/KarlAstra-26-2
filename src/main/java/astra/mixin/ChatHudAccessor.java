@@ -20,25 +20,25 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(value={ChatComponent.class})
 public interface ChatHudAccessor {
-    @Accessor(value="field_2066")
+    @Accessor(value="chatScrollbarPos")
     public int astra$scrolledLines();
 
-    @Invoker(value="method_44752")
+    @Invoker(value="getLineHeight")
     public int astra$lineHeight();
 
-    @Accessor(value="field_2061")
+    @Accessor(value="allMessages")
     public List<GuiMessage> astra$messages();
 
-    @Accessor(value="field_2064")
+    @Accessor(value="trimmedMessages")
     public List<GuiMessage.Line> astra$visibleMessages();
 
-    @Invoker(value="method_1811")
+    @Invoker(value="getWidth")
     public int astra$width();
 
-    @Invoker(value="method_1814")
+    @Invoker(value="getScale")
     public double astra$chatScale();
 
-    @Invoker(value="method_44813")
+    @Invoker(value="refreshTrimmedMessages")
     public void astra$refresh();
 }
 

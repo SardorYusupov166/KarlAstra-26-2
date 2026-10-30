@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={Gui.class})
 public abstract class InGameHudOverlayMixin {
-    @Inject(method={"method_31977"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderTextureOverlay"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$hideOverlay(GuiGraphics context, Identifier texture, float opacity, CallbackInfo ci) {
         if (PvpTweaks.hideHudOverlay(texture)) {
             ci.cancel();

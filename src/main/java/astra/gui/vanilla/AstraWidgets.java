@@ -59,19 +59,19 @@ public final class AstraWidgets {
     }
 
     private static Component bold(Component t) {
-        return t.method_27661().method_27696(Style.field_24360.method_27704((FontDescription)new FontDescription.Resource(Fonts.BOLD)));
+        return t.copy().withStyle(Style.EMPTY.withFont((FontDescription)new FontDescription.Resource(Fonts.BOLD)));
     }
 
     private static void label(GuiGraphics ctx, Component msg, float x, float y, float w, float h, int color) {
-        Font tr = Minecraft.method_1551().field_1772;
+        Font tr = Minecraft.getInstance().font;
         Component t = AstraWidgets.bold(msg);
-        float tw = tr.method_27525((FormattedText)t);
+        float tw = tr.width((FormattedText)t);
         float s = tw > w - 8.0f ? Math.max(0.6f, (w - 8.0f) / tw) : 1.0f;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(x + w / 2.0f, y + h / 2.0f);
         m.scale(s, s);
-        ctx.method_51439(tr, t, (int)(-tw / 2.0f), -4, color, true);
+        ctx.drawString(tr, t, (int)(-tw / 2.0f), -4, color, true);
         m.popMatrix();
     }
 

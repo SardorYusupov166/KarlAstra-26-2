@@ -223,7 +223,7 @@ extends HudModule {
         this.resetWorldPlacement();
         this.demoStartedAt = System.currentTimeMillis();
         this.demoLine = -1;
-        mc.method_1507(null);
+        mc.setScreen(null);
     }
 
     public void previewLightningLyrics() {
@@ -420,7 +420,7 @@ extends HudModule {
         if (!this.isEnabled()) {
             this.setEnabled(true);
         }
-        mc.method_1507((Screen)new PlayerScreen(NowPlayingModule.mc.field_1755));
+        mc.setScreen((Screen)new PlayerScreen(NowPlayingModule.mc.screen));
     }
 
     @Override
@@ -453,17 +453,17 @@ extends HudModule {
     }
 
     private void handleKeys() {
-        if (NowPlayingModule.mc.field_1755 != null) {
+        if (NowPlayingModule.mc.screen != null) {
             for (int i = 0; i < this.keyWas.length; ++i) {
                 this.keyWas[i] = true;
             }
             return;
         }
         KeybindSetting[] keys = new KeybindSetting[]{this.playerKey, this.toggleKey, this.nextKey, this.prevKey};
-        Window window = mc.method_22683();
+        Window window = mc.getWindow();
         for (int i = 0; i < keys.length; ++i) {
             boolean down;
-            boolean bl = down = keys[i].isBound() && InputConstants.method_15987((Window)window, (int)keys[i].getKey());
+            boolean bl = down = keys[i].isBound() && InputConstants.isKeyDown((Window)window, (int)keys[i].getKey());
             if (down && !this.keyWas[i]) {
                 switch (i) {
                     case 0: {
@@ -729,10 +729,10 @@ extends HudModule {
         float t = AnimationUtils.time() * 16.0f;
         float pos = t % (cycle = period + 40.0f);
         float off = pos < 40.0f ? 0.0f : pos - 40.0f;
-        ctx.method_44379((int)Math.floor(x), (int)Math.floor(y - 2.0f), (int)Math.ceil(x + maxW), (int)Math.ceil(y + size + 3.0f));
+        ctx.enableScissor((int)Math.floor(x), (int)Math.floor(y - 2.0f), (int)Math.ceil(x + maxW), (int)Math.ceil(y + size + 3.0f));
         Fonts.draw(ctx, s, x - off, y, size, color, bold);
         Fonts.draw(ctx, s, x - off + period, y, size, color, bold);
-        ctx.method_44380();
+        ctx.disableScissor();
     }
 
     public void renderOverlay(GuiGraphics ctx) {
@@ -799,8 +799,8 @@ extends HudModule {
 
     public BannerLayout bannerLayout(boolean editor, float scale) {
         NowPlaying song = this.bannerSong(editor);
-        float available = Math.max(30.0f, (float)mc.method_22683().method_4486() / scale - 68.0f);
-        float limit = Math.min(available, (float)mc.method_22683().method_4486() * 0.62f / scale);
+        float available = Math.max(30.0f, (float)mc.getWindow().getGuiScaledWidth() / scale - 68.0f);
+        float limit = Math.min(available, (float)mc.getWindow().getGuiScaledWidth() * 0.62f / scale);
         List<LyricFx.Glyph> glyphs = LyricFx.split(song.title(), ch -> Fonts.width(ch, 1.0f, true));
         float tw = LyricFx.totalWidth(glyphs) * 24.0f;
         float size = tw > limit ? 24.0f * limit / Math.max(1.0f, tw) : 24.0f;
@@ -816,7 +816,7 @@ extends HudModule {
         if (!this.bannerVisible() || layout == null || !layout.isEnabled()) {
             return;
         }
-        layout.render(ctx, ctx.method_51421(), ctx.method_51443(), false);
+        layout.render(ctx, ctx.guiWidth(), ctx.guiHeight(), false);
     }
 
     /*
@@ -855,8 +855,8 @@ extends HudModule {
         if (Lyrics.status() != Lyrics.Status.SYNCED) {
             return;
         }
-        float sw = ctx.method_51421();
-        float sh = ctx.method_51443();
+        float sw = ctx.guiWidth();
+        float sh = ctx.guiHeight();
         float size = 15.0f * this.lyricsSize.getFloat() / 100.0f;
         float y = switch ((String)this.screenPos.get()) {
             case UP -> sh * 0.16f;
@@ -896,7 +896,7 @@ extends HudModule {
     }
 
     public static void drawGlyphs(GuiGraphics ctx, List<LyricFx.Glyph> gs, float left, float top, float size, boolean bold, boolean glow, int glowColor, float alphaMul) {
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         float o = Math.max(0.6f, size * 0.07f);
         for (LyricFx.Glyph g : gs) {
             float a = g.alpha * alphaMul;
@@ -935,12 +935,12 @@ extends HudModule {
         String next;
         String text;
         boolean demo;
-        if (!this.lyricsMode.is(IN_WORLD) || NowPlayingModule.mc.field_1724 == null || NowPlayingModule.mc.field_1687 == null || NowPlayingModule.mc.field_1690.field_1842) {
+        if (!this.lyricsMode.is(IN_WORLD) || NowPlayingModule.mc.player == null || NowPlayingModule.mc.level == null || NowPlayingModule.mc.options.hideGui) {
             return;
         }
-        if (this.placementWorld != NowPlayingModule.mc.field_1687 || !this.placementMode.equals(this.anchor.get())) {
+        if (this.placementWorld != NowPlayingModule.mc.level || !this.placementMode.equals(this.anchor.get())) {
             this.resetWorldPlacement();
-            this.placementWorld = NowPlayingModule.mc.field_1687;
+            this.placementWorld = NowPlayingModule.mc.level;
             this.placementMode = (String)this.anchor.get();
         }
         long now = System.currentTimeMillis();
@@ -984,21 +984,21 @@ extends HudModule {
         if (text.isBlank() && !showPrevious) {
             return;
         }
-        Camera camera = Minecraft.method_1551().field_1773.method_19418();
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         if (this.anchor.is(FOLLOW)) {
             this.followView(camera);
             if (!this.followReferenceInit) {
-                this.worldReferenceDistance = (float)Math.min((double)this.distance.getFloat(), this.worldAnchor.method_1022(camera.method_71156()));
+                this.worldReferenceDistance = (float)Math.min((double)this.distance.getFloat(), this.worldAnchor.distanceTo(camera.position()));
                 this.followReferenceInit = true;
             }
         } else if (this.worldAnchor == null) {
             this.worldAnchor = this.targetPoint(camera);
-            this.pinnedRot = new Quaternionf((Quaternionfc)camera.method_23767());
-            this.worldReferenceDistance = (float)Math.min((double)this.distance.getFloat(), this.worldAnchor.method_1022(camera.method_71156()));
+            this.pinnedRot = new Quaternionf((Quaternionfc)camera.rotation());
+            this.worldReferenceDistance = (float)Math.min((double)this.distance.getFloat(), this.worldAnchor.distanceTo(camera.position()));
         }
         int[] c = this.lyricColors(np);
         LyricFx.Colors colors = new LyricFx.Colors(c[0], c[1], this.worldStyle.unfilledColor(), this.lyricsColor.is(COLOR_RAINBOW));
-        MultiBufferSource.BufferSource imm = mc.method_22940().method_23000();
+        MultiBufferSource.BufferSource imm = mc.renderBuffers().bufferSource();
         float time = AnimationUtils.time();
         if (showPrevious && (previous = this.worldPlacement(camera, at = this.anchor.is(PINNED) ? this.previousWorldAnchor : this.worldAnchor, this.previousWorldRot, this.previousReferenceDistance)) != null) {
             this.drawWorldGroup(imm, previous, this.outgoingWorldText, "", (float)(now - this.prevLineAt) / 1000.0f, -1.0f, colors, c[0], time, true);
@@ -1007,27 +1007,27 @@ extends HudModule {
         if (!text.isBlank() && current != null) {
             this.drawWorldGroup(imm, current, text, next, age, fill, colors, c[0], time, false);
         }
-        imm.method_22993();
+        imm.endBatch();
     }
 
     private WorldPlacement worldPlacement(Camera camera, Vec3 at, Quaternionf fixedRotation, float reference) {
         if (at == null) {
             return null;
         }
-        Vec3 delta = at.method_1020(camera.method_71156());
-        float actualDistance = (float)delta.method_1033();
+        Vec3 delta = at.subtract(camera.position());
+        float actualDistance = (float)delta.length();
         float alpha = WorldLyricMotion.distanceAlpha(actualDistance, this.worldStyle.renderDistance.getFloat());
-        if (alpha <= 0.0f || delta.method_1026(Vec3.method_1030((float)camera.method_19329(), (float)camera.method_19330())) <= 0.05) {
+        if (alpha <= 0.0f || delta.dot(Vec3.directionFromRotation((float)camera.xRot(), (float)camera.yRot())) <= 0.05) {
             return null;
         }
         float scale = WorldLyricMotion.scale(this.lyricsSize.getFloat(), reference, actualDistance, this.worldStyle.sizeMode.is("\u0420\u0430\u0437\u043c\u0435\u0440 \u043d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435"));
-        Quaternionf rotation = this.anchor.is(PINNED) && (Boolean)this.faceCamera.get() == false && fixedRotation != null ? fixedRotation : camera.method_23767();
-        Matrix4f matrix = new Matrix4f().translate((float)delta.field_1352, (float)delta.field_1351, (float)delta.field_1350).rotate((Quaternionfc)rotation).rotateZ((float)Math.toRadians(this.worldStyle.roll.getFloat())).rotateX((float)Math.toRadians(this.worldStyle.tilt.getFloat())).scale(scale, -scale, scale);
+        Quaternionf rotation = this.anchor.is(PINNED) && (Boolean)this.faceCamera.get() == false && fixedRotation != null ? fixedRotation : camera.rotation();
+        Matrix4f matrix = new Matrix4f().translate((float)delta.x, (float)delta.y, (float)delta.z).rotate((Quaternionfc)rotation).rotateZ((float)Math.toRadians(this.worldStyle.roll.getFloat())).rotateX((float)Math.toRadians(this.worldStyle.tilt.getFloat())).scale(scale, -scale, scale);
         float widthLimit = this.worldStyle.maxWidth.getFloat();
         float heightLimit = Float.MAX_VALUE;
         if (((Boolean)this.worldStyle.nearProtection.get()).booleanValue()) {
-            float viewHeight = 2.0f * actualDistance * (float)Math.tan(Math.toRadians((double)((Integer)NowPlayingModule.mc.field_1690.method_41808().method_41753()).intValue() / 2.0));
-            float aspect = (float)mc.method_22683().method_4489() / (float)Math.max(1, mc.method_22683().method_4506());
+            float viewHeight = 2.0f * actualDistance * (float)Math.tan(Math.toRadians((double)((Integer)NowPlayingModule.mc.options.fov().get()).intValue() / 2.0));
+            float aspect = (float)mc.getWindow().getWidth() / (float)Math.max(1, mc.getWindow().getHeight());
             widthLimit = Math.min(widthLimit, viewHeight * aspect * 0.72f);
             heightLimit = viewHeight * 0.55f;
         }
@@ -1035,9 +1035,9 @@ extends HudModule {
     }
 
     private void followView(Camera camera) {
-        Vec3 cam = camera.method_71156();
-        float yaw = camera.method_19330();
-        float pitch = Math.max(-25.0f, Math.min(25.0f, camera.method_19329()));
+        Vec3 cam = camera.position();
+        float yaw = camera.yRot();
+        float pitch = Math.max(-25.0f, Math.min(25.0f, camera.xRot()));
         float dt = FrameStats.delta();
         if (!this.followInit) {
             this.smoothYaw = yaw;
@@ -1045,26 +1045,26 @@ extends HudModule {
             this.followInit = true;
         }
         float k = 1.0f - (float)Math.exp(-dt * this.follow.getFloat());
-        this.smoothYaw += Mth.method_15393((float)(yaw - this.smoothYaw)) * k;
+        this.smoothYaw += Mth.wrapDegrees((float)(yaw - this.smoothYaw)) * k;
         this.smoothPitch += (pitch - this.smoothPitch) * k;
-        float dYaw = Mth.method_15393((float)(yaw - this.smoothYaw));
+        float dYaw = Mth.wrapDegrees((float)(yaw - this.smoothYaw));
         if (Math.abs(dYaw) > 15.0f) {
             this.smoothYaw = yaw - Math.signum(dYaw) * 15.0f;
         }
         if (Math.abs(pitch - this.smoothPitch) > 10.0f) {
             this.smoothPitch = pitch - Math.signum(pitch - this.smoothPitch) * 10.0f;
         }
-        Vec3 look = Vec3.method_1030((float)this.smoothPitch, (float)this.smoothYaw);
+        Vec3 look = Vec3.directionFromRotation((float)this.smoothPitch, (float)this.smoothYaw);
         double d = this.rayDistance(cam, look);
         this.smoothDist = this.smoothDist < 0.0f || d < (double)this.smoothDist ? (float)d : (this.smoothDist += (float)(d - (double)this.smoothDist) * (1.0f - (float)Math.exp(-dt * 6.0f)));
-        this.worldAnchor = cam.method_1019(look.method_1021((double)this.smoothDist)).method_1031(0.0, (double)this.height.getFloat(), 0.0).method_1019(Vec3.method_1030((float)0.0f, (float)(camera.method_19330() + 90.0f)).method_1021((double)this.worldStyle.horizontal.getFloat()));
+        this.worldAnchor = cam.add(look.scale((double)this.smoothDist)).add(0.0, (double)this.height.getFloat(), 0.0).add(Vec3.directionFromRotation((float)0.0f, (float)(camera.yRot() + 90.0f)).scale((double)this.worldStyle.horizontal.getFloat()));
     }
 
     private double rayDistance(Vec3 cam, Vec3 look) {
         double d = this.distance.getFloat();
-        BlockHitResult hit = NowPlayingModule.mc.field_1687.method_17742(new ClipContext(cam, cam.method_1019(look.method_1021(d)), ClipContext.Block.field_17558, ClipContext.Fluid.field_1348, (Entity)NowPlayingModule.mc.field_1724));
-        if (hit.method_17783() != HitResult.Type.field_1333) {
-            d = Math.max(1.0, hit.method_17784().method_1022(cam) - 0.35);
+        BlockHitResult hit = NowPlayingModule.mc.level.clip(new ClipContext(cam, cam.add(look.scale(d)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity)NowPlayingModule.mc.player));
+        if (hit.getType() != HitResult.Type.MISS) {
+            d = Math.max(1.0, hit.getLocation().distanceTo(cam) - 0.35);
         }
         return d;
     }
@@ -1074,17 +1074,17 @@ extends HudModule {
         float pitch;
         Vec3 look;
         Vec3 end;
-        Vec3 cam = camera.method_71156();
-        BlockHitResult hit = NowPlayingModule.mc.field_1687.method_17742(new ClipContext(cam, end = cam.method_1019((look = Vec3.method_1030((float)(pitch = Math.max(-25.0f, Math.min(25.0f, camera.method_19329()))), (float)camera.method_19330())).method_1021(d = (double)this.distance.getFloat())), ClipContext.Block.field_17558, ClipContext.Fluid.field_1348, (Entity)NowPlayingModule.mc.field_1724));
-        if (hit.method_17783() != HitResult.Type.field_1333) {
-            double hd = hit.method_17784().method_1022(cam);
+        Vec3 cam = camera.position();
+        BlockHitResult hit = NowPlayingModule.mc.level.clip(new ClipContext(cam, end = cam.add((look = Vec3.directionFromRotation((float)(pitch = Math.max(-25.0f, Math.min(25.0f, camera.xRot()))), (float)camera.yRot())).scale(d = (double)this.distance.getFloat())), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity)NowPlayingModule.mc.player));
+        if (hit.getType() != HitResult.Type.MISS) {
+            double hd = hit.getLocation().distanceTo(cam);
             d = Math.max(1.0, hd - 0.35);
         }
-        return cam.method_1019(look.method_1021(d)).method_1031(0.0, (double)this.height.getFloat(), 0.0).method_1019(Vec3.method_1030((float)0.0f, (float)(camera.method_19330() + 90.0f)).method_1021((double)this.worldStyle.horizontal.getFloat()));
+        return cam.add(look.scale(d)).add(0.0, (double)this.height.getFloat(), 0.0).add(Vec3.directionFromRotation((float)0.0f, (float)(camera.yRot() + 90.0f)).scale((double)this.worldStyle.horizontal.getFloat()));
     }
 
     private List<LyricFx.Glyph> worldGlyphs(String text) {
-        List<LyricFx.Glyph> result = LyricFx.split(text, ch -> (float)NowPlayingModule.mc.field_1772.method_27525((FormattedText)Fonts.text(ch, (Boolean)this.worldStyle.bold.get())) / 9.0f);
+        List<LyricFx.Glyph> result = LyricFx.split(text, ch -> (float)NowPlayingModule.mc.font.width((FormattedText)Fonts.text(ch, (Boolean)this.worldStyle.bold.get())) / 9.0f);
         WorldLyricMotion.tracking(result, this.worldStyle.tracking.getFloat() / 100.0f);
         return result;
     }
@@ -1097,7 +1097,7 @@ extends HudModule {
         if (!((Boolean)this.worldStyle.wrap.get()).booleanValue()) {
             return List.of(text);
         }
-        WorldWrapKey key = new WorldWrapKey(text, Math.max(12, (int)limit), this.worldStyle.maxRows.getInt(), (Boolean)this.worldStyle.bold.get(), this.worldStyle.tracking.getFloat(), NowPlayingModule.mc.field_1772);
+        WorldWrapKey key = new WorldWrapKey(text, Math.max(12, (int)limit), this.worldStyle.maxRows.getInt(), (Boolean)this.worldStyle.bold.get(), this.worldStyle.tracking.getFloat(), NowPlayingModule.mc.font);
         List<String> cached = this.worldWrapCache.get(key);
         if (cached != null) {
             return cached;
@@ -1157,30 +1157,30 @@ extends HudModule {
             this.drawWorldDecor(imm, base, widest, bottom, glowColor, opacity * bodyAlpha, age, time);
             if (((Boolean)this.nextLine.get()).booleanValue() && !((String)next).isBlank()) {
                 float nextSize = this.worldStyle.nextScale.getFloat() / 100.0f;
-                String line = WorldLyricMotion.wrap((String)next, limit / nextSize, 1, value -> NowPlayingModule.mc.field_1772.method_27525((FormattedText)Fonts.text(value, false))).stream().findFirst().orElse("");
+                String line = WorldLyricMotion.wrap((String)next, limit / nextSize, 1, value -> NowPlayingModule.mc.font.width((FormattedText)Fonts.text(value, false))).stream().findFirst().orElse("");
                 Component rendered = Fonts.text(line, false);
                 Matrix4f nm = new Matrix4f((Matrix4fc)base).translate(0.0f, bottom + gap * 0.65f, 0.0f).scale(nextSize);
                 float nextAlpha = this.worldStyle.nextOpacity.getFloat() / 100.0f * opacity * bodyAlpha;
                 if (nextAlpha < 0.025f) {
                     return;
                 }
-                float nextX = (float)(-NowPlayingModule.mc.field_1772.method_27525((FormattedText)rendered)) / 2.0f;
+                float nextX = (float)(-NowPlayingModule.mc.font.width((FormattedText)rendered)) / 2.0f;
                 if (((Boolean)this.worldStyle.outline.get()).booleanValue()) {
                     float[][] border = new float[][]{{-0.55f, 0.0f}, {0.55f, 0.0f}, {0.0f, -0.55f}, {0.0f, 0.55f}};
                     Matrix4f borderMatrix = new Matrix4f((Matrix4fc)nm).translate(0.0f, 0.0f, 0.08f);
                     for (float[] at : border) {
-                        NowPlayingModule.mc.field_1772.method_27522(rendered, nextX + at[0], at[1], ColorUtil.withAlpha(-16185838, nextAlpha), false, borderMatrix, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
+                        NowPlayingModule.mc.font.drawInBatch(rendered, nextX + at[0], at[1], ColorUtil.withAlpha(-16185838, nextAlpha), false, borderMatrix, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
                     }
-                    imm.method_22993();
+                    imm.endBatch();
                 }
-                NowPlayingModule.mc.field_1772.method_27522(rendered, nextX, 0.0f, ColorUtil.withAlpha(-1, nextAlpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), nm, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
+                NowPlayingModule.mc.font.drawInBatch(rendered, nextX, 0.0f, ColorUtil.withAlpha(-1, nextAlpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), nm, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
             }
         }
     }
 
     private void drawWorldGlyphs(MultiBufferSource.BufferSource imm, Matrix4f base, List<LyricFx.Glyph> glyphs, float y, float opacity, int glowColor) {
         int pass;
-        Font tr = NowPlayingModule.mc.field_1772;
+        Font tr = NowPlayingModule.mc.font;
         float total = LyricFx.totalWidth(glyphs) * 9.0f;
         int light = 0xF000F0;
         Font.DisplayMode layer = this.layerType();
@@ -1194,14 +1194,14 @@ extends HudModule {
                     float alpha = opacity * glyph.alpha * (float)ColorUtil.alpha(glyph.color) / 255.0f;
                     if (alpha < 0.025f || glyph.ch.isBlank()) continue;
                     Component text = Fonts.text(glyph.ch, (Boolean)this.worldStyle.bold.get());
-                    float half = (float)tr.method_27525((FormattedText)text) / 2.0f;
+                    float half = (float)tr.width((FormattedText)text) / 2.0f;
                     Matrix4f matrix = new Matrix4f((Matrix4fc)base).translate((glyph.x + glyph.w / 2.0f + glyph.dx) * 9.0f - total / 2.0f, y + glyph.dy * 9.0f, 0.0f).rotateZ(glyph.rot).scale(glyph.scale);
                     if (pass == 0) {
                         float a = alpha * Math.min(0.6f, 0.28f * glyph.glow * this.worldStyle.glowStrength.getFloat() / 100.0f);
                         if (a < 0.025f) continue;
                         int color = ColorUtil.withAlpha(ColorUtil.lerp(glowColor, glyph.color, 0.3f), a);
                         for (float[] offset : offsets) {
-                            tr.method_27522(text, -half + offset[0], -4.5f + offset[1], color, false, matrix, (MultiBufferSource)imm, layer, 0, light);
+                            tr.drawInBatch(text, -half + offset[0], -4.5f + offset[1], color, false, matrix, (MultiBufferSource)imm, layer, 0, light);
                         }
                         continue;
                     }
@@ -1210,13 +1210,13 @@ extends HudModule {
                         float[][] border = new float[][]{{-0.55f, 0.0f}, {0.55f, 0.0f}, {0.0f, -0.55f}, {0.0f, 0.55f}};
                         Matrix4f borderMatrix = new Matrix4f((Matrix4fc)matrix).translate(0.0f, 0.0f, 0.08f);
                         for (float[] at : border) {
-                            tr.method_27522(text, -half + at[0], -4.5f + at[1], edge, false, borderMatrix, (MultiBufferSource)imm, layer, 0, light);
+                            tr.drawInBatch(text, -half + at[0], -4.5f + at[1], edge, false, borderMatrix, (MultiBufferSource)imm, layer, 0, light);
                         }
                         continue;
                     }
-                    tr.method_27522(text, -half, -4.5f, ColorUtil.withAlpha(glyph.color, alpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), matrix, (MultiBufferSource)imm, layer, 0, light);
+                    tr.drawInBatch(text, -half, -4.5f, ColorUtil.withAlpha(glyph.color, alpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), matrix, (MultiBufferSource)imm, layer, 0, light);
                 }
-                imm.method_22993();
+                imm.endBatch();
             }
             ++pass;
         }
@@ -1228,7 +1228,7 @@ extends HudModule {
         }
         Component rendered = Fonts.text(text, false);
         Matrix4f matrix = new Matrix4f((Matrix4fc)base).translate(x, y, -0.02f).rotateZ(rotation).scale(size);
-        NowPlayingModule.mc.field_1772.method_27522(rendered, (float)(-NowPlayingModule.mc.field_1772.method_27525((FormattedText)rendered)) / 2.0f, -4.5f, color, false, matrix, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
+        NowPlayingModule.mc.font.drawInBatch(rendered, (float)(-NowPlayingModule.mc.font.width((FormattedText)rendered)) / 2.0f, -4.5f, color, false, matrix, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
     }
 
     private void drawWorldDecor(MultiBufferSource.BufferSource imm, Matrix4f base, float width, float bottom, int color, float alpha, float age, float time) {
@@ -1236,7 +1236,7 @@ extends HudModule {
         switch ((String)this.worldStyle.ornament.get()) {
             case "\u041b\u0438\u043d\u0438\u044f": {
                 String line = "\u2500".repeat(Math.max(2, Math.min(48, (int)(width / 6.0f))));
-                float natural = Math.max(1, NowPlayingModule.mc.field_1772.method_27525((FormattedText)Fonts.text(line, false)));
+                float natural = Math.max(1, NowPlayingModule.mc.font.width((FormattedText)Fonts.text(line, false)));
                 this.worldMark(imm, base, line, 0.0f, bottom, Math.min(1.0f, width / natural), 0.0f, tint);
                 break;
             }
@@ -1275,7 +1275,7 @@ extends HudModule {
     }
 
     private Font.DisplayMode layerType() {
-        return (Boolean)this.throughBlocks.get() != false ? Font.DisplayMode.field_33994 : Font.DisplayMode.field_33993;
+        return (Boolean)this.throughBlocks.get() != false ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL;
     }
 
     public record HistoryEntry(String title, String artist, String app, String cover) {

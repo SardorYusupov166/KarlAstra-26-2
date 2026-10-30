@@ -46,11 +46,11 @@ public final class UserAudio {
             key = "f" + Integer.toHexString(file.toAbsolutePath().normalize().toString().hashCode() & Integer.MAX_VALUE);
         }
         FILES.put(key, file);
-        return Identifier.method_60655((String)NAMESPACE, (String)key);
+        return Identifier.fromNamespaceAndPath((String)NAMESPACE, (String)key);
     }
 
     private static String key(Identifier location) {
-        String p = location.method_12832();
+        String p = location.getPath();
         if (p.startsWith("sounds/")) {
             p = p.substring(7);
         }
@@ -75,9 +75,9 @@ public final class UserAudio {
                 Path f = UserAudio.file(location);
                 FloatSampleSource s = Decoders.open(f);
                 try {
-                    ByteBuffer data = s.method_59757();
+                    ByteBuffer data = s.readAll();
                     UserAudio.normalize(data);
-                    soundBuffer = new SoundBuffer(data, s.method_19719());
+                    soundBuffer = new SoundBuffer(data, s.getFormat());
                     if (s == null) break block8;
                 }
                 catch (Throwable throwable) {
@@ -100,7 +100,7 @@ public final class UserAudio {
                 s.close();
             }
             return soundBuffer;
-        }, (Executor)Util.method_55473()));
+        }, (Executor)Util.nonCriticalIoPool()));
     }
 
     private static void normalize(ByteBuffer data) {
@@ -131,7 +131,7 @@ public final class UserAudio {
                 AstraClient.LOGGER.warn("\u0421\u0432\u043e\u0439 \u0442\u0440\u0435\u043a \u043d\u0435 \u043e\u0442\u043a\u0440\u044b\u043b\u0441\u044f: {} ({})", (Object)f.getFileName(), (Object)e.getMessage());
                 throw new CompletionException(e);
             }
-        }, (Executor)Util.method_55473());
+        }, (Executor)Util.nonCriticalIoPool());
     }
 
     public static void forgetMissing() {

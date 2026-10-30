@@ -26,18 +26,18 @@ extends PlayerCosmetic {
 
     @Override
     public void onTick() {
-        if (this.player() == null || TrailCosmetic.mc.field_1687 == null || mc.method_1493()) {
+        if (this.player() == null || TrailCosmetic.mc.level == null || mc.isPaused()) {
             return;
         }
-        if (this.player().method_18798().method_37268() < 0.002) {
+        if (this.player().getDeltaMovement().horizontalDistanceSqr() < 0.002) {
             return;
         }
         Random r = AstraParticles.random();
         int n = this.density.getInt();
         block11: for (int i = 0; i < n; ++i) {
-            double x = this.player().method_23317() + (r.nextDouble() - 0.5) * 0.4;
-            double z = this.player().method_23321() + (r.nextDouble() - 0.5) * 0.4;
-            double y = this.player().method_23318() + 0.08 + r.nextDouble() * 0.2;
+            double x = this.player().getX() + (r.nextDouble() - 0.5) * 0.4;
+            double z = this.player().getZ() + (r.nextDouble() - 0.5) * 0.4;
+            double y = this.player().getY() + 0.08 + r.nextDouble() * 0.2;
             int c = this.color.getColor();
             switch ((String)this.type.get()) {
                 case "\u0417\u0432\u0451\u0437\u0434\u044b": {

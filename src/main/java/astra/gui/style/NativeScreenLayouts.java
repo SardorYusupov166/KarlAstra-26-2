@@ -148,13 +148,13 @@ public final class NativeScreenLayouts {
             }
             layout.schemaVersion = 2;
         }
-        Identifier late = Identifier.method_60655((String)"astra", (String)"native_layouts");
+        Identifier late = Identifier.fromNamespaceAndPath((String)"astra", (String)"native_layouts");
         ScreenEvents.AFTER_INIT.addPhaseOrdering(Event.DEFAULT_PHASE, late);
         ScreenEvents.AFTER_INIT.register(late, (mc, s, w, h) -> {
             if (NativeScreenLayouts.key(s).isEmpty()) {
                 return;
             }
-            Screens.getButtons((Screen)s).removeIf(widget -> EDITOR_LABEL.equals(widget.method_25369().getString()));
+            Screens.getButtons((Screen)s).removeIf(widget -> EDITOR_LABEL.equals(widget.getMessage().getString()));
             IdentityHashMap<AbstractWidget, Base> previous = new IdentityHashMap<AbstractWidget, Base>();
             for (Entry entry : NativeScreenLayouts.entries(s)) {
                 previous.put(entry.widget(), entry.base());
@@ -165,18 +165,18 @@ public final class NativeScreenLayouts {
             for (AbstractWidget widget2 : Screens.getButtons((Screen)s)) {
                 String name;
                 if (!(widget2 instanceof AbstractButton)) continue;
-                ComponentContents componentContents = widget2.method_25369().method_10851();
+                ComponentContents componentContents = widget2.getMessage().getContents();
                 if (componentContents instanceof TranslatableContents) {
                     TranslatableContents t = (TranslatableContents)componentContents;
-                    v0 = t.method_11022();
+                    v0 = t.getKey();
                 } else {
-                    v0 = name = widget2.method_25369().getString();
+                    v0 = name = widget2.getMessage().getString();
                 }
                 if (name.isBlank()) {
                     name = widget2.getClass().getName();
                 }
                 String id = name + "#" + String.valueOf(counts.merge(name, 1, Integer::sum));
-                list.add(new Entry(id, widget2, previous.getOrDefault(widget2, new Base(widget2.method_46426(), widget2.method_46427(), widget2.method_25368(), widget2.method_25364(), widget2.field_22764))));
+                list.add(new Entry(id, widget2, previous.getOrDefault(widget2, new Base(widget2.getX(), widget2.getY(), widget2.getWidth(), widget2.getHeight(), widget2.visible))));
                 owners.put(widget2, s);
             }
             entries.keySet().removeIf(old -> old != s && NativeScreenLayouts.key(old).equals(NativeScreenLayouts.key(s)));
@@ -194,9 +194,9 @@ public final class NativeScreenLayouts {
             Event clickEvent = ScreenMouseEvents.allowMouseClick((Screen)s);
             if (clickHooks.get(s) != clickEvent) {
                 clickHooks.put(s, clickEvent);
-                clickEvent.register((screen, click) -> !NativeScreenLayouts.routeMovedClick(screen, click.comp_4798(), click.comp_4799(), click.method_74245()));
+                clickEvent.register((screen, click) -> !NativeScreenLayouts.routeMovedClick(screen, click.x(), click.y(), click.button()));
             }
-            Screens.getButtons((Screen)s).add(Button.method_46430((Component)Component.method_43470((String)EDITOR_LABEL), b -> mc.method_1507((Screen)new NativeLayoutEditor(s))).method_46434(s instanceof JoinMultiplayerScreen ? Math.max(6, w - 118) : 6, s instanceof TitleScreen ? h - 42 : (s instanceof JoinMultiplayerScreen ? 6 : h - 24), s instanceof JoinMultiplayerScreen ? 112 : 128, 18).method_46431());
+            Screens.getButtons((Screen)s).add(Button.builder((Component)Component.literal((String)EDITOR_LABEL), b -> mc.setScreen((Screen)new NativeLayoutEditor(s))).bounds(s instanceof JoinMultiplayerScreen ? Math.max(6, w - 118) : 6, s instanceof TitleScreen ? h - 42 : (s instanceof JoinMultiplayerScreen ? 6 : h - 24), s instanceof JoinMultiplayerScreen ? 112 : 128, 18).build());
         });
     }
 
@@ -211,8 +211,8 @@ public final class NativeScreenLayouts {
             AbstractWidget w = e.widget();
             int[] ex = expected.get(w);
             if (ex == null) continue;
-            int ddx = w.method_46426() - ex[0];
-            int ddy = w.method_46427() - ex[1];
+            int ddx = w.getX() - ex[0];
+            int ddy = w.getY() - ex[1];
             if (ddx == 0 && ddy == 0) continue;
             Base b = e.base();
             list.set(i, new Entry(e.id(), w, new Base(b.x() + ddx, b.y() + ddy, b.w(), b.h(), b.visible())));
@@ -232,19 +232,19 @@ public final class NativeScreenLayouts {
             o.opacity = NativeScreenLayouts.clamp(o.opacity, 0.0f, 100.0f);
             o.dx = NativeScreenLayouts.clamp(o.dx, -1.0f, 1.0f);
             o.dy = NativeScreenLayouts.clamp(o.dy, -1.0f, 1.0f);
-            w.method_55445(Math.max(8, Math.round((float)b.w() * o.scale / 100.0f)), Math.max(8, Math.round((float)b.h() * o.scale / 100.0f)));
-            w.method_55445(Math.min(s.field_22789, w.method_25368()), Math.min(s.field_22790, w.method_25364()));
-            w.method_46421(Math.max(0, Math.min(s.field_22789 - w.method_25368(), Math.round((float)b.x() + o.dx * (float)s.field_22789))));
-            w.method_46419(Math.max(0, Math.min(s.field_22790 - w.method_25364(), Math.round((float)b.y() + o.dy * (float)s.field_22790))));
-            o.dx = (float)(w.method_46426() - b.x()) / (float)Math.max(1, s.field_22789);
-            o.dy = (float)(w.method_46427() - b.y()) / (float)Math.max(1, s.field_22790);
-            w.field_22764 = b.visible() && !o.hidden;
-            expected.put(w, new int[]{w.method_46426(), w.method_46427()});
+            w.setSize(Math.max(8, Math.round((float)b.w() * o.scale / 100.0f)), Math.max(8, Math.round((float)b.h() * o.scale / 100.0f)));
+            w.setSize(Math.min(s.width, w.getWidth()), Math.min(s.height, w.getHeight()));
+            w.setX(Math.max(0, Math.min(s.width - w.getWidth(), Math.round((float)b.x() + o.dx * (float)s.width))));
+            w.setY(Math.max(0, Math.min(s.height - w.getHeight(), Math.round((float)b.y() + o.dy * (float)s.height))));
+            o.dx = (float)(w.getX() - b.x()) / (float)Math.max(1, s.width);
+            o.dy = (float)(w.getY() - b.y()) / (float)Math.max(1, s.height);
+            w.visible = b.visible() && !o.hidden;
+            expected.put(w, new int[]{w.getX(), w.getY()});
         }
     }
 
     public static boolean routeMovedClick(Screen s, double x, double y, int button) {
-        if (button != 0 || Minecraft.method_1551().field_1755 != s) {
+        if (button != 0 || Minecraft.getInstance().screen != s) {
             return false;
         }
         List<Entry> list = NativeScreenLayouts.entries(s);
@@ -252,9 +252,9 @@ public final class NativeScreenLayouts {
             Entry e = list.get(i);
             Item o = NativeScreenLayouts.item(s, e.id());
             AbstractWidget widget = e.widget();
-            if (o.dx == 0.0f && o.dy == 0.0f && o.scale == 100.0f || !widget.field_22763 || !widget.field_22764 || !widget.method_25405(x, y)) continue;
-            s.method_25395((GuiEventListener)widget);
-            return widget.method_25402(new MouseButtonEvent(x, y, new MouseButtonInfo(button, 0)), false);
+            if (o.dx == 0.0f && o.dy == 0.0f && o.scale == 100.0f || !widget.active || !widget.visible || !widget.isMouseOver(x, y)) continue;
+            s.setFocused((GuiEventListener)widget);
+            return widget.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(button, 0)), false);
         }
         return false;
     }
@@ -306,7 +306,7 @@ public final class NativeScreenLayouts {
         float scale = NativeScreenLayouts.clamp(o.scale, 25.0f, 250.0f) / 100.0f;
         CanvasBoard.Canvas custom = NativeScreenLayouts.layout((Screen)s).logo;
         float h = custom == null ? w * 280.0f / 720.0f : (float)((double)(w *= scale) * custom.height / custom.width);
-        logos.put(s, new float[]{x += o.dx * (float)s.field_22789, y += o.dy * (float)s.field_22790, w, h});
+        logos.put(s, new float[]{x += o.dx * (float)s.width, y += o.dy * (float)s.height, w, h});
         if (o.hidden) {
             return;
         }
@@ -334,7 +334,7 @@ public final class NativeScreenLayouts {
     }
 
     public static Screen current() {
-        return preview != null ? preview : Minecraft.method_1551().field_1755;
+        return preview != null ? preview : Minecraft.getInstance().screen;
     }
 
     private static void rect(Screen screen, String id, float x, float y, float w, float h) {
@@ -365,7 +365,7 @@ public final class NativeScreenLayouts {
                 }
                 for (Entry e : NativeScreenLayouts.entries(screen)) {
                     if (!e.id().equals(id)) continue;
-                    String n = e.widget().method_25369().getString();
+                    String n = e.widget().getMessage().getString();
                     if (n.isBlank()) {
                         yield "\u041a\u043d\u043e\u043f\u043a\u0430-\u0438\u043a\u043e\u043d\u043a\u0430";
                     }
@@ -378,16 +378,16 @@ public final class NativeScreenLayouts {
 
     public static void splash(Screen screen, GuiGraphics ctx, Font tr, Component text, float alpha) {
         Item o = NativeScreenLayouts.item(screen, "@splash");
-        text = Component.method_43470((String)(o.text.isBlank() ? text.getString() : o.text));
-        float scale = (1.8f - (float)Math.abs(Math.sin((double)(System.currentTimeMillis() % 1000L) / 1000.0 * Math.PI * 2.0)) * 0.1f) * 100.0f / (float)(tr.method_27525((FormattedText)text) + 32) * NativeScreenLayouts.clamp(o.scale, 25.0f, 250.0f) / 100.0f;
-        float cx = (float)screen.field_22789 / 2.0f + 123.0f + o.dx * (float)screen.field_22789;
-        float cy = 69.0f + o.dy * (float)screen.field_22790;
-        float tw = (float)tr.method_27525((FormattedText)text) * scale;
+        text = Component.literal((String)(o.text.isBlank() ? text.getString() : o.text));
+        float scale = (1.8f - (float)Math.abs(Math.sin((double)(System.currentTimeMillis() % 1000L) / 1000.0 * Math.PI * 2.0)) * 0.1f) * 100.0f / (float)(tr.width((FormattedText)text) + 32) * NativeScreenLayouts.clamp(o.scale, 25.0f, 250.0f) / 100.0f;
+        float cx = (float)screen.width / 2.0f + 123.0f + o.dx * (float)screen.width;
+        float cy = 69.0f + o.dy * (float)screen.height;
+        float tw = (float)tr.width((FormattedText)text) * scale;
         NativeScreenLayouts.rect(screen, "@splash", cx - tw / 2.0f - 4.0f, cy - tw * 0.18f - 12.0f, tw + 8.0f, tw * 0.36f + 24.0f);
         if (o.hidden || (double)(alpha * o.opacity) < 0.1) {
             return;
         }
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(cx, cy);
         m.rotate(-0.34906587f);
@@ -401,7 +401,7 @@ public final class NativeScreenLayouts {
         catch (Exception exception) {
             // empty catch block
         }
-        ctx.method_27535(tr, text, -tr.method_27525((FormattedText)text) / 2, -8, (int)(255.0f * alpha * o.opacity / 100.0f) << 24 | rgb);
+        ctx.drawString(tr, text, -tr.width((FormattedText)text) / 2, -8, (int)(255.0f * alpha * o.opacity / 100.0f) << 24 | rgb);
         m.popMatrix();
     }
 
@@ -411,13 +411,13 @@ public final class NativeScreenLayouts {
             text = o.text;
         }
         float scale = NativeScreenLayouts.clamp(o.scale, 25.0f, 250.0f) / 100.0f;
-        float px = (float)x + o.dx * (float)screen.field_22789;
-        float py = (float)y + o.dy * (float)screen.field_22790;
-        NativeScreenLayouts.rect(screen, "@version", px, py, (float)tr.method_1727(text) * scale, 10.0f * scale);
+        float px = (float)x + o.dx * (float)screen.width;
+        float py = (float)y + o.dy * (float)screen.height;
+        NativeScreenLayouts.rect(screen, "@version", px, py, (float)tr.width(text) * scale, 10.0f * scale);
         if (o.hidden || o.opacity <= 0.0f || (float)(color >>> 24) * o.opacity < 1.0f) {
             return;
         }
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(px, py);
         m.scale(scale, scale);
@@ -430,7 +430,7 @@ public final class NativeScreenLayouts {
         catch (Exception exception) {
             // empty catch block
         }
-        ctx.method_25303(tr, text, 0, 0, (int)((float)(color >>> 24) * o.opacity / 100.0f) << 24 | rgb);
+        ctx.drawString(tr, text, 0, 0, (int)((float)(color >>> 24) * o.opacity / 100.0f) << 24 | rgb);
         m.popMatrix();
     }
 
@@ -450,9 +450,9 @@ public final class NativeScreenLayouts {
                 return true;
             }
             float scale = NativeScreenLayouts.clamp(o.scale, 25.0f, 250.0f) / 100.0f;
-            Matrix3x2fStack m = ctx.method_51448();
+            Matrix3x2fStack m = ctx.pose();
             m.pushMatrix();
-            m.translate((float)widget.method_46426(), (float)widget.method_46427());
+            m.translate((float)widget.getX(), (float)widget.getY());
             m.scale(scale, scale);
             int rgb = 0xFFFFFF;
             try {
@@ -465,7 +465,7 @@ public final class NativeScreenLayouts {
             }
             float alpha = ((ClickableWidgetAccessor)widget).astra$getAlpha() * o.opacity / 100.0f;
             if ((double)alpha > 0.003) {
-                ctx.method_27535(Minecraft.method_1551().field_1772, widget.method_25369(), 0, 0, (int)(alpha * 255.0f) << 24 | rgb);
+                ctx.drawString(Minecraft.getInstance().font, widget.getMessage(), 0, 0, (int)(alpha * 255.0f) << 24 | rgb);
             }
             m.popMatrix();
             return true;
@@ -494,8 +494,8 @@ public final class NativeScreenLayouts {
         }
         float aw = bw * scale * NativeScreenLayouts.clamp(o.sw, 25.0f, 300.0f) / 100.0f;
         float ah = bh * scale * NativeScreenLayouts.clamp(o.sh, 25.0f, 300.0f) / 100.0f;
-        float px = x + w - aw + o.dx * (float)screen.field_22789;
-        float py = bottom + o.dy * (float)screen.field_22790 - ah;
+        float px = x + w - aw + o.dx * (float)screen.width;
+        float py = bottom + o.dy * (float)screen.height - ah;
         NativeScreenLayouts.rect(screen, "@art", px, py, aw, ah);
         if (o.hidden || o.opacity <= 0.0f) {
             return;
@@ -525,7 +525,7 @@ public final class NativeScreenLayouts {
         if (tex == null) {
             return;
         }
-        Render2D.texture(ctx, tex, 0.0f, 0.0f, (float)s.field_22789, (float)s.field_22790, 0.0f, 0.0f, 1.0f, 1.0f, ColorUtil.withAlpha(-1, NativeScreenLayouts.clamp(l.backgroundOpacity, 0.0f, 100.0f) / 100.0f));
+        Render2D.texture(ctx, tex, 0.0f, 0.0f, (float)s.width, (float)s.height, 0.0f, 0.0f, 1.0f, 1.0f, ColorUtil.withAlpha(-1, NativeScreenLayouts.clamp(l.backgroundOpacity, 0.0f, 100.0f) / 100.0f));
     }
 
     static {

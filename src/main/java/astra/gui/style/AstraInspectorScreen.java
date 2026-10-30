@@ -49,7 +49,7 @@ implements PopupHost {
     private Widget focus;
 
     protected AstraInspectorScreen(String title) {
-        super((Component)Component.method_43470((String)title));
+        super((Component)Component.literal((String)title));
     }
 
     protected abstract List<Setting<?>> properties();
@@ -84,12 +84,12 @@ implements PopupHost {
     }
 
     private void scale() {
-        this.s = Math.max(0.15f, (float)this.field_22790 * 0.86f / 600.0f);
-        this.dw = (float)this.field_22789 / this.s;
-        this.dh = (float)this.field_22790 / this.s;
+        this.s = Math.max(0.15f, (float)this.height * 0.86f / 600.0f);
+        this.dw = (float)this.width / this.s;
+        this.dh = (float)this.height / this.s;
     }
 
-    protected void method_25426() {
+    protected void init() {
         this.scale();
         this.rebuildRows();
     }
@@ -98,19 +98,19 @@ implements PopupHost {
         return 240.0f * this.s;
     }
 
-    public void method_25420(GuiGraphics ctx, int mx, int my, float delta) {
-        if (this.field_22787.field_1687 == null) {
-            this.method_57728(ctx, delta);
+    public void renderBackground(GuiGraphics ctx, int mx, int my, float delta) {
+        if (this.minecraft.level == null) {
+            this.renderPanorama(ctx, delta);
         } else {
-            ctx.method_25294(0, 0, this.field_22789, this.field_22790, 0x20000000);
+            ctx.fill(0, 0, this.width, this.height, 0x20000000);
         }
     }
 
-    public void method_25394(GuiGraphics ctx, int mx, int my, float delta) {
+    public void render(GuiGraphics ctx, int mx, int my, float delta) {
         this.scale();
         this.workspace(ctx, mx, my, delta);
         Theme t = ThemeManager.get();
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.scale(this.s, this.s);
         this.ui.ctx = ctx;
@@ -122,7 +122,7 @@ implements PopupHost {
         Render2D.roundRect(ctx, 8.0f, 8.0f, 220.0f, this.dh - 16.0f, 12.0f, ColorUtil.withAlpha(t.bg2(), 0.96f));
         Render2D.outline(ctx, 8.0f, 8.0f, 220.0f, this.dh - 16.0f, 12.0f, 1.0f, t.stroke());
         ArtManager.drawLogo(ctx, 22.0f, 10.0f, 130.0f, 1.0f, t.accent(), t.accent2());
-        Fonts.draw(ctx, this.field_22785.getString(), 20.0f, 67.0f, 10.0f, t.text(), true);
+        Fonts.draw(ctx, this.title.getString(), 20.0f, 67.0f, 10.0f, t.text(), true);
         Fonts.draw(ctx, "\u041e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u0435 \u0438 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u044b", 20.0f, 83.0f, 7.0f, t.textDim(), false);
         float top = 104.0f;
         float viewH = this.dh - 151.0f;
@@ -134,12 +134,12 @@ implements PopupHost {
         }
         this.contentH = y + this.scroll - top;
         this.ui.setClip(12.0f, top, 212.0f, viewH);
-        ctx.method_44379(12, (int)top, 224, (int)(top + viewH));
+        ctx.enableScissor(12, (int)top, 224, (int)(top + viewH));
         for (Widget row : this.rows) {
             if (!row.isVisible() || !(row.y + row.h >= top) || !(row.y < top + viewH)) continue;
             row.render(this.ui);
         }
-        ctx.method_44380();
+        ctx.disableScissor();
         this.ui.clearClip();
         if (this.contentH > viewH) {
             float bar = Math.max(18.0f, viewH * viewH / this.contentH);
@@ -168,7 +168,7 @@ implements PopupHost {
         if (ux < 236.0) {
             if (uy >= (double)(this.dh - 37.0f)) {
                 this.finishChange();
-                this.method_25419();
+                this.onClose();
                 return true;
             }
             if (uy >= 104.0 && uy < (double)(this.dh - 47.0f)) {
@@ -212,7 +212,7 @@ implements PopupHost {
         return used || x / (double)this.s < 236.0;
     }
 
-    public boolean method_25401(double x, double y, double horizontal, double vertical) {
+    public boolean mouseScrolled(double x, double y, double horizontal, double vertical) {
         if (this.popup != null) {
             return this.popup.mouseScrolled(x / (double)this.s, y / (double)this.s, vertical);
         }
@@ -232,7 +232,7 @@ implements PopupHost {
                 this.closePopup();
             } else {
                 this.finishChange();
-                this.method_25419();
+                this.onClose();
             }
             return true;
         }
@@ -277,26 +277,26 @@ implements PopupHost {
         this.focus = widget;
     }
 
-    public boolean method_25402(MouseButtonEvent c, boolean doubled) {
-        return this.inputClick(c.comp_4798(), c.comp_4799(), c.method_74245());
+    public boolean mouseClicked(MouseButtonEvent c, boolean doubled) {
+        return this.inputClick(c.x(), c.y(), c.button());
     }
 
-    public boolean method_25403(MouseButtonEvent c, double dx, double dy) {
-        return this.inputDrag(c.comp_4798(), c.comp_4799(), c.method_74245());
+    public boolean mouseDragged(MouseButtonEvent c, double dx, double dy) {
+        return this.inputDrag(c.x(), c.y(), c.button());
     }
 
-    public boolean method_25406(MouseButtonEvent c) {
-        return this.inputRelease(c.comp_4798(), c.comp_4799(), c.method_74245());
+    public boolean mouseReleased(MouseButtonEvent c) {
+        return this.inputRelease(c.x(), c.y(), c.button());
     }
 
-    public boolean method_25404(KeyEvent k) {
-        return this.inputKey(k.comp_4795(), k.comp_4796(), k.comp_4797());
+    public boolean keyPressed(KeyEvent k) {
+        return this.inputKey(k.key(), k.scancode(), k.modifiers());
     }
 
-    public boolean method_25400(CharacterEvent c) {
+    public boolean charTyped(CharacterEvent c) {
         boolean used = false;
-        for (char ch : c.method_74226().toCharArray()) {
-            used |= this.inputChar(ch, c.comp_4794());
+        for (char ch : c.codepointAsString().toCharArray()) {
+            used |= this.inputChar(ch, c.modifiers());
         }
         return used;
     }

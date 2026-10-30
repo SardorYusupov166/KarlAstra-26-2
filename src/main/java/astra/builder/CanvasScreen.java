@@ -197,7 +197,7 @@ extends AstraInspectorScreen {
         CanvasBoard.put(this.draft.copy());
     }
 
-    public void method_25393() {
+    public void tick() {
         List<CanvasBoard.Canvas> all = CanvasBoard.all();
         String ids = all.stream().map(c -> c.id).reduce("", (a, b) -> a + b);
         if (!this.wanted.isEmpty()) {
@@ -232,7 +232,7 @@ extends AstraInspectorScreen {
     }
 
     private void choose() {
-        CompletableFuture.supplyAsync(() -> TinyFileDialogs.tinyfd_openFileDialog((CharSequence)"Astra image", (CharSequence)"", (PointerBuffer)null, null, (boolean)false)).thenAccept(f -> this.field_22787.execute(() -> {
+        CompletableFuture.supplyAsync(() -> TinyFileDialogs.tinyfd_openFileDialog((CharSequence)"Astra image", (CharSequence)"", (PointerBuffer)null, null, (boolean)false)).thenAccept(f -> this.minecraft.execute(() -> {
             if (f != null) {
                 this.path = f;
                 this.load((String)f);
@@ -241,7 +241,7 @@ extends AstraInspectorScreen {
     }
 
     private void load(String file) {
-        if (this.busy || this.field_22787.field_1724 == null) {
+        if (this.busy || this.minecraft.player == null) {
             return;
         }
         if ((file = file.trim()).startsWith("\"") && file.endsWith("\"")) {
@@ -257,13 +257,13 @@ extends AstraInspectorScreen {
             catch (Exception e) {
                 throw new CompletionException(e);
             }
-        }).whenComplete((c, error) -> this.field_22787.execute(() -> {
+        }).whenComplete((c, error) -> this.minecraft.execute(() -> {
             this.busy = false;
             if (error != null) {
                 this.status = "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043a\u0430\u0440\u0442\u0438\u043d\u043a\u0443";
                 return;
             }
-            if (!scope.equals(CanvasBoard.scope()) || this.field_22787.field_1724 == null) {
+            if (!scope.equals(CanvasBoard.scope()) || this.minecraft.player == null) {
                 this.status = "\u041c\u0438\u0440 \u0438\u0437\u043c\u0435\u043d\u0438\u043b\u0441\u044f \u2014 \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u0438\u043c\u043f\u043e\u0440\u0442";
                 return;
             }
@@ -274,42 +274,42 @@ extends AstraInspectorScreen {
     }
 
     private void place(CanvasBoard.Canvas c) {
-        HitResult hit = this.field_22787.field_1765;
-        Vec3 p = hit != null && hit.method_17783() != HitResult.Type.field_1333 ? hit.method_17784() : this.field_22787.field_1724.method_33571().method_1019(this.field_22787.field_1724.method_5828(1.0f).method_1021(4.0));
-        c.x = p.field_1352;
-        c.y = p.field_1351;
-        c.z = p.field_1350;
-        c.yaw = Mth.method_15393((float)(180.0f - this.field_22787.field_1724.method_36454()));
+        HitResult hit = this.minecraft.hitResult;
+        Vec3 p = hit != null && hit.getType() != HitResult.Type.MISS ? hit.getLocation() : this.minecraft.player.getEyePosition().add(this.minecraft.player.getViewVector(1.0f).scale(4.0));
+        c.x = p.x;
+        c.y = p.y;
+        c.z = p.z;
+        c.yaw = Mth.wrapDegrees((float)(180.0f - this.minecraft.player.getYRot()));
         c.pitch = 0.0;
         if (hit instanceof BlockHitResult) {
             BlockHitResult b = (BlockHitResult)hit;
-            Direction side = b.method_17780();
-            Vec3 n = side.method_62676();
-            c.x += n.field_1352 * 0.015;
-            c.y += n.field_1351 * 0.015;
-            c.z += n.field_1350 * 0.015;
+            Direction side = b.getDirection();
+            Vec3 n = side.getUnitVec3();
+            c.x += n.x * 0.015;
+            c.y += n.y * 0.015;
+            c.z += n.z * 0.015;
             switch (side) {
-                case field_11036: {
+                case UP: {
                     c.pitch = -90.0;
                     break;
                 }
-                case field_11033: {
+                case DOWN: {
                     c.pitch = 90.0;
                     break;
                 }
-                case field_11043: {
+                case NORTH: {
                     c.yaw = 180.0;
                     break;
                 }
-                case field_11035: {
+                case SOUTH: {
                     c.yaw = 0.0;
                     break;
                 }
-                case field_11034: {
+                case EAST: {
                     c.yaw = 90.0;
                     break;
                 }
-                case field_11039: {
+                case WEST: {
                     c.yaw = -90.0;
                 }
             }
@@ -325,12 +325,12 @@ extends AstraInspectorScreen {
         if (tex == null) {
             return;
         }
-        float availW = (float)this.field_22789 - this.workspaceLeft() - 40.0f * this.s;
-        float availH = (float)this.field_22790 - 110.0f * this.s;
+        float availW = (float)this.width - this.workspaceLeft() - 40.0f * this.s;
+        float availH = (float)this.height - 110.0f * this.s;
         float aspect = (float)(this.draft.width / this.draft.height);
         float w = Math.min(availW, availH * aspect);
         float h = w / aspect;
-        float x = this.workspaceLeft() + ((float)this.field_22789 - this.workspaceLeft() - w) / 2.0f;
+        float x = this.workspaceLeft() + ((float)this.width - this.workspaceLeft() - w) / 2.0f;
         float y = 65.0f * this.s + (availH - h) / 2.0f;
         Theme t = ThemeManager.get();
         Render2D.roundRect(ctx, x - 5.0f * this.s, y - 5.0f * this.s, w + 10.0f * this.s, h + 10.0f * this.s, 7.0f * this.s, ColorUtil.withAlpha(t.bg2(), 0.9f));
@@ -383,13 +383,13 @@ extends AstraInspectorScreen {
         }
     }
 
-    public boolean method_25421() {
+    public boolean isPauseScreen() {
         return false;
     }
 
-    public void method_25419() {
+    public void onClose() {
         this.commit();
-        this.field_22787.method_1507(this.parent);
+        this.minecraft.setScreen(this.parent);
     }
 }
 

@@ -48,7 +48,7 @@ extends Module {
         boolean wantCinematic;
         SoundsModule sounds;
         boolean down;
-        boolean bl = down = ZoomModule.mc.field_1755 == null && this.key.isBound() && InputConstants.method_15987((Window)mc.method_22683(), (int)this.key.getKey());
+        boolean bl = down = ZoomModule.mc.screen == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
         if (this.mode.is("\u0423\u0434\u0435\u0440\u0436\u0430\u043d\u0438\u0435")) {
             this.active = down;
         } else if (down && !this.wasDown) {
@@ -65,7 +65,7 @@ extends Module {
         boolean bl2 = wantCinematic = this.active && (Boolean)this.cinematic.get() != false;
         if (wantCinematic != this.cinematicApplied) {
             CameraModule camera = ModuleManager.get(CameraModule.class);
-            ZoomModule.mc.field_1690.field_1914 = wantCinematic || camera != null && camera.isEnabled();
+            ZoomModule.mc.options.smoothCamera = wantCinematic || camera != null && camera.isEnabled();
             this.cinematicApplied = wantCinematic;
         }
     }

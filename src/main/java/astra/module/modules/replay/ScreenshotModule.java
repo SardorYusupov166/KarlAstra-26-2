@@ -38,13 +38,13 @@ extends Module {
     }
 
     public static File screenshotsDir() {
-        return new File(ScreenshotModule.mc.field_1697, "screenshots");
+        return new File(ScreenshotModule.mc.gameDirectory, "screenshots");
     }
 
     public static void openFolder() {
         File dir = ScreenshotModule.screenshotsDir();
         dir.mkdirs();
-        Util.method_668().method_672(dir);
+        Util.getPlatform().openFile(dir);
     }
 
     public void requestShot() {
@@ -54,7 +54,7 @@ extends Module {
     @Override
     public void onTick() {
         boolean down;
-        boolean bl = down = ScreenshotModule.mc.field_1755 == null && this.key.isBound() && InputConstants.method_15987((Window)mc.method_22683(), (int)this.key.getKey());
+        boolean bl = down = ScreenshotModule.mc.screen == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
         if (down && !this.wasDown) {
             this.requestShot();
         }
@@ -63,17 +63,17 @@ extends Module {
             return;
         }
         if (this.pending == 2 && ((Boolean)this.hideHud.get()).booleanValue()) {
-            this.hudWasHidden = ScreenshotModule.mc.field_1690.field_1842;
-            ScreenshotModule.mc.field_1690.field_1842 = true;
+            this.hudWasHidden = ScreenshotModule.mc.options.hideGui;
+            ScreenshotModule.mc.options.hideGui = true;
         }
-        if (this.pending-- == 0 && ScreenshotModule.mc.field_1755 == null) {
-            Screenshot.method_1659((File)ScreenshotModule.mc.field_1697, (RenderTarget)mc.method_1522(), message -> mc.execute(() -> {
-                if (ScreenshotModule.mc.field_1705 != null) {
-                    ScreenshotModule.mc.field_1705.method_1743().method_1812(message);
+        if (this.pending-- == 0 && ScreenshotModule.mc.screen == null) {
+            Screenshot.grab((File)ScreenshotModule.mc.gameDirectory, (RenderTarget)mc.getMainRenderTarget(), message -> mc.execute(() -> {
+                if (ScreenshotModule.mc.gui != null) {
+                    ScreenshotModule.mc.gui.getChat().addMessage(message);
                 }
             }));
             if (((Boolean)this.hideHud.get()).booleanValue()) {
-                ScreenshotModule.mc.field_1690.field_1842 = this.hudWasHidden;
+                ScreenshotModule.mc.options.hideGui = this.hudWasHidden;
             }
             this.pending = -1;
         }

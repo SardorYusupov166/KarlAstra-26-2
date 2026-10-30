@@ -27,15 +27,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value={AbstractSliderButton.class})
 public abstract class SliderWidgetMixin {
     @Shadow
-    protected double field_22753;
+    protected double value;
 
-    @Inject(method={"method_48579"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderWidget"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$render(GuiGraphics ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;
         }
         AbstractWidget w = (AbstractWidget)this;
-        AstraWidgets.slider(ctx, this, w.method_46426(), w.method_46427(), w.method_25368(), w.method_25364(), w.method_25369(), this.field_22753, w.field_22763, w.method_25367(), ((ClickableWidgetAccessor)w).astra$getAlpha());
+        AstraWidgets.slider(ctx, this, w.getX(), w.getY(), w.getWidth(), w.getHeight(), w.getMessage(), this.value, w.active, w.isHoveredOrFocused(), ((ClickableWidgetAccessor)w).astra$getAlpha());
         ci.cancel();
     }
 }

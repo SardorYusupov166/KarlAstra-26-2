@@ -33,10 +33,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={ItemInHandRenderer.class})
 public abstract class HeldItemRendererMixin {
-    @Inject(method={"method_3228"}, at={@At(value="INVOKE", target="Lcom/mojang/blaze3d/vertex/PoseStack;method_22903()V", shift=At.Shift.AFTER, ordinal=0)})
+    @Inject(method={"renderArmWithItem"}, at={@At(value="INVOKE", target="Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift=At.Shift.AFTER, ordinal=0)})
     private void astra$armTransform(AbstractClientPlayer player, float tickDelta, float pitch, InteractionHand hand, float swingProgress, ItemStack item, float equipProgress, PoseStack matrices, SubmitNodeCollector queue, int light, CallbackInfo ci) {
-        HumanoidArm arm = hand == InteractionHand.field_5808 ? player.method_6068() : player.method_6068().method_5928();
-        ArmAnimation.apply(matrices, arm == HumanoidArm.field_6183);
+        HumanoidArm arm = hand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
+        ArmAnimation.apply(matrices, arm == HumanoidArm.RIGHT);
         PvpTweaks.applyHeldItem(matrices, item);
     }
 }

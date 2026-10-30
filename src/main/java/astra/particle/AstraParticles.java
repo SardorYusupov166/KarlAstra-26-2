@@ -50,7 +50,7 @@ import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 public final class AstraParticles {
-    public static final Identifier SHEET = Identifier.method_60655((String)"astra", (String)"textures/particle/astra_particles.png");
+    public static final Identifier SHEET = Identifier.fromNamespaceAndPath((String)"astra", (String)"textures/particle/astra_particles.png");
     private static final int MAX = 4000;
     private static final List<AstraParticle> PARTICLES = new ArrayList<AstraParticle>();
     private static final Random RANDOM = new Random();
@@ -120,11 +120,11 @@ public final class AstraParticles {
     }
 
     private static void tick(Minecraft mc) {
-        if (mc.field_1687 != world) {
+        if (mc.level != world) {
             PARTICLES.clear();
-            world = mc.field_1687;
+            world = mc.level;
         }
-        if (mc.field_1687 == null || mc.method_1493()) {
+        if (mc.level == null || mc.isPaused()) {
             return;
         }
         PARTICLES.removeIf(p -> {
@@ -147,25 +147,25 @@ public final class AstraParticles {
     }
 
     private static void draw(WorldRenderContext ctx) {
-        Minecraft mc = Minecraft.method_1551();
-        Camera camera = Minecraft.method_1551().field_1773.method_19418();
-        Vec3 cam = camera.method_71156();
-        Quaternionf rotation = camera.method_23767();
-        float td = Minecraft.method_1551().method_61966().method_60637(false);
+        Minecraft mc = Minecraft.getInstance();
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Vec3 cam = camera.position();
+        Quaternionf rotation = camera.rotation();
+        float td = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         PARTICLES.sort(Comparator.comparingDouble(p -> -AstraParticles.sqDist(p, cam)));
-        MultiBufferSource.BufferSource immediate = mc.method_22940().method_23000();
-        RenderType layer = RenderTypes.method_76002((Identifier)SHEET);
-        VertexConsumer vc = immediate.method_73477(layer);
-        PoseStack.Pose entry = new PoseStack().method_23760();
+        MultiBufferSource.BufferSource immediate = mc.renderBuffers().bufferSource();
+        RenderType layer = RenderTypes.entityTranslucentEmissive((Identifier)SHEET);
+        VertexConsumer vc = immediate.getBuffer(layer);
+        PoseStack.Pose entry = new PoseStack().last();
         int light = 0xF000F0;
         Vector3f v = new Vector3f();
         float[][] corners = new float[][]{{-1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f}};
         for (AstraParticle p2 : PARTICLES) {
             float a = p2.alpha(td);
             if (a <= 0.01f) continue;
-            float x = (float)(AstraParticles.lerp(td, p2.prevX, p2.x) - cam.field_1352);
-            float y = (float)(AstraParticles.lerp(td, p2.prevY, p2.y) - cam.field_1351);
-            float z = (float)(AstraParticles.lerp(td, p2.prevZ, p2.z) - cam.field_1350);
+            float x = (float)(AstraParticles.lerp(td, p2.prevX, p2.x) - cam.x);
+            float y = (float)(AstraParticles.lerp(td, p2.prevY, p2.y) - cam.y);
+            float z = (float)(AstraParticles.lerp(td, p2.prevZ, p2.z) - cam.z);
             float size = p2.currentSize(td);
             float roll = (float)Math.toRadians(p2.prevRoll + (p2.roll - p2.prevRoll) * td);
             int baseAlpha = p2.color >>> 24 & 0xFF;
@@ -175,16 +175,16 @@ public final class AstraParticles {
             float[] vs = new float[]{s.v1, s.v0, s.v0, s.v1};
             for (int i = 0; i < 4; ++i) {
                 v.set(corners[i][0], corners[i][1], 0.0f).rotateZ(roll).mul(size).rotate((Quaternionfc)rotation).add(x, y, z);
-                vc.method_56824(entry, v.x, v.y, v.z).method_39415(color).method_22913(us[i], vs[i]).method_22922(OverlayTexture.field_21444).method_60803(light).method_60831(entry, 0.0f, 1.0f, 0.0f);
+                vc.addVertex(entry, v.x, v.y, v.z).setColor(color).setUv(us[i], vs[i]).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(entry, 0.0f, 1.0f, 0.0f);
             }
         }
-        immediate.method_22994(layer);
+        immediate.endBatch(layer);
     }
 
     private static double sqDist(AstraParticle p, Vec3 cam) {
-        double dx = p.x - cam.field_1352;
-        double dy = p.y - cam.field_1351;
-        double dz = p.z - cam.field_1350;
+        double dx = p.x - cam.x;
+        double dy = p.y - cam.y;
+        double dz = p.z - cam.z;
         return dx * dx + dy * dy + dz * dz;
     }
 

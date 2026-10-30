@@ -83,9 +83,9 @@ public final class Render2D {
 
     public static float pixel(GuiGraphics ctx) {
         double gui;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         float scale = (float)Math.sqrt(m.m00 * m.m00 + m.m01 * m.m01);
-        float s = (float)((double)scale * (gui = (double)Minecraft.method_1551().method_22683().method_4495()));
+        float s = (float)((double)scale * (gui = (double)Minecraft.getInstance().getWindow().getGuiScale()));
         return s <= 1.0E-4f ? 1.0f : 1.0f / s;
     }
 
@@ -95,7 +95,7 @@ public final class Render2D {
     }
 
     public static void end(GuiGraphics ctx) {
-        Render2D.submit(ctx, MESH, RenderPipelines.field_56879, TextureSetup.method_70899());
+        Render2D.submit(ctx, MESH, RenderPipelines.GUI, TextureSetup.noTexture());
     }
 
     private static boolean screenBounds(Matrix3x2f pose, Mesh m, ScreenRectangle scissor) {
@@ -121,10 +121,10 @@ public final class Render2D {
             iy1 = iy0 + 1;
         }
         if (scissor != null) {
-            ix0 = Math.max(ix0, scissor.method_49620());
-            iy0 = Math.max(iy0, scissor.method_49618());
-            ix1 = Math.min(ix1, scissor.method_49621());
-            iy1 = Math.min(iy1, scissor.method_49619());
+            ix0 = Math.max(ix0, scissor.left());
+            iy0 = Math.max(iy0, scissor.top());
+            ix1 = Math.min(ix1, scissor.right());
+            iy1 = Math.min(iy1, scissor.bottom());
             if (ix1 <= ix0 || iy1 <= iy0) {
                 return false;
             }
@@ -145,17 +145,17 @@ public final class Render2D {
         if (m.count == 0) {
             return;
         }
-        Matrix3x2fStack cur = ctx.method_51448();
-        if (!Render2D.screenBounds((Matrix3x2f)cur, m, scissor = ctx.field_44659.method_70863())) {
+        Matrix3x2fStack cur = ctx.pose();
+        if (!Render2D.screenBounds((Matrix3x2f)cur, m, scissor = ctx.scissorStack.peek())) {
             return;
         }
-        if (m.uv == null && pipeline == RenderPipelines.field_56879) {
-            if (!(batchCount <= 0 || batchState == ctx.field_59826 && Render2D.samePose(BATCH_POSE, (Matrix3x2f)cur) && Objects.equals(batchScissor, scissor))) {
+        if (m.uv == null && pipeline == RenderPipelines.GUI) {
+            if (!(batchCount <= 0 || batchState == ctx.guiRenderState && Render2D.samePose(BATCH_POSE, (Matrix3x2f)cur) && Objects.equals(batchScissor, scissor))) {
                 Render2D.flushBatch();
             }
             if (batchCount == 0) {
                 batchStart = arenaUsed;
-                batchState = ctx.field_59826;
+                batchState = ctx.guiRenderState;
                 BATCH_POSE.set((Matrix3x2fc)cur);
                 batchScissor = scissor;
                 bx0 = TMP_BOUNDS[0];
@@ -187,7 +187,7 @@ public final class Render2D {
         }
         Render2D.flushBatch();
         ScreenRectangle bounds = new ScreenRectangle(TMP_BOUNDS[0], TMP_BOUNDS[1], TMP_BOUNDS[2] - TMP_BOUNDS[0], TMP_BOUNDS[3] - TMP_BOUNDS[1]);
-        ctx.field_59826.method_70919((GuiElementRenderState)new ShapeRenderState(pipeline, textures, new Matrix3x2f((Matrix3x2fc)cur), Arrays.copyOf(m.pos, m.count * 2), m.uv != null ? Arrays.copyOf(m.uv, m.count * 2) : null, Arrays.copyOf(m.col, m.count), 0, m.count, scissor, bounds));
+        ctx.guiRenderState.submitGuiElement((GuiElementRenderState)new ShapeRenderState(pipeline, textures, new Matrix3x2f((Matrix3x2fc)cur), Arrays.copyOf(m.pos, m.count * 2), m.uv != null ? Arrays.copyOf(m.uv, m.count * 2) : null, Arrays.copyOf(m.col, m.count), 0, m.count, scissor, bounds));
     }
 
     public static void dropBatch() {
@@ -203,7 +203,7 @@ public final class Render2D {
         flushing = true;
         try {
             ScreenRectangle bounds = new ScreenRectangle(bx0, by0, Math.max(1, bx1 - bx0), Math.max(1, by1 - by0));
-            batchState.method_70919((GuiElementRenderState)new ShapeRenderState(RenderPipelines.field_56879, TextureSetup.method_70899(), new Matrix3x2f((Matrix3x2fc)BATCH_POSE), arenaPos, null, arenaCol, batchStart, batchCount, batchScissor, bounds));
+            batchState.submitGuiElement((GuiElementRenderState)new ShapeRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f((Matrix3x2fc)BATCH_POSE), arenaPos, null, arenaCol, batchStart, batchCount, batchScissor, bounds));
         }
         finally {
             batchCount = 0;
@@ -701,7 +701,7 @@ public final class Render2D {
             float by = P[j * 2 + 1];
             TEX_MESH.triUv(cx, cy, cu, cv, color, ax, ay, u0 + (ax - x) / w * uSpan, v0 + (ay - y) / h * vSpan, color, bx, by, u0 + (bx - x) / w * uSpan, v0 + (by - y) / h * vSpan, color);
         }
-        Render2D.submit(ctx, TEX_MESH, RenderPipelines.field_56883, TextureSetup.method_70900((GpuTextureView)Render2D.textureView(id), (GpuSampler)Render2D.linearSampler()));
+        Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)Render2D.textureView(id), (GpuSampler)Render2D.linearSampler()));
     }
 
     public static void petal(GuiGraphics ctx, float cx, float cy, float size, float rot, Paint paint) {
@@ -735,24 +735,24 @@ public final class Render2D {
     }
 
     private static GpuSampler linearSampler() {
-        return RenderSystem.getSamplerCache().method_75294(FilterMode.LINEAR);
+        return RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
     }
 
     public static GpuTextureView textureView(Identifier id) {
-        AbstractTexture tex = Minecraft.method_1551().method_1531().method_4619(id);
-        return tex.method_71659();
+        AbstractTexture tex = Minecraft.getInstance().getTextureManager().getTexture(id);
+        return tex.getTextureView();
     }
 
     public static void texture(GuiGraphics ctx, GpuTextureView view, float x, float y, float w, float h, float u0, float v0, float u1, float v1, int color) {
         TEX_MESH.reset();
         TEX_MESH.quadUv(x, y, u0, v0, color, x, y + h, u0, v1, color, x + w, y + h, u1, v1, color, x + w, y, u1, v0, color);
-        Render2D.submit(ctx, TEX_MESH, RenderPipelines.field_56883, TextureSetup.method_70900((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
+        Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
     }
 
     public static void textureGradient(GuiGraphics ctx, Identifier id, float x, float y, float w, float h, int left, int right) {
         TEX_MESH.reset();
         TEX_MESH.quadUv(x, y, 0.0f, 0.0f, left, x, y + h, 0.0f, 1.0f, left, x + w, y + h, 1.0f, 1.0f, right, x + w, y, 1.0f, 0.0f, right);
-        Render2D.submit(ctx, TEX_MESH, RenderPipelines.field_56883, TextureSetup.method_70900((GpuTextureView)Render2D.textureView(id), (GpuSampler)Render2D.linearSampler()));
+        Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)Render2D.textureView(id), (GpuSampler)Render2D.linearSampler()));
     }
 
     public static void texture(GuiGraphics ctx, Identifier id, float x, float y, float w, float h, float u0, float v0, float u1, float v1, int color) {
@@ -776,7 +776,7 @@ public final class Render2D {
             float v1 = v + (float)Math.sin(a1 + rot) * uvRadius;
             TEX_MESH.triUv(cx, cy, u, v, color, x0, y0, u0, v0, color, x1, y1, u1, v1, color);
         }
-        Render2D.submit(ctx, TEX_MESH, RenderPipelines.field_56883, TextureSetup.method_70900((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
+        Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
     }
 
     public static void texturedSquare(GuiGraphics ctx, GpuTextureView view, float cx, float cy, float half, float u, float v, float uvHalf, float rotationDeg, int color) {
@@ -793,7 +793,7 @@ public final class Render2D {
             q[i * 4 + 3] = v + (c[i][0] * sin + c[i][1] * cos) * uvHalf;
         }
         TEX_MESH.quadUv(q[0], q[1], q[2], q[3], color, q[4], q[5], q[6], q[7], color, q[8], q[9], q[10], q[11], color, q[12], q[13], q[14], q[15], color);
-        Render2D.submit(ctx, TEX_MESH, RenderPipelines.field_56883, TextureSetup.method_70900((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
+        Render2D.submit(ctx, TEX_MESH, RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture((GpuTextureView)view, (GpuSampler)Render2D.linearSampler()));
     }
 
     static {

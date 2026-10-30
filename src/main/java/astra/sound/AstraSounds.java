@@ -36,17 +36,17 @@ public final class AstraSounds {
     private static boolean claim(Minecraft mc, String channel) {
         if (!singleVoice) {
             SoundInstance previous = PLAYING.get(channel);
-            if (previous != null && mc.method_1483().method_4877(previous)) {
-                mc.method_1483().method_4870(previous);
+            if (previous != null && mc.getSoundManager().isActive(previous)) {
+                mc.getSoundManager().stop(previous);
             }
             return true;
         }
         int pr = PRIORITY.getOrDefault(channel, 2);
-        if (voice != null && mc.method_1483().method_4877(voice)) {
+        if (voice != null && mc.getSoundManager().isActive(voice)) {
             if (pr < voicePriority) {
                 return false;
             }
-            mc.method_1483().method_4870(voice);
+            mc.getSoundManager().stop(voice);
         }
         voicePriority = pr;
         return true;
@@ -68,17 +68,17 @@ public final class AstraSounds {
         if (volume <= 0.001f) {
             return;
         }
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.method_1483() == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getSoundManager() == null) {
             return;
         }
         try {
-            SoundEvent event = EVENTS.computeIfAbsent(id, k -> SoundEvent.method_47908((Identifier)Identifier.method_60655((String)"astra", (String)k)));
+            SoundEvent event = EVENTS.computeIfAbsent(id, k -> SoundEvent.createVariableRangeEvent((Identifier)Identifier.fromNamespaceAndPath((String)"astra", (String)k)));
             if (!AstraSounds.claim(mc, channel)) {
                 return;
             }
-            SimpleSoundInstance instance = SimpleSoundInstance.method_4757((SoundEvent)event, (float)1.0f, (float)Math.min(1.0f, volume));
-            mc.method_1483().method_4873((SoundInstance)instance);
+            SimpleSoundInstance instance = SimpleSoundInstance.forUI((SoundEvent)event, (float)1.0f, (float)Math.min(1.0f, volume));
+            mc.getSoundManager().play((SoundInstance)instance);
             AstraSounds.started(channel, (SoundInstance)instance);
         }
         catch (RuntimeException e) {
@@ -90,16 +90,16 @@ public final class AstraSounds {
         if (volume <= 0.001f) {
             return;
         }
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.method_1483() == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getSoundManager() == null) {
             return;
         }
         try {
             if (!AstraSounds.claim(mc, channel)) {
                 return;
             }
-            UserSoundInstance instance = new UserSoundInstance(file, SoundSource.field_15250, Math.min(1.0f, volume), false);
-            mc.method_1483().method_4873((SoundInstance)instance);
+            UserSoundInstance instance = new UserSoundInstance(file, SoundSource.MASTER, Math.min(1.0f, volume), false);
+            mc.getSoundManager().play((SoundInstance)instance);
             AstraSounds.started(channel, (SoundInstance)instance);
         }
         catch (RuntimeException e) {

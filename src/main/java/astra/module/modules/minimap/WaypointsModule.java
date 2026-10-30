@@ -105,16 +105,16 @@ extends Module {
     }
 
     private static void say(String text) {
-        if (WaypointsModule.mc.field_1705 != null) {
-            WaypointsModule.mc.field_1705.method_1743().method_1812((Component)Component.method_43470((String)"\u2726 ").method_54663(16731608).method_10852((Component)Component.method_43470((String)text).method_54663(15261170)));
+        if (WaypointsModule.mc.gui != null) {
+            WaypointsModule.mc.gui.getChat().addMessage((Component)Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)text).withColor(15261170)));
         }
     }
 
     public Waypoints.Waypoint addHere(String name) {
-        if (WaypointsModule.mc.field_1724 == null) {
+        if (WaypointsModule.mc.player == null) {
             return null;
         }
-        Waypoints.Waypoint w = Waypoints.add(name, WaypointsModule.mc.field_1724.method_31477(), WaypointsModule.mc.field_1724.method_31478(), WaypointsModule.mc.field_1724.method_31479(), this.nextColor(), false);
+        Waypoints.Waypoint w = Waypoints.add(name, WaypointsModule.mc.player.getBlockX(), WaypointsModule.mc.player.getBlockY(), WaypointsModule.mc.player.getBlockZ(), this.nextColor(), false);
         if (w != null) {
             WaypointsModule.say("\u0422\u043e\u0447\u043a\u0430 \u00ab" + w.name + "\u00bb \u043f\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u0430: " + w.x + " " + w.y + " " + w.z);
         }
@@ -122,13 +122,13 @@ extends Module {
     }
 
     private Waypoints.Waypoint nearest() {
-        if (WaypointsModule.mc.field_1724 == null) {
+        if (WaypointsModule.mc.player == null) {
             return null;
         }
         Waypoints.Waypoint best = null;
         double bestD = Double.MAX_VALUE;
         for (Waypoints.Waypoint w : Waypoints.here()) {
-            double d = WaypointsModule.mc.field_1724.method_5649((double)w.x + 0.5, (double)w.y, (double)w.z + 0.5);
+            double d = WaypointsModule.mc.player.distanceToSqr((double)w.x + 0.5, (double)w.y, (double)w.z + 0.5);
             if (!(d < bestD)) continue;
             bestD = d;
             best = w;
@@ -141,82 +141,82 @@ extends Module {
         Waypoints.Waypoint w;
         boolean rem;
         boolean add;
-        if (WaypointsModule.mc.field_1724 == null) {
+        if (WaypointsModule.mc.player == null) {
             return;
         }
-        Window window = mc.method_22683();
-        boolean canUse = WaypointsModule.mc.field_1755 == null;
-        boolean bl = add = canUse && this.addKey.isBound() && InputConstants.method_15987((Window)window, (int)this.addKey.getKey());
+        Window window = mc.getWindow();
+        boolean canUse = WaypointsModule.mc.screen == null;
+        boolean bl = add = canUse && this.addKey.isBound() && InputConstants.isKeyDown((Window)window, (int)this.addKey.getKey());
         if (add && !this.addWasDown) {
             this.addHere(Waypoints.nextName());
         }
         this.addWasDown = add;
-        boolean bl2 = rem = canUse && this.removeKey.isBound() && InputConstants.method_15987((Window)window, (int)this.removeKey.getKey());
+        boolean bl2 = rem = canUse && this.removeKey.isBound() && InputConstants.isKeyDown((Window)window, (int)this.removeKey.getKey());
         if (rem && !this.removeWasDown && (w = this.nearest()) != null && Waypoints.remove(w.name)) {
             WaypointsModule.say("\u0422\u043e\u0447\u043a\u0430 \u00ab" + w.name + "\u00bb \u0443\u0434\u0430\u043b\u0435\u043d\u0430");
         }
         this.removeWasDown = rem;
-        boolean dead = WaypointsModule.mc.field_1724.method_29504();
+        boolean dead = WaypointsModule.mc.player.isDeadOrDying();
         if (dead && !this.wasDead && ((Boolean)this.deathPoint.get()).booleanValue()) {
-            Waypoints.add("\u0421\u043c\u0435\u0440\u0442\u044c", WaypointsModule.mc.field_1724.method_31477(), WaypointsModule.mc.field_1724.method_31478(), WaypointsModule.mc.field_1724.method_31479(), -770210, true);
-            WaypointsModule.say("\u041c\u0435\u0441\u0442\u043e \u0441\u043c\u0435\u0440\u0442\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043e: " + WaypointsModule.mc.field_1724.method_31477() + " " + WaypointsModule.mc.field_1724.method_31478() + " " + WaypointsModule.mc.field_1724.method_31479());
+            Waypoints.add("\u0421\u043c\u0435\u0440\u0442\u044c", WaypointsModule.mc.player.getBlockX(), WaypointsModule.mc.player.getBlockY(), WaypointsModule.mc.player.getBlockZ(), -770210, true);
+            WaypointsModule.say("\u041c\u0435\u0441\u0442\u043e \u0441\u043c\u0435\u0440\u0442\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u043e: " + WaypointsModule.mc.player.getBlockX() + " " + WaypointsModule.mc.player.getBlockY() + " " + WaypointsModule.mc.player.getBlockZ());
         }
         this.wasDead = dead;
     }
 
     public void renderWorld(WorldRenderContext ctx) {
-        if (WaypointsModule.mc.field_1724 == null || WaypointsModule.mc.field_1687 == null || WaypointsModule.mc.field_1690.field_1842) {
+        if (WaypointsModule.mc.player == null || WaypointsModule.mc.level == null || WaypointsModule.mc.options.hideGui) {
             return;
         }
         List<Waypoints.Waypoint> list = Waypoints.here();
         if (list.isEmpty()) {
             return;
         }
-        Camera camera = Minecraft.method_1551().field_1773.method_19418();
-        Vec3 cam = camera.method_71156();
-        MultiBufferSource.BufferSource imm = mc.method_22940().method_23000();
-        float td = Minecraft.method_1551().method_61966().method_60637(false);
-        long time = WaypointsModule.mc.field_1687.method_75260();
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Vec3 cam = camera.position();
+        MultiBufferSource.BufferSource imm = mc.renderBuffers().bufferSource();
+        float td = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        long time = WaypointsModule.mc.level.getGameTime();
         double maxD = (Double)this.maxDistance.get();
-        int beamLimit = WaypointsModule.mc.field_1690.method_38521() * 16;
+        int beamLimit = WaypointsModule.mc.options.getEffectiveRenderDistance() * 16;
         for (Waypoints.Waypoint w : list) {
-            double dx = (double)w.x + 0.5 - cam.field_1352;
-            double dz = (double)w.z + 0.5 - cam.field_1350;
-            double dy = (double)w.y + 0.5 - cam.field_1351;
+            double dx = (double)w.x + 0.5 - cam.x;
+            double dz = (double)w.z + 0.5 - cam.z;
+            double dy = (double)w.y + 0.5 - cam.y;
             double horiz = Math.sqrt(dx * dx + dz * dz);
             double dist = Math.sqrt(horiz * horiz + dy * dy);
             if (dist > maxD || !((Boolean)this.beam.get()).booleanValue() || !(horiz < (double)beamLimit) || !(horiz > 1.5)) continue;
-            WaypointsModule.drawBeam((MultiBufferSource)imm, (float)((double)w.x + 0.5 - cam.field_1352), (float)((double)WaypointsModule.mc.field_1687.method_31607() - cam.field_1351), (float)((double)w.z + 0.5 - cam.field_1350), WaypointsModule.mc.field_1687.method_31605(), w.color, (float)time + td);
+            WaypointsModule.drawBeam((MultiBufferSource)imm, (float)((double)w.x + 0.5 - cam.x), (float)((double)WaypointsModule.mc.level.getMinY() - cam.y), (float)((double)w.z + 0.5 - cam.z), WaypointsModule.mc.level.getHeight(), w.color, (float)time + td);
         }
-        imm.method_22993();
+        imm.endBatch();
         if (!((Boolean)this.label.get()).booleanValue()) {
             return;
         }
-        Font tr = WaypointsModule.mc.field_1772;
+        Font tr = WaypointsModule.mc.font;
         for (Waypoints.Waypoint w : list) {
-            double dx = (double)w.x + 0.5 - cam.field_1352;
-            double dy = (double)w.y + 1.2 - cam.field_1351;
-            double dz = (double)w.z + 0.5 - cam.field_1350;
+            double dx = (double)w.x + 0.5 - cam.x;
+            double dy = (double)w.y + 1.2 - cam.y;
+            double dz = (double)w.z + 0.5 - cam.z;
             double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
             if (dist > maxD || dist < 0.5) continue;
             double place = Math.min(dist, 12.0);
             double k = place / dist;
             float scale = (float)(0.025 * (double)this.labelSize.getFloat() / 100.0 * Math.max(place, 3.0) / 6.0);
-            Matrix4f mat = new Matrix4f().translate((float)(dx * k), (float)(dy * k), (float)(dz * k)).rotate((Quaternionfc)camera.method_23767()).scale(scale, -scale, scale);
+            Matrix4f mat = new Matrix4f().translate((float)(dx * k), (float)(dy * k), (float)(dz * k)).rotate((Quaternionfc)camera.rotation()).scale(scale, -scale, scale);
             String title = w.name;
             String sub = (Boolean)this.distance.get() != false ? WaypointsModule.formatDistance(dist) : null;
             int bg = ColorUtil.withAlpha(-15464420, 0.55f);
-            float tw = tr.method_1727(title);
-            tr.method_27521(title, -tw / 2.0f, sub != null ? -10.0f : -4.0f, w.color | 0xFF000000, false, mat, (MultiBufferSource)imm, Font.DisplayMode.field_33994, bg, 0xF000F0);
+            float tw = tr.width(title);
+            tr.drawInBatch(title, -tw / 2.0f, sub != null ? -10.0f : -4.0f, w.color | 0xFF000000, false, mat, (MultiBufferSource)imm, Font.DisplayMode.SEE_THROUGH, bg, 0xF000F0);
             if (sub == null) continue;
-            float sw = tr.method_1727(sub);
-            tr.method_27521(sub, -sw / 2.0f, 1.0f, -1, false, mat, (MultiBufferSource)imm, Font.DisplayMode.field_33994, bg, 0xF000F0);
+            float sw = tr.width(sub);
+            tr.drawInBatch(sub, -sw / 2.0f, 1.0f, -1, false, mat, (MultiBufferSource)imm, Font.DisplayMode.SEE_THROUGH, bg, 0xF000F0);
         }
-        imm.method_22993();
+        imm.endBatch();
     }
 
     private static void drawBeam(MultiBufferSource consumers, float x, float y, float z, int height, int color, float time) {
-        VertexConsumer vc = consumers.method_73477(RenderTypes.method_75988((Identifier)BeaconRenderer.field_4338, (boolean)true));
+        VertexConsumer vc = consumers.getBuffer(RenderTypes.beaconBeam((Identifier)BeaconRenderer.BEAM_LOCATION, (boolean)true));
         float scroll = -(time * 0.025f) % 1.0f;
         float v1 = (float)height * 0.5f + scroll;
         WaypointsModule.beamPrism(vc, x, y, z, height, 0.12f, ColorUtil.withAlpha(color, 0.85f), scroll, v1, time * 2.25f);
@@ -235,10 +235,10 @@ extends Module {
         int light = 0xF000F0;
         for (int i = 0; i < 4; ++i) {
             int j = (i + 1) % 4;
-            vc.method_22912(px[i], top, pz[i]).method_39415(color).method_22913(1.0f, v1).method_22922(OverlayTexture.field_21444).method_60803(light).method_22914(0.0f, 1.0f, 0.0f);
-            vc.method_22912(px[i], y, pz[i]).method_39415(color).method_22913(1.0f, v0).method_22922(OverlayTexture.field_21444).method_60803(light).method_22914(0.0f, 1.0f, 0.0f);
-            vc.method_22912(px[j], y, pz[j]).method_39415(color).method_22913(0.0f, v0).method_22922(OverlayTexture.field_21444).method_60803(light).method_22914(0.0f, 1.0f, 0.0f);
-            vc.method_22912(px[j], top, pz[j]).method_39415(color).method_22913(0.0f, v1).method_22922(OverlayTexture.field_21444).method_60803(light).method_22914(0.0f, 1.0f, 0.0f);
+            vc.addVertex(px[i], top, pz[i]).setColor(color).setUv(1.0f, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(0.0f, 1.0f, 0.0f);
+            vc.addVertex(px[i], y, pz[i]).setColor(color).setUv(1.0f, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(0.0f, 1.0f, 0.0f);
+            vc.addVertex(px[j], y, pz[j]).setColor(color).setUv(0.0f, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(0.0f, 1.0f, 0.0f);
+            vc.addVertex(px[j], top, pz[j]).setColor(color).setUv(0.0f, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(0.0f, 1.0f, 0.0f);
         }
     }
 
@@ -268,8 +268,8 @@ extends Module {
             Waypoints.Waypoint w = Waypoints.find(StringArgumentType.getString((CommandContext)c, (String)"name"));
             if (w == null) {
                 WaypointsModule.say("\u0422\u0430\u043a\u043e\u0439 \u0442\u043e\u0447\u043a\u0438 \u043d\u0435\u0442");
-            } else if (mc.method_1562() != null) {
-                mc.method_1562().method_45729(w.name + ": " + w.x + " " + w.y + " " + w.z);
+            } else if (mc.getConnection() != null) {
+                mc.getConnection().sendChat(w.name + ": " + w.x + " " + w.y + " " + w.z);
             }
             return 1;
         }))));
@@ -293,8 +293,8 @@ extends Module {
         for (Waypoints.Waypoint w : all) {
             String where = w.dimension.equals(dim) ? "" : "  (" + w.dimension.replace("minecraft:", "") + ")";
             Object dist = "";
-            if (WaypointsModule.mc.field_1724 != null && w.dimension.equals(dim)) {
-                dist = " \u00b7 " + WaypointsModule.formatDistance(Math.sqrt(WaypointsModule.mc.field_1724.method_5649((double)w.x + 0.5, (double)w.y, (double)w.z + 0.5)));
+            if (WaypointsModule.mc.player != null && w.dimension.equals(dim)) {
+                dist = " \u00b7 " + WaypointsModule.formatDistance(Math.sqrt(WaypointsModule.mc.player.distanceToSqr((double)w.x + 0.5, (double)w.y, (double)w.z + 0.5)));
             }
             WaypointsModule.say(w.name + ": " + w.x + " " + w.y + " " + w.z + (String)dist + where);
         }

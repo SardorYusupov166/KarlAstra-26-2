@@ -39,17 +39,17 @@ implements TintedItemState {
         this.astra$tint = tint;
     }
 
-    @Inject(method={"method_65605"}, at={@At(value="HEAD")})
+    @Inject(method={"clear"}, at={@At(value="HEAD")})
     private void astra$clearTint(CallbackInfo ci) {
         this.astra$tint = 0;
     }
 
-    @Inject(method={"method_65604"}, at={@At(value="HEAD")})
+    @Inject(method={"submit"}, at={@At(value="HEAD")})
     private void astra$beginTint(PoseStack matrices, SubmitNodeCollector queue, int light, int overlay, int outline, CallbackInfo ci) {
         TintedItemState.CURRENT[0] = this.astra$tint;
     }
 
-    @Inject(method={"method_65604"}, at={@At(value="RETURN")})
+    @Inject(method={"submit"}, at={@At(value="RETURN")})
     private void astra$endTint(PoseStack matrices, SubmitNodeCollector queue, int light, int overlay, int outline, CallbackInfo ci) {
         TintedItemState.CURRENT[0] = 0;
     }

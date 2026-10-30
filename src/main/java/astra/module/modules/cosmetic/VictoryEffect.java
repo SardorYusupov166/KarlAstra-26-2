@@ -24,12 +24,12 @@ extends Module {
     }
 
     public void trigger(LivingEntity target) {
-        if (VictoryEffect.mc.field_1687 == null || VictoryEffect.mc.field_1724 == null) {
+        if (VictoryEffect.mc.level == null || VictoryEffect.mc.player == null) {
             return;
         }
-        double x = target.method_23317();
-        double y = target.method_23318() + (double)target.method_17682() * 0.6;
-        double z = target.method_23321();
+        double x = target.getX();
+        double y = target.getY() + (double)target.getBbHeight() * 0.6;
+        double z = target.getZ();
         switch ((String)this.type.get()) {
             case "\u0421\u0430\u043a\u0443\u0440\u0430": {
                 AstraParticles.burst(ParticleSprite.PETAL, x, y, z, 45, 0.25f, 0.13f, -22308, 60, 0.004f);

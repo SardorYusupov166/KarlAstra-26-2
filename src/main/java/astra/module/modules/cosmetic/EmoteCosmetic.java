@@ -49,7 +49,7 @@ extends PlayerCosmetic {
     private void play() {
         this.burstTicks = 24;
         this.burstEmote = (String)this.emote.get();
-        if (EmoteCosmetic.mc.field_1724 != null) {
+        if (EmoteCosmetic.mc.player != null) {
             this.sound.play(null);
         }
         AstraOnline.sendEmote((String)this.emote.get());
@@ -58,7 +58,7 @@ extends PlayerCosmetic {
     public void playEmote(String name) {
         this.burstTicks = 24;
         this.burstEmote = name;
-        if (EmoteCosmetic.mc.field_1724 != null) {
+        if (EmoteCosmetic.mc.player != null) {
             this.sound.play(null);
         }
         AstraOnline.sendEmote(name);
@@ -74,17 +74,17 @@ extends PlayerCosmetic {
         ParticleSprite sprite;
         if (!this.isRemote()) {
             boolean down;
-            boolean bl = down = EmoteCosmetic.mc.field_1755 == null && this.key.isBound() && InputConstants.method_15987((Window)mc.method_22683(), (int)this.key.getKey());
+            boolean bl = down = EmoteCosmetic.mc.screen == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
             if (down && !this.wasDown) {
                 if (((Boolean)this.wheel.get()).booleanValue()) {
-                    mc.method_1507((Screen)new EmoteWheelScreen(this, this.key.getKey()));
+                    mc.setScreen((Screen)new EmoteWheelScreen(this, this.key.getKey()));
                 } else {
                     this.play();
                 }
             }
             this.wasDown = down;
         }
-        if (this.burstTicks <= 0 || this.player() == null || EmoteCosmetic.mc.field_1687 == null) {
+        if (this.burstTicks <= 0 || this.player() == null || EmoteCosmetic.mc.level == null) {
             return;
         }
         --this.burstTicks;
@@ -114,9 +114,9 @@ extends PlayerCosmetic {
             }
         };
         Random r = AstraParticles.random();
-        double x = this.player().method_23317() + (r.nextDouble() - 0.5) * 0.5;
-        double z = this.player().method_23321() + (r.nextDouble() - 0.5) * 0.5;
-        AstraParticle p = AstraParticles.spawn(sprite, x, this.player().method_23320() + 0.55, z, 0.0, 0.03, 0.0, 0.16f, color, 34);
+        double x = this.player().getX() + (r.nextDouble() - 0.5) * 0.5;
+        double z = this.player().getZ() + (r.nextDouble() - 0.5) * 0.5;
+        AstraParticle p = AstraParticles.spawn(sprite, x, this.player().getEyeY() + 0.55, z, 0.0, 0.03, 0.0, 0.16f, color, 34);
         if (p != null) {
             p.drag(0.93f).sway(0.0015f);
         }

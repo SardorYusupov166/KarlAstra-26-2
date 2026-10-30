@@ -40,16 +40,16 @@ extends HudModule {
 
     public ItemCounterHud() {
         super("item_counter", "\u0421\u0447\u0451\u0442\u0447\u0438\u043a \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u043e\u0432", "\u0422\u043e\u0442\u0435\u043c\u044b, \u043f\u0435\u0440\u043b\u044b, \u044f\u0431\u043b\u043e\u043a\u0438, \u0441\u0442\u0440\u0435\u043b\u044b \u0438 \u043a\u0440\u0438\u0441\u0442\u0430\u043b\u043b\u044b \u0432 \u0438\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0435.", Category.PVP, Icon.GRID, 0.06f, 0.5f);
-        this.kind("\u0422\u043e\u0442\u0435\u043c\u044b", Items.field_8288, true, Items.field_8288);
-        this.kind("\u041f\u0435\u0440\u043b\u044b", Items.field_8634, true, Items.field_8634);
-        this.kind("\u0417\u043e\u043b\u043e\u0442\u044b\u0435 \u044f\u0431\u043b\u043e\u043a\u0438", Items.field_8463, true, Items.field_8463);
-        this.kind("\u0417\u0430\u0447\u0430\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u044f\u0431\u043b\u043e\u043a\u0438", Items.field_8367, true, Items.field_8367);
-        this.kind("\u0421\u0442\u0440\u0435\u043b\u044b", Items.field_8107, true, Items.field_8107, Items.field_8236, Items.field_8087);
-        this.kind("\u041a\u0440\u0438\u0441\u0442\u0430\u043b\u043b\u044b", Items.field_8301, false, Items.field_8301);
-        this.kind("\u041e\u0431\u0441\u0438\u0434\u0438\u0430\u043d", Items.field_8281, false, Items.field_8281);
-        this.kind("\u0425\u043e\u0440\u0443\u0441", Items.field_8233, false, Items.field_8233);
-        this.kind("\u0417\u0430\u0440\u044f\u0434\u044b \u0432\u0435\u0442\u0440\u0430", Items.field_49098, false, Items.field_49098);
-        this.kind("\u0411\u0443\u0442\u044b\u043b\u044c\u043a\u0438 \u043e\u043f\u044b\u0442\u0430", Items.field_8287, false, Items.field_8287);
+        this.kind("\u0422\u043e\u0442\u0435\u043c\u044b", Items.TOTEM_OF_UNDYING, true, Items.TOTEM_OF_UNDYING);
+        this.kind("\u041f\u0435\u0440\u043b\u044b", Items.ENDER_PEARL, true, Items.ENDER_PEARL);
+        this.kind("\u0417\u043e\u043b\u043e\u0442\u044b\u0435 \u044f\u0431\u043b\u043e\u043a\u0438", Items.GOLDEN_APPLE, true, Items.GOLDEN_APPLE);
+        this.kind("\u0417\u0430\u0447\u0430\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u044f\u0431\u043b\u043e\u043a\u0438", Items.ENCHANTED_GOLDEN_APPLE, true, Items.ENCHANTED_GOLDEN_APPLE);
+        this.kind("\u0421\u0442\u0440\u0435\u043b\u044b", Items.ARROW, true, Items.ARROW, Items.SPECTRAL_ARROW, Items.TIPPED_ARROW);
+        this.kind("\u041a\u0440\u0438\u0441\u0442\u0430\u043b\u043b\u044b", Items.END_CRYSTAL, false, Items.END_CRYSTAL);
+        this.kind("\u041e\u0431\u0441\u0438\u0434\u0438\u0430\u043d", Items.OBSIDIAN, false, Items.OBSIDIAN);
+        this.kind("\u0425\u043e\u0440\u0443\u0441", Items.CHORUS_FRUIT, false, Items.CHORUS_FRUIT);
+        this.kind("\u0417\u0430\u0440\u044f\u0434\u044b \u0432\u0435\u0442\u0440\u0430", Items.WIND_CHARGE, false, Items.WIND_CHARGE);
+        this.kind("\u0411\u0443\u0442\u044b\u043b\u044c\u043a\u0438 \u043e\u043f\u044b\u0442\u0430", Items.EXPERIENCE_BOTTLE, false, Items.EXPERIENCE_BOTTLE);
         this.setDefaultEnabled(true);
     }
 
@@ -59,11 +59,11 @@ extends HudModule {
 
     private static int count(Inventory inv, Item[] items) {
         int n = 0;
-        for (int i = 0; i < inv.method_5439(); ++i) {
-            ItemStack s = inv.method_5438(i);
+        for (int i = 0; i < inv.getContainerSize(); ++i) {
+            ItemStack s = inv.getItem(i);
             for (Item item : items) {
-                if (!s.method_31574(item)) continue;
-                n += s.method_7947();
+                if (!s.is(item)) continue;
+                n += s.getCount();
             }
         }
         return n;
@@ -71,7 +71,7 @@ extends HudModule {
 
     private List<int[]> rows(boolean editor) {
         this.counts.clear();
-        Inventory inv = ItemCounterHud.mc.field_1724 != null ? ItemCounterHud.mc.field_1724.method_31548() : null;
+        Inventory inv = ItemCounterHud.mc.player != null ? ItemCounterHud.mc.player.getInventory() : null;
         for (int k = 0; k < this.kinds.size(); ++k) {
             int n;
             Kind kind = this.kinds.get(k);
@@ -122,7 +122,7 @@ extends HudModule {
             if (low) {
                 Render2D.roundRect(ctx, x, y, this.vertical() ? w - 4.0f : 36.0f, 16.0f, 4.0f, ColorUtil.withAlpha(-770210, (n == 0 ? 0.18f : 0.1f) + 0.22f * blink));
             }
-            ctx.method_51427(new ItemStack((ItemLike)kind.icon), Math.round(x + 1.0f), Math.round(y));
+            ctx.renderItem(new ItemStack((ItemLike)kind.icon), Math.round(x + 1.0f), Math.round(y));
             int col = n == 0 ? -770210 : (low ? ColorUtil.lerp(-340971, -770210, blink) : t.text());
             Fonts.draw(ctx, String.valueOf(n), x + 20.0f, y + 4.5f, 7.5f, col, true);
         }

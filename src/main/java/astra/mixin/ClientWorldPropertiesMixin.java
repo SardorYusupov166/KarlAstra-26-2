@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value={ClientLevel.ClientLevelData.class})
 public abstract class ClientWorldPropertiesMixin {
-    @Inject(method={"method_217"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"getDayTime"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$timeOfDay(CallbackInfoReturnable<Long> cir) {
         long time = WorldVisuals.overrideTime();
         if (time >= 0L) {

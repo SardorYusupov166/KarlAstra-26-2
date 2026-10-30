@@ -37,20 +37,20 @@ public final class Waypoints {
     }
 
     public static String worldKey() {
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.field_1687 == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
             return null;
         }
-        if (mc.method_1576() != null) {
-            return "local:" + mc.method_1576().method_27728().method_150();
+        if (mc.getSingleplayerServer() != null) {
+            return "local:" + mc.getSingleplayerServer().getWorldData().getLevelName();
         }
-        ServerData server = mc.method_1558();
-        return server != null ? "server:" + server.field_3761.toLowerCase(Locale.ROOT) : "unknown";
+        ServerData server = mc.getCurrentServer();
+        return server != null ? "server:" + server.ip.toLowerCase(Locale.ROOT) : "unknown";
     }
 
     public static String dimension() {
-        Minecraft mc = Minecraft.method_1551();
-        return mc.field_1687 != null ? mc.field_1687.method_27983().method_29177().toString() : "";
+        Minecraft mc = Minecraft.getInstance();
+        return mc.level != null ? mc.level.dimension().identifier().toString() : "";
     }
 
     private static void ensureLoaded() {

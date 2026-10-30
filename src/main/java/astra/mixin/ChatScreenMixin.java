@@ -51,7 +51,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ChatScreenMixin
 extends Screen {
     @Shadow
-    protected EditBox field_2382;
+    protected EditBox input;
     @Unique
     private final ChatScrollbar astra$scrollbar = new ChatScrollbar();
 
@@ -59,41 +59,41 @@ extends Screen {
         super(title);
     }
 
-    @Inject(method={"method_25426"}, at={@At(value="TAIL")})
+    @Inject(method={"init"}, at={@At(value="TAIL")})
     private void astra$placeInput(CallbackInfo ci) {
         ChatInputHud layout = ChatInputHud.get();
         if (layout != null && layout.isEnabled()) {
-            layout.place(this.field_2382);
+            layout.place(this.input);
         }
     }
 
-    public boolean method_25403(MouseButtonEvent click, double dx, double dy) {
-        if (click.method_74245() == 0 && this.astra$scrollbar.drag(click.comp_4799())) {
+    public boolean mouseDragged(MouseButtonEvent click, double dx, double dy) {
+        if (click.button() == 0 && this.astra$scrollbar.drag(click.y())) {
             return true;
         }
-        return super.method_25403(click, dx, dy);
+        return super.mouseDragged(click, dx, dy);
     }
 
-    public boolean method_25406(MouseButtonEvent click) {
-        if (click.method_74245() == 0 && this.astra$scrollbar.release()) {
+    public boolean mouseReleased(MouseButtonEvent click) {
+        if (click.button() == 0 && this.astra$scrollbar.release()) {
             return true;
         }
-        return super.method_25406(click);
+        return super.mouseReleased(click);
     }
 
-    @Inject(method={"method_25432"}, at={@At(value="HEAD")})
+    @Inject(method={"removed"}, at={@At(value="HEAD")})
     private void astra$stopDrag(CallbackInfo ci) {
         this.astra$scrollbar.release();
     }
 
-    @Inject(method={"method_25402"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"mouseClicked"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$copy(MouseButtonEvent click, boolean doubled, CallbackInfoReturnable<Boolean> cir) {
-        double mouseX = click.comp_4798();
-        double mouseY = click.comp_4799();
-        int button = click.method_74245();
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
         ChatInputHud input = ChatInputHud.get();
         if (button == 0 && input != null && input.isEnabled() && input.bounds().contains(mouseX, mouseY)) {
-            this.field_2382.method_25402(click, doubled);
+            this.input.mouseClicked(click, doubled);
             cir.setReturnValue((Object)true);
             return;
         }
@@ -106,12 +106,12 @@ extends Screen {
         }
     }
 
-    @WrapOperation(method={"method_25402"}, at={@At(value="NEW", target="(Lnet/minecraft/client/gui/Font;II)Lnet/minecraft/client/gui/ActiveTextCollector$ClickableStyleFinder;")})
+    @WrapOperation(method={"mouseClicked"}, at={@At(value="NEW", target="(Lnet/minecraft/client/gui/Font;II)Lnet/minecraft/client/gui/ActiveTextCollector$ClickableStyleFinder;")})
     private ActiveTextCollector.ClickableStyleFinder astra$clickHandler(Font tr, int x, int y, Operation<ActiveTextCollector.ClickableStyleFinder> original) {
         return (ActiveTextCollector.ClickableStyleFinder)original.call(new Object[]{tr, (int)ChatLayoutHud.unmapX(x), (int)ChatLayoutHud.unmapY(y)});
     }
 
-    @Redirect(method={"method_25394"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphics;method_25294(IIIII)V")}, require=0)
+    @Redirect(method={"render"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V")}, require=0)
     private void astra$input(GuiGraphics ctx, int x1, int y1, int x2, int y2, int color) {
         ChatInputHud input = ChatInputHud.get();
         if (input != null && input.isEnabled()) {
@@ -120,7 +120,7 @@ extends Screen {
         } else if (AnimeChatModule.chatStyled()) {
             AnimeChatModule.chatInput(ctx, x1, y1, x2, y2);
         } else {
-            ctx.method_25294(x1, y1, x2, y2, color);
+            ctx.fill(x1, y1, x2, y2, color);
         }
     }
 }

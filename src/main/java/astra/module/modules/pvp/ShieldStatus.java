@@ -51,14 +51,14 @@ extends Module {
 
     public static void onShieldBreakSound(double x, double y, double z) {
         ShieldStatus m = ShieldStatus.active();
-        if (m == null || !((Boolean)m.enemies.get()).booleanValue() || ShieldStatus.mc.field_1687 == null) {
+        if (m == null || !((Boolean)m.enemies.get()).booleanValue() || ShieldStatus.mc.level == null) {
             return;
         }
         Player best = null;
         double bestDist = 6.25;
-        for (Player p : ShieldStatus.mc.field_1687.method_18456()) {
+        for (Player p : ShieldStatus.mc.level.players()) {
             double d;
-            if (p == ShieldStatus.mc.field_1724 || !ShieldStatus.holdsShield((LivingEntity)p) || !((d = p.method_5649(x, y, z)) < bestDist)) continue;
+            if (p == ShieldStatus.mc.player || !ShieldStatus.holdsShield((LivingEntity)p) || !((d = p.distanceToSqr(x, y, z)) < bestDist)) continue;
             bestDist = d;
             best = p;
         }
@@ -66,11 +66,11 @@ extends Module {
             return;
         }
         long now = System.currentTimeMillis();
-        BROKEN.put(best.method_5628(), new long[]{now, now + (long)((Double)m.enemyTime.get() * 1000.0)});
+        BROKEN.put(best.getId(), new long[]{now, now + (long)((Double)m.enemyTime.get() * 1000.0)});
     }
 
     private static boolean holdsShield(LivingEntity e) {
-        return e.method_6047().method_31574(Items.field_8255) || e.method_6079().method_31574(Items.field_8255);
+        return e.getMainHandItem().is(Items.SHIELD) || e.getOffhandItem().is(Items.SHIELD);
     }
 
     public static float brokenProgress(LivingEntity entity) {
@@ -78,17 +78,17 @@ extends Module {
         if (m == null || entity == null) {
             return 0.0f;
         }
-        if (entity == ShieldStatus.mc.field_1724) {
-            if (!((Boolean)m.own.get()).booleanValue() || ShieldStatus.mc.field_1724 == null) {
+        if (entity == ShieldStatus.mc.player) {
+            if (!((Boolean)m.own.get()).booleanValue() || ShieldStatus.mc.player == null) {
                 return 0.0f;
             }
-            ItemStack shield = ShieldStatus.mc.field_1724.method_6079().method_31574(Items.field_8255) ? ShieldStatus.mc.field_1724.method_6079() : (ShieldStatus.mc.field_1724.method_6047().method_31574(Items.field_8255) ? ShieldStatus.mc.field_1724.method_6047() : new ItemStack((ItemLike)Items.field_8255));
-            return ShieldStatus.mc.field_1724.method_7357().method_7905(shield, 0.0f);
+            ItemStack shield = ShieldStatus.mc.player.getOffhandItem().is(Items.SHIELD) ? ShieldStatus.mc.player.getOffhandItem() : (ShieldStatus.mc.player.getMainHandItem().is(Items.SHIELD) ? ShieldStatus.mc.player.getMainHandItem() : new ItemStack((ItemLike)Items.SHIELD));
+            return ShieldStatus.mc.player.getCooldowns().getCooldownPercent(shield, 0.0f);
         }
         if (!((Boolean)m.enemies.get()).booleanValue()) {
             return 0.0f;
         }
-        long[] t = BROKEN.get(entity.method_5628());
+        long[] t = BROKEN.get(entity.getId());
         if (t == null) {
             return 0.0f;
         }
@@ -100,7 +100,7 @@ extends Module {
     }
 
     public static int tint(LivingEntity entity, ItemStack stack) {
-        if (entity == null || stack == null || !stack.method_31574(Items.field_8255)) {
+        if (entity == null || stack == null || !stack.is(Items.SHIELD)) {
             return 0;
         }
         ShieldStatus m = ShieldStatus.active();
@@ -124,10 +124,10 @@ extends Module {
         if (m == null || !((Boolean)m.targetHud.get()).booleanValue() || entity == null) {
             return 0.0f;
         }
-        if (entity == ShieldStatus.mc.field_1724) {
+        if (entity == ShieldStatus.mc.player) {
             return 0.0f;
         }
-        long[] t = BROKEN.get(entity.method_5628());
+        long[] t = BROKEN.get(entity.getId());
         if (t == null) {
             return 0.0f;
         }
@@ -136,9 +136,9 @@ extends Module {
 
     @Override
     public void onTick() {
-        if (ShieldStatus.mc.field_1687 != this.lastWorld) {
+        if (ShieldStatus.mc.level != this.lastWorld) {
             BROKEN.clear();
-            this.lastWorld = ShieldStatus.mc.field_1687;
+            this.lastWorld = ShieldStatus.mc.level;
         }
         if (BROKEN.isEmpty()) {
             return;

@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={PlainTextButton.class})
 public class NativeCopyrightMixin {
-    @Inject(method={"method_75752"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderContents"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$text(GuiGraphics ctx, int mx, int my, float delta, CallbackInfo ci) {
         if (NativeScreenLayouts.textWidget(this, ctx)) {
             ci.cancel();

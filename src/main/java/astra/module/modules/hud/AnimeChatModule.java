@@ -130,8 +130,8 @@ extends Module {
         ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> c.execute(ChatPatches::save));
         ClientLifecycleEvents.CLIENT_STOPPING.register(c -> ChatPatches.save());
         ClientReceiveMessageEvents.CHAT.register((message, signed, sender, params, time) -> {
-            Minecraft mc = Minecraft.method_1551();
-            if (sender != null && mc.field_1724 != null && sender.id().equals(mc.field_1724.method_5667())) {
+            Minecraft mc = Minecraft.getInstance();
+            if (sender != null && mc.player != null && sender.id().equals(mc.player.getUUID())) {
                 return;
             }
             AnimeChatModule.mention(message);
@@ -146,15 +146,15 @@ extends Module {
 
     private static void mention(Component message) {
         AnimeChatModule m = AnimeChatModule.get();
-        Minecraft mc = Minecraft.method_1551();
-        if (m == null || !m.isEnabled() || !((Boolean)m.mentions.get()).booleanValue() || mc.field_1724 == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (m == null || !m.isEnabled() || !((Boolean)m.mentions.get()).booleanValue() || mc.player == null) {
             return;
         }
         long now = System.currentTimeMillis();
         if (now - joinedAt < 6000L || now - lastMention < 3000L) {
             return;
         }
-        String name = mc.field_1724.method_7334().name().toLowerCase(Locale.ROOT);
+        String name = mc.player.getGameProfile().name().toLowerCase(Locale.ROOT);
         if (name.length() < 3 || !message.getString().toLowerCase(Locale.ROOT).contains(name)) {
             return;
         }
@@ -180,20 +180,20 @@ extends Module {
         if (!AnimeChatModule.chatStyled() || !AnimeChatModule.chatStyle().equals("\u0421\u0442\u0435\u043a\u043b\u043e")) {
             return;
         }
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.field_1690.method_42539().method_41753() == ChatVisiblity.field_7536) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.options.chatVisibility().get() == ChatVisiblity.HIDDEN) {
             return;
         }
-        ChatComponent hud = mc.field_1705.method_1743();
+        ChatComponent hud = mc.gui.getChat();
         ChatHudAccessor access = (ChatHudAccessor)hud;
         List<GuiMessage.Line> lines = access.astra$visibleMessages();
-        int count = Math.min(hud.method_1813(), lines.size() - access.astra$scrolledLines());
+        int count = Math.min(hud.getLinesPerPage(), lines.size() - access.astra$scrolledLines());
         int first = -1;
         int last = -1;
         float fade = 0.0f;
         for (int i = 0; i < count; ++i) {
             float f;
-            int age = tick - lines.get(i + access.astra$scrolledLines()).comp_895();
+            int age = tick - lines.get(i + access.astra$scrolledLines()).addedTime();
             float f2 = f = focused ? 1.0f : (float)Math.pow(Math.max(0.0, Math.min(1.0, (1.0 - (double)age / 200.0) * 10.0)), 2.0);
             if (f <= 1.0E-5f) continue;
             if (first < 0) {
@@ -202,7 +202,7 @@ extends Module {
             last = i;
             fade = Math.max(fade, f);
         }
-        float alpha = ((Double)mc.field_1690.method_42550().method_41753()).floatValue() * fade;
+        float alpha = ((Double)mc.options.textBackgroundOpacity().get()).floatValue() * fade;
         if (first < 0 || alpha <= 0.0f) {
             return;
         }
@@ -210,10 +210,10 @@ extends Module {
         if (scale <= 0.0f) {
             return;
         }
-        float bottom = (float)Math.floor((float)(ctx.method_51443() - 40) / scale);
+        float bottom = (float)Math.floor((float)(ctx.guiHeight() - 40) / scale);
         float top = bottom - (float)((last + 1) * access.astra$lineHeight());
         bottom -= (float)(first * access.astra$lineHeight());
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.scale(scale, scale);
         m.translate(4.0f, 0.0f);
@@ -238,7 +238,7 @@ extends Module {
         int bg = AnimeChatModule.chatBackground(t);
         switch (style) {
             case "\u041a\u043b\u0430\u0441\u0441\u0438\u043a\u0430": {
-                ctx.method_25294(x1, y1, x2, y2, color);
+                ctx.fill(x1, y1, x2, y2, color);
                 break;
             }
             case "\u041c\u0438\u043d\u0438\u043c\u0430\u043b": 
@@ -254,10 +254,10 @@ extends Module {
                 break;
             }
             default: {
-                ctx.method_25294(x1, y1, x2, y2, ColorUtil.withAlpha(bg, Math.min(1.0f, alpha * 1.15f)));
+                ctx.fill(x1, y1, x2, y2, ColorUtil.withAlpha(bg, Math.min(1.0f, alpha * 1.15f)));
                 ChatLayoutHud layout = ChatLayoutHud.get();
                 if (layout != null && !layout.stripe()) break;
-                ctx.method_25294(x1, y1, x1 + 1, y2, ColorUtil.withAlpha(t.accent(), Math.min(1.0f, alpha * 1.6f)));
+                ctx.fill(x1, y1, x1 + 1, y2, ColorUtil.withAlpha(t.accent(), Math.min(1.0f, alpha * 1.6f)));
             }
         }
     }
@@ -265,7 +265,7 @@ extends Module {
     public static void chatInput(GuiGraphics ctx, int x1, int y1, int x2, int y2) {
         switch (AnimeChatModule.chatStyle()) {
             case "\u041a\u043b\u0430\u0441\u0441\u0438\u043a\u0430": {
-                ctx.method_25294(x1, y1, x2, y2, Minecraft.method_1551().field_1690.method_19344(Integer.MIN_VALUE));
+                ctx.fill(x1, y1, x2, y2, Minecraft.getInstance().options.getBackgroundColor(Integer.MIN_VALUE));
                 break;
             }
             case "\u041c\u0438\u043d\u0438\u043c\u0430\u043b": {
@@ -303,20 +303,20 @@ extends Module {
         } else if (color >>> 24 > 0 && color >>> 24 < 96) {
             Render2D.roundRect(ctx, (float)x1, (float)y1, w, h, Math.min(2.0f, r), ColorUtil.withAlpha(t.accent(), layout != null ? layout.entryAlpha() : 0.14f));
         } else {
-            ctx.method_25294(x1, y1, x2, y2, color);
+            ctx.fill(x1, y1, x2, y2, color);
         }
     }
 
     public static void ping(GuiGraphics ctx, int width, int x, int y, int latency) {
         int color = latency < 0 ? -7699815 : (latency < 80 ? -8585294 : (latency < 150 ? -2492003 : (latency < 250 ? -19641 : -41094)));
         String text = latency < 0 ? "?" : String.valueOf(Math.min(9999, latency));
-        Font tr = Minecraft.method_1551().field_1772;
+        Font tr = Minecraft.getInstance().font;
         float s = 0.62f;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
-        m.translate((float)(x + width - 1) - (float)tr.method_1727(text) * s, (float)y + 1.5f);
+        m.translate((float)(x + width - 1) - (float)tr.width(text) * s, (float)y + 1.5f);
         m.scale(s, s);
-        ctx.method_51433(tr, text, 0, 0, color, true);
+        ctx.drawString(tr, text, 0, 0, color, true);
         m.popMatrix();
     }
 }

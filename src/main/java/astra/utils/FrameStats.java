@@ -53,7 +53,7 @@ public final class FrameStats {
     }
 
     public static int fps() {
-        return Minecraft.method_1551().method_47599();
+        return Minecraft.getInstance().getFps();
     }
 
     public static float[] history() {

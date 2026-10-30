@@ -242,36 +242,36 @@ public final class DevShots {
     }
 
     private static void shot(Minecraft client, String name) {
-        Screenshot.method_22690((File)client.field_1697, (String)("astra_" + name + ".png"), (RenderTarget)client.method_1522(), (int)1, text -> AstraClient.LOGGER.info("DevShots: {}", (Object)text.getString()));
+        Screenshot.grab((File)client.gameDirectory, (String)("astra_" + name + ".png"), (RenderTarget)client.getMainRenderTarget(), (int)1, text -> AstraClient.LOGGER.info("DevShots: {}", (Object)text.getString()));
     }
 
     private static void devCommand(Minecraft client, String command) {
-        IntegratedServer server = client.method_1576();
+        IntegratedServer server = client.getSingleplayerServer();
         if (server == null) {
             return;
         }
         server.execute(() -> {
-            List players = server.method_3760().method_14571();
+            List players = server.getPlayerList().getPlayers();
             if (players.isEmpty()) {
                 return;
             }
             ServerPlayer p = (ServerPlayer)players.get(0);
-            CommandSourceStack source = server.method_3739().method_9232((Entity)p).method_9208(p.method_73189()).method_9216(p.method_5802()).method_9227(p.method_51469()).method_9217();
-            server.method_3734().method_44252(source, command);
+            CommandSourceStack source = server.createCommandSourceStack().withEntity((Entity)p).withPosition(p.position()).withRotation(p.getRotationVector()).withLevel(p.level()).withSuppressedOutput();
+            server.getCommands().performPrefixedCommand(source, command);
         });
     }
 
     private static void devHit(Minecraft client) {
-        if (client.field_1687 == null || client.field_1724 == null) {
+        if (client.level == null || client.player == null) {
             return;
         }
-        for (Entity e : client.field_1687.method_18112()) {
+        for (Entity e : client.level.entitiesForRendering()) {
             Zombie z;
-            if (!(e instanceof Zombie) || !((z = (Zombie)e).method_5858((Entity)client.field_1724) < 64.0)) continue;
+            if (!(e instanceof Zombie) || !((z = (Zombie)e).distanceToSqr((Entity)client.player) < 64.0)) continue;
             CombatTracker.onAttack((Entity)z);
-            z.field_6235 = 10;
-            z.field_6254 = 10;
-            client.field_1724.method_6104(InteractionHand.field_5808);
+            z.hurtTime = 10;
+            z.hurtDuration = 10;
+            client.player.swing(InteractionHand.MAIN_HAND);
             return;
         }
     }
@@ -318,8 +318,8 @@ public final class DevShots {
 
     private static void perfScenes(Minecraft client) {
         if (tick == 1) {
-            client.field_1690.method_42433().method_41748((Object)false);
-            client.field_1690.method_42524().method_41748((Object)260);
+            client.options.enableVsync().set((Object)false);
+            client.options.framerateLimit().set((Object)260);
             for (String id : PERF_MODULES) {
                 Module m = ModuleManager.byId(id);
                 if (m != null) {
@@ -336,13 +336,13 @@ public final class DevShots {
             for (int i = 0; i < 10; ++i) {
                 DevShots.devCommand(client, "scoreboard players set \u0421\u0442\u0440\u043e\u043a\u0430_" + i + " astra_perf " + i);
             }
-            ChatComponent chat = client.field_1705.method_1743();
+            ChatComponent chat = client.gui.getChat();
             for (int i = 0; i < 60; ++i) {
-                chat.method_1812((Component)Component.method_43470((String)("\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fPlayer" + i + " \u00a76\u25b8 \u00a7f\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u043d\u043e\u043c\u0435\u0440 " + i)));
+                chat.addMessage((Component)Component.literal((String)("\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fPlayer" + i + " \u00a76\u25b8 \u00a7f\u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u043d\u043e\u043c\u0435\u0440 " + i)));
             }
         }
         if (tick >= 60 && tick < 460) {
-            fpsSamples.add(client.method_47599());
+            fpsSamples.add(client.getFps());
             if (tick % 10 == 0) {
                 DevShots.devHit(client);
             }
@@ -356,17 +356,17 @@ public final class DevShots {
         if (tick == 460) {
             DevShots.perfReport("\u0438\u0433\u0440\u0430, \u0432\u0441\u0451 \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u043e");
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 462) {
             gui.setCategory(Category.VISUAL);
         }
         if (tick >= 500 && tick < 700) {
-            fpsSamples.add(client.method_47599());
+            fpsSamples.add(client.getFps());
         }
         if (tick == 700) {
             DevShots.perfReport("\u043c\u0435\u043d\u044e Astra");
-            client.method_1507(null);
+            client.setScreen(null);
             for (Module m : ModuleManager.all()) {
                 if (m instanceof ClientSettings) continue;
                 m.setEnabled(false);
@@ -374,7 +374,7 @@ public final class DevShots {
             MediaBridge.devOverride(null);
         }
         if (tick >= 740 && tick < 940) {
-            fpsSamples.add(client.method_47599());
+            fpsSamples.add(client.getFps());
         }
         if (tick == 940) {
             DevShots.perfReport("Astra \u0432\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u0430");
@@ -390,9 +390,9 @@ public final class DevShots {
     private static void artEditScenes(Minecraft client) {
         if (tick == 1) {
             artTitle = new PauseScreen(true);
-            client.method_1507(artTitle);
+            client.setScreen(artTitle);
             try {
-                Path fixture = client.field_1697.toPath().resolve("astra-art-test.png");
+                Path fixture = client.gameDirectory.toPath().resolve("astra-art-test.png");
                 try (InputStream stream = DevShots.class.getResourceAsStream("/assets/astra/textures/gui/sidebar_girl.png");){
                     Files.copy(stream, fixture, StandardCopyOption.REPLACE_EXISTING);
                 }
@@ -415,7 +415,7 @@ public final class DevShots {
         }
         if (tick == 22) {
             NativeLayoutEditor ed = new NativeLayoutEditor(artTitle);
-            client.method_1507((Screen)ed);
+            client.setScreen((Screen)ed);
             try {
                 Field f = ed.getClass().getDeclaredField("selected");
                 f.setAccessible(true);
@@ -438,7 +438,7 @@ public final class DevShots {
                 throw new IllegalStateException("Missing art geometry");
             }
             try {
-                NativeLayoutEditor ed = (NativeLayoutEditor)client.field_1755;
+                NativeLayoutEditor ed = (NativeLayoutEditor)client.screen;
                 Class<?> c = ed.getClass();
                 Field selected = c.getDeclaredField("selected");
                 selected.setAccessible(true);
@@ -471,9 +471,9 @@ public final class DevShots {
                     cf.setInt(ed, corner);
                     boolean left = corner == 1 || corner == 4;
                     boolean top = corner == 1 || corner == 2;
-                    resize.invoke((Object)ed, item, Float.valueOf(left ? -20.0f : 20.0f), Float.valueOf(top ? -16.0f : 16.0f), Float.valueOf(DevShots.artTitle.field_22789), Float.valueOf(DevShots.artTitle.field_22790));
-                    if (!((double)Math.abs(item.sw - 120.0f) > 0.01 || (double)Math.abs(item.sh - 120.0f) > 0.01 || (double)Math.abs(item.dx * (float)DevShots.artTitle.field_22789 - (float)(left ? 0 : 20)) > 0.01)) {
-                        float f = item.dy * (float)DevShots.artTitle.field_22790;
+                    resize.invoke((Object)ed, item, Float.valueOf(left ? -20.0f : 20.0f), Float.valueOf(top ? -16.0f : 16.0f), Float.valueOf(DevShots.artTitle.width), Float.valueOf(DevShots.artTitle.height));
+                    if (!((double)Math.abs(item.sw - 120.0f) > 0.01 || (double)Math.abs(item.sh - 120.0f) > 0.01 || (double)Math.abs(item.dx * (float)DevShots.artTitle.width - (float)(left ? 0 : 20)) > 0.01)) {
+                        float f = item.dy * (float)DevShots.artTitle.height;
                         int n = top ? 0 : 16;
                         if (!((double)Math.abs(f - (float)n) > 0.01)) continue;
                     }
@@ -484,7 +484,7 @@ public final class DevShots {
                 Field lastCorner = c.getDeclaredField("corner");
                 lastCorner.setAccessible(true);
                 lastCorner.setInt(ed, 3);
-                resize.invoke((Object)ed, item, Float.valueOf(-20.0f), Float.valueOf(0.0f), Float.valueOf(DevShots.artTitle.field_22789), Float.valueOf(DevShots.artTitle.field_22790));
+                resize.invoke((Object)ed, item, Float.valueOf(-20.0f), Float.valueOf(0.0f), Float.valueOf(DevShots.artTitle.width), Float.valueOf(DevShots.artTitle.height));
                 if ((double)Math.abs(item.scale - 80.0f) > 0.01) {
                     throw new IllegalStateException("Proportional shrink regression");
                 }
@@ -494,8 +494,8 @@ public final class DevShots {
                 item.scale = 100.0f;
                 item.dy = 0.0f;
                 item.dx = 0.0f;
-                resize.invoke((Object)ed, item, Float.valueOf(1000.0f), Float.valueOf(1000.0f), Float.valueOf(DevShots.artTitle.field_22789), Float.valueOf(DevShots.artTitle.field_22790));
-                if (item.sw != 300.0f || item.sh != 300.0f || (double)Math.abs(item.dx * (float)DevShots.artTitle.field_22789 - 200.0f) > 0.01 || (double)Math.abs(item.dy * (float)DevShots.artTitle.field_22790 - 160.0f) > 0.01) {
+                resize.invoke((Object)ed, item, Float.valueOf(1000.0f), Float.valueOf(1000.0f), Float.valueOf(DevShots.artTitle.width), Float.valueOf(DevShots.artTitle.height));
+                if (item.sw != 300.0f || item.sh != 300.0f || (double)Math.abs(item.dx * (float)DevShots.artTitle.width - 200.0f) > 0.01 || (double)Math.abs(item.dy * (float)DevShots.artTitle.height - 160.0f) > 0.01) {
                     throw new IllegalStateException("Clamped art anchor regression");
                 }
                 Field elementSnap = c.getDeclaredField("snapElements");
@@ -514,8 +514,8 @@ public final class DevShots {
                     throw new IllegalStateException("Grid snap regression");
                 }
                 elementSnap.setBoolean(null, true);
-                pos = (float[])snap.invoke((Object)ed, Float.valueOf((float)DevShots.artTitle.field_22789 / 2.0f - 50.0f + 1.5f), Float.valueOf((float)DevShots.artTitle.field_22790 / 2.0f - 40.0f + 1.5f), Float.valueOf(100.0f), Float.valueOf(80.0f));
-                if ((double)Math.abs(pos[0] + 50.0f - (float)DevShots.artTitle.field_22789 / 2.0f) > 0.01 || (double)Math.abs(pos[1] + 40.0f - (float)DevShots.artTitle.field_22790 / 2.0f) > 0.01) {
+                pos = (float[])snap.invoke((Object)ed, Float.valueOf((float)DevShots.artTitle.width / 2.0f - 50.0f + 1.5f), Float.valueOf((float)DevShots.artTitle.height / 2.0f - 40.0f + 1.5f), Float.valueOf(100.0f), Float.valueOf(80.0f));
+                if ((double)Math.abs(pos[0] + 50.0f - (float)DevShots.artTitle.width / 2.0f) > 0.01 || (double)Math.abs(pos[1] + 40.0f - (float)DevShots.artTitle.height / 2.0f) > 0.01) {
                     throw new IllegalStateException("Center snap regression");
                 }
                 step.setFloat(null, savedStep);
@@ -534,7 +534,7 @@ public final class DevShots {
             o.sw = 100.0f;
             NativeScreenLayouts.layout((Screen)DevShots.artTitle).art = null;
             NativeScreenLayouts.save();
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -545,7 +545,7 @@ public final class DevShots {
         Page page2;
         if (tick == 1) {
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.SOUNDS);
@@ -587,14 +587,14 @@ public final class DevShots {
             DevShots.shot(client, "cards_pvp");
         }
         if (tick == 70) {
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
     }
 
     private static void toolScenes(Minecraft client) {
-        LocalPlayer p = client.field_1724;
+        LocalPlayer p = client.player;
         if (tick == 1) {
             for (String id : new String[]{"cooldowns", "item_counter", "waypoints", "minimap"}) {
                 ModuleManager.byId(id).setEnabled(true);
@@ -607,17 +607,17 @@ public final class DevShots {
             DevShots.devCommand(client, "give @s minecraft:arrow 64");
             DevShots.devCommand(client, "item replace entity @s weapon.mainhand with minecraft:netherite_sword");
             Waypoints.clear();
-            double yaw = Math.toRadians(p.method_36454());
+            double yaw = Math.toRadians(p.getYRot());
             int fx = (int)Math.round(-Math.sin(yaw));
             int fz = (int)Math.round(Math.cos(yaw));
-            Waypoints.add("\u0411\u0430\u0437\u0430", p.method_31477() + fx * 25 + fz * 8, p.method_31478(), p.method_31479() + fz * 25 - fx * 8, -11939841, false);
-            Waypoints.add("\u0428\u0430\u0445\u0442\u0430", p.method_31477() + fx * 300 - fz * 60, p.method_31478() - 20, p.method_31479() + fz * 300 + fx * 60, -11870592, false);
-            Waypoints.add("\u0421\u043c\u0435\u0440\u0442\u044c", p.method_31477() - fx * 40, p.method_31478(), p.method_31479() - fz * 40, -770210, true);
-            p.method_36457(5.0f);
+            Waypoints.add("\u0411\u0430\u0437\u0430", p.getBlockX() + fx * 25 + fz * 8, p.getBlockY(), p.getBlockZ() + fz * 25 - fx * 8, -11939841, false);
+            Waypoints.add("\u0428\u0430\u0445\u0442\u0430", p.getBlockX() + fx * 300 - fz * 60, p.getBlockY() - 20, p.getBlockZ() + fz * 300 + fx * 60, -11870592, false);
+            Waypoints.add("\u0421\u043c\u0435\u0440\u0442\u044c", p.getBlockX() - fx * 40, p.getBlockY(), p.getBlockZ() - fz * 40, -770210, true);
+            p.setXRot(5.0f);
         }
         if (tick == 30) {
-            client.method_1562().method_45730("wp list");
-            client.method_1562().method_45730("wp add \u0422\u0435\u0441\u0442");
+            client.getConnection().sendCommand("wp list");
+            client.getConnection().sendCommand("wp add \u0422\u0435\u0441\u0442");
             if (Waypoints.find("\u0422\u0435\u0441\u0442") == null) {
                 throw new IllegalStateException("Waypoint command regression");
             }
@@ -626,14 +626,14 @@ public final class DevShots {
         if (tick == 40) {
             Waypoints.Waypoint base = Waypoints.find("\u0411\u0430\u0437\u0430");
             if (base != null) {
-                double dx = (double)base.x + 0.5 - p.method_23317();
-                double dz = (double)base.z + 0.5 - p.method_23321();
-                p.method_36456((float)Math.toDegrees(Math.atan2(-dx, dz)) + 12.0f);
+                double dx = (double)base.x + 0.5 - p.getX();
+                double dz = (double)base.z + 0.5 - p.getZ();
+                p.setYRot((float)Math.toDegrees(Math.atan2(-dx, dz)) + 12.0f);
             }
-            p.method_7357().method_62835(new ItemStack((ItemLike)Items.field_8634), 200);
-            p.method_7357().method_62835(new ItemStack((ItemLike)Items.field_8233), 120);
-            p.method_6104(InteractionHand.field_5808);
-            p.method_75203();
+            p.getCooldowns().addCooldown(new ItemStack((ItemLike)Items.ENDER_PEARL), 200);
+            p.getCooldowns().addCooldown(new ItemStack((ItemLike)Items.CHORUS_FRUIT), 120);
+            p.swing(InteractionHand.MAIN_HAND);
+            p.resetOnlyAttackStrengthTicker();
         }
         if (tick == 44) {
             AstraClient.LOGGER.info("DevShots: TOOLS PASS \u2014 waypoints {}", (Object)Waypoints.all().size());
@@ -668,31 +668,31 @@ public final class DevShots {
             }
         }
         if (tick == 50) {
-            long night = client.field_1687.method_8532() % 24000L;
+            long night = client.level.getDayTime() % 24000L;
             AstraClient.LOGGER.info("DevShots: BINDS time {} (\u043d\u043e\u0447\u044c \u2248 13000)", (Object)night);
             DevShots.shot(client, "binds_chat");
             ModuleManager.byId("minimap").setEnabled(true);
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 52) {
             gui.setCategory(Category.PVP);
         }
         if (tick == 54) {
-            gui.method_25401((double)client.method_22683().method_4486() / 2.0, (double)client.method_22683().method_4502() / 2.0, 0.0, -30.0);
+            gui.mouseScrolled((double)client.getWindow().getGuiScaledWidth() / 2.0, (double)client.getWindow().getGuiScaledHeight() / 2.0, 0.0, -30.0);
         }
         if (tick == 70) {
             DevShots.shot(client, "binds_menu");
         }
         if (tick == 80) {
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
     }
 
     private static void pvpScenes(Minecraft client) {
-        LocalPlayer p = client.field_1724;
+        LocalPlayer p = client.player;
         if (tick == 1) {
             ModuleManager.byId("pvp_tweaks").setEnabled(true);
             ModuleManager.byId("shield_status").setEnabled(true);
@@ -702,24 +702,24 @@ public final class DevShots {
             DevShots.devCommand(client, "effect give @s minecraft:fire_resistance 60 0 true");
             DevShots.devCommand(client, "effect give @s minecraft:resistance 60 4 true");
             DevShots.devCommand(client, "time set day");
-            pvpBob = new RemotePlayer(client.field_1687, new GameProfile(UUID.fromString("33333333-3333-3333-3333-333333333333"), "Bob"));
-            double yaw = Math.toRadians(p.method_36454());
-            pvpBob.method_5808(p.method_23317() - Math.sin(yaw) * 2.6, p.method_23318(), p.method_23321() + Math.cos(yaw) * 2.6, p.method_36454() + 150.0f, 0.0f);
-            pvpBob.method_5847(p.method_36454() + 150.0f);
-            pvpBob.method_5636(p.method_36454() + 150.0f);
-            pvpBob.method_5673(EquipmentSlot.field_6171, new ItemStack((ItemLike)Items.field_8255));
-            pvpBob.method_5673(EquipmentSlot.field_6173, new ItemStack((ItemLike)Items.field_8802));
-            client.field_1687.method_53875((Entity)pvpBob);
-            p.method_36457(12.0f);
+            pvpBob = new RemotePlayer(client.level, new GameProfile(UUID.fromString("33333333-3333-3333-3333-333333333333"), "Bob"));
+            double yaw = Math.toRadians(p.getYRot());
+            pvpBob.snapTo(p.getX() - Math.sin(yaw) * 2.6, p.getY(), p.getZ() + Math.cos(yaw) * 2.6, p.getYRot() + 150.0f, 0.0f);
+            pvpBob.setYHeadRot(p.getYRot() + 150.0f);
+            pvpBob.setYBodyRot(p.getYRot() + 150.0f);
+            pvpBob.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack((ItemLike)Items.SHIELD));
+            pvpBob.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack((ItemLike)Items.DIAMOND_SWORD));
+            client.level.addEntity((Entity)pvpBob);
+            p.setXRot(12.0f);
         }
         if (tick == 20 || tick == 60) {
-            IntegratedServer server = client.method_1576();
-            UUID uuid = p.method_5667();
-            server.execute(() -> server.method_3760().method_14602(uuid).method_5639(20.0f));
-            p.method_7357().method_62835(p.method_6079(), 100);
-            ShieldStatus.onShieldBreakSound(pvpBob.method_23317(), pvpBob.method_23318(), pvpBob.method_23321());
+            IntegratedServer server = client.getSingleplayerServer();
+            UUID uuid = p.getUUID();
+            server.execute(() -> server.getPlayerList().getPlayer(uuid).igniteForSeconds(20.0f));
+            p.getCooldowns().addCooldown(p.getOffhandItem(), 100);
+            ShieldStatus.onShieldBreakSound(pvpBob.getX(), pvpBob.getY(), pvpBob.getZ());
             PvpTweaks.onTotemPop((Entity)pvpBob);
-            client.field_1773.method_3189(new ItemStack((ItemLike)Items.field_8288));
+            client.gameRenderer.displayItemActivation(new ItemStack((ItemLike)Items.TOTEM_OF_UNDYING));
         }
         if (tick == 30) {
             if (ShieldStatus.brokenProgress((LivingEntity)pvpBob) <= 0.0f || ShieldStatus.brokenProgress((LivingEntity)p) <= 0.0f) {
@@ -738,7 +738,7 @@ public final class DevShots {
         if (tick == 80) {
             ModuleManager.byId("pvp_tweaks").setEnabled(true);
             ModuleManager.byId("shield_status").setEnabled(true);
-            client.field_1687.method_2945(pvpBob.method_5628(), Entity.RemovalReason.field_26999);
+            client.level.removeEntity(pvpBob.getId(), Entity.RemovalReason.DISCARDED);
             DevShots.devCommand(client, "gamemode creative");
             phase = Phase.DONE;
             tick = 0;
@@ -753,20 +753,20 @@ public final class DevShots {
             Module module = ModuleManager.byId("astra_online");
             DevShots.set(module, "\u0410\u0434\u0440\u0435\u0441 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "127.0.0.1:8799");
             DevShots.set(module, "\u041a\u043b\u044e\u0447 \u043a\u043e\u043c\u043d\u0430\u0442\u044b", "friends");
-            LocalPlayer p = client.field_1724;
-            RemotePlayer bob = new RemotePlayer(client.field_1687, new GameProfile(UUID.fromString("22222222-2222-2222-2222-222222222222"), "Bob"));
-            double yaw = Math.toRadians(p.method_36454());
-            bob.method_5808(p.method_23317() - Math.sin(yaw) * 3.0, p.method_23318(), p.method_23321() + Math.cos(yaw) * 3.0, p.method_36454() + 180.0f, 0.0f);
-            bob.method_5847(p.method_36454() + 180.0f);
-            bob.method_5636(p.method_36454() + 180.0f);
-            client.field_1687.method_53875((Entity)bob);
-            p.method_36457(5.0f);
+            LocalPlayer p = client.player;
+            RemotePlayer bob = new RemotePlayer(client.level, new GameProfile(UUID.fromString("22222222-2222-2222-2222-222222222222"), "Bob"));
+            double yaw = Math.toRadians(p.getYRot());
+            bob.snapTo(p.getX() - Math.sin(yaw) * 3.0, p.getY(), p.getZ() + Math.cos(yaw) * 3.0, p.getYRot() + 180.0f, 0.0f);
+            bob.setYHeadRot(p.getYRot() + 180.0f);
+            bob.setYBodyRot(p.getYRot() + 180.0f);
+            client.level.addEntity((Entity)bob);
+            p.setXRot(5.0f);
         }
         if (tick == 10) {
-            ChatComponent chatComponent = client.field_1705.method_1743();
-            chatComponent.method_1812((Component)Component.method_43470((String)"\u00a7d[Astra] \u00a7f\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c \u043d\u0430 \u0441\u0435\u0440\u0432\u0435\u0440!"));
-            chatComponent.method_1812((Component)Component.method_43470((String)"\u00a7b<Bob> \u00a7f\u043f\u0440\u0438\u0432\u0435\u0442, \u0442\u044b \u0433\u0434\u0435?"));
-            chatComponent.method_1812((Component)Component.method_43470((String)("\u00a7e<Kira> \u00a7f" + client.field_1724.method_7334().name() + ", \u043f\u043e\u0439\u0434\u0451\u043c \u0432 \u043f\u0432\u043f!")));
+            ChatComponent chatComponent = client.gui.getChat();
+            chatComponent.addMessage((Component)Component.literal((String)"\u00a7d[Astra] \u00a7f\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c \u043d\u0430 \u0441\u0435\u0440\u0432\u0435\u0440!"));
+            chatComponent.addMessage((Component)Component.literal((String)"\u00a7b<Bob> \u00a7f\u043f\u0440\u0438\u0432\u0435\u0442, \u0442\u044b \u0433\u0434\u0435?"));
+            chatComponent.addMessage((Component)Component.literal((String)("\u00a7e<Kira> \u00a7f" + client.player.getGameProfile().name() + ", \u043f\u043e\u0439\u0434\u0451\u043c \u0432 \u043f\u0432\u043f!")));
         }
         if (tick == 30) {
             CompanionHud.onKill();
@@ -779,35 +779,35 @@ public final class DevShots {
             DevShots.shot(client, "feat_hud");
         }
         if (tick == 92) {
-            client.field_1690.field_1907.method_23481(true);
+            client.options.keyPlayerList.setDown(true);
         }
         if (tick == 100) {
             DevShots.shot(client, "feat_tab");
         }
         if (tick == 102) {
-            client.field_1690.field_1907.method_23481(false);
-            client.method_1507((Screen)new ChatScreen("\u043f\u0440\u0438\u0432\u0435\u0442", false));
+            client.options.keyPlayerList.setDown(false);
+            client.setScreen((Screen)new ChatScreen("\u043f\u0440\u0438\u0432\u0435\u0442", false));
         }
         if (tick == 110) {
             DevShots.shot(client, "feat_chat");
         }
         if (tick == 112) {
             EmoteCosmetic emoteCosmetic = (EmoteCosmetic)ModuleManager.byId("emotes");
-            client.method_1507((Screen)new EmoteWheelScreen(emoteCosmetic, 71));
+            client.setScreen((Screen)new EmoteWheelScreen(emoteCosmetic, 71));
         }
         if (tick == 125) {
             DevShots.shot(client, "feat_wheel");
         }
         if (tick == 127) {
-            client.method_1507(null);
+            client.setScreen(null);
             StylePresets.ALL.get(1).apply().run();
-            client.field_1690.method_31043(CameraType.field_26665);
+            client.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
         if (tick == 160) {
             DevShots.shot(client, "feat_preset");
         }
         if (tick == 162) {
-            client.field_1690.method_31043(CameraType.field_26664);
+            client.options.setCameraType(CameraType.FIRST_PERSON);
             StylePresets.ALL.get(0).apply().run();
             DevShots.set(ModuleManager.byId("astra_online"), "\u0410\u0434\u0440\u0435\u0441 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "");
             phase = Phase.DONE;
@@ -821,14 +821,14 @@ public final class DevShots {
             DevShots.set(online, "\u0410\u0434\u0440\u0435\u0441 \u0441\u0435\u0440\u0432\u0435\u0440\u0430", "127.0.0.1:8799");
             DevShots.set(online, "\u041a\u043b\u044e\u0447 \u043a\u043e\u043c\u043d\u0430\u0442\u044b", "friends");
             online.setEnabled(true);
-            LocalPlayer p = client.field_1724;
-            RemotePlayer bob = new RemotePlayer(client.field_1687, new GameProfile(UUID.fromString("22222222-2222-2222-2222-222222222222"), "Bob"));
-            double yaw = Math.toRadians(p.method_36454());
-            bob.method_5808(p.method_23317() - Math.sin(yaw) * 3.0, p.method_23318(), p.method_23321() + Math.cos(yaw) * 3.0, p.method_36454(), 0.0f);
-            bob.method_5847(p.method_36454());
-            bob.method_5636(p.method_36454());
-            client.field_1687.method_53875((Entity)bob);
-            p.method_36457(5.0f);
+            LocalPlayer p = client.player;
+            RemotePlayer bob = new RemotePlayer(client.level, new GameProfile(UUID.fromString("22222222-2222-2222-2222-222222222222"), "Bob"));
+            double yaw = Math.toRadians(p.getYRot());
+            bob.snapTo(p.getX() - Math.sin(yaw) * 3.0, p.getY(), p.getZ() + Math.cos(yaw) * 3.0, p.getYRot(), 0.0f);
+            bob.setYHeadRot(p.getYRot());
+            bob.setYBodyRot(p.getYRot());
+            client.level.addEntity((Entity)bob);
+            p.setXRot(5.0f);
         }
         if (tick == 140) {
             AstraClient.LOGGER.info("DevShots: Astra Online \u2014 {}", (Object)AstraOnline.status());
@@ -870,20 +870,20 @@ public final class DevShots {
             DevShots.shot(client, "menus_ingame");
         }
         if (tick == 62) {
-            client.method_1507((Screen)new PauseScreen(true));
+            client.setScreen((Screen)new PauseScreen(true));
         }
         if (tick == 90) {
             DevShots.shot(client, "menus_pause");
         }
         if (tick == 92) {
-            client.method_1507((Screen)new OptionsScreen(client.field_1755, client.field_1690));
+            client.setScreen((Screen)new OptionsScreen(client.screen, client.options));
         }
         if (tick == 120) {
             DevShots.shot(client, "menus_options");
         }
         if (tick == 122) {
             DevShots.devCommand(client, "scoreboard objectives remove astra_test");
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -907,14 +907,14 @@ public final class DevShots {
             }
             ClientSettings.get().theme.set("Astra Purple");
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.THEMES);
         }
         if (tick == 20) {
             decorEditor = new DecorEditorScreen(null);
-            client.method_1507((Screen)decorEditor);
+            client.setScreen((Screen)decorEditor);
         }
         if (tick == 40) {
             c = DevShots.hitCenter("logo");
@@ -970,13 +970,13 @@ public final class DevShots {
             GuiStyle.Override n = GuiStyle.edit("nav");
             n.dx = 30.0f;
             n.dy = 40.0f;
-            decorEditor.method_25419();
+            decorEditor.onClose();
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 120) {
             float[] g = gui.devDesignToGui(128.0f, 244.0f);
-            gui.method_25402(new MouseButtonEvent((double)g[0], (double)g[1], new MouseButtonInfo(0, 0)), false);
+            gui.mouseClicked(new MouseButtonEvent((double)g[0], (double)g[1], new MouseButtonInfo(0, 0)), false);
             AstraClient.LOGGER.info("DevShots: \u043a\u043b\u0438\u043a \u043f\u043e \u0441\u0434\u0432\u0438\u043d\u0443\u0442\u043e\u043c\u0443 \u00ab\u0414\u0432\u0438\u0436\u0435\u043d\u0438\u0435\u00bb \u2192 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f {}", (Object)gui.getCategory());
         }
         if (tick == 150) {
@@ -987,7 +987,7 @@ public final class DevShots {
                 GuiStyle.reset(id);
             }
             GuiStyle.save();
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1001,7 +1001,7 @@ public final class DevShots {
             cs.sidebarArt.set("sidebar.jpg");
             cs.theme.set("Midnight Blue");
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.THEMES);
@@ -1018,7 +1018,7 @@ public final class DevShots {
         if (tick == 72) {
             cs.theme.set("Astra Purple");
             decorEditor = new DecorEditorScreen(null);
-            client.method_1507((Screen)decorEditor);
+            client.setScreen((Screen)decorEditor);
         }
         if (tick == 100) {
             DevShots.shot(client, "themebg_editor_before");
@@ -1036,21 +1036,21 @@ public final class DevShots {
             decorEditor.mouseClicked(g[0], g[1], 0);
             decorEditor.mouseDragged(g[0] + 60.0f, g[1] - 20.0f, 0, 60.0, -20.0);
             decorEditor.mouseReleased(g[0] + 60.0f, g[1] - 20.0f, 0);
-            decorEditor.method_25401(g[0] + 60.0f, g[1] - 20.0f, 0.0, 3.0);
+            decorEditor.mouseScrolled(g[0] + 60.0f, g[1] - 20.0f, 0.0, 3.0);
         }
         if (tick == 150) {
             DevShots.shot(client, "themebg_editor_moved");
         }
         if (tick == 152) {
-            decorEditor.method_25419();
+            decorEditor.onClose();
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 190) {
             DevShots.shot(client, "themebg_menu_after");
         }
         if (tick == 192) {
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1101,14 +1101,14 @@ public final class DevShots {
         }
         if (tick == 22) {
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 60) {
             DevShots.shot(client, "decor_menu");
         }
         if (tick == 62) {
             decorEditor = new DecorEditorScreen(null);
-            client.method_1507((Screen)decorEditor);
+            client.setScreen((Screen)decorEditor);
         }
         if (tick == 64) {
             decorEditor.devSelect(layers.get(1), "menu");
@@ -1136,8 +1136,8 @@ public final class DevShots {
             DevShots.shot(client, "decor_editor_screen");
         }
         if (tick == 142) {
-            decorEditor.method_25419();
-            client.method_1507(null);
+            decorEditor.onClose();
+            client.setScreen(null);
         }
         if (tick == 150) {
             phase = Phase.DONE;
@@ -1155,7 +1155,7 @@ public final class DevShots {
         if (tick == 1) {
             cs.sidebarArt.set("\u0410\u0432\u0442\u043e");
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 3) {
             gui.setCategory(Category.THEMES);
@@ -1181,7 +1181,7 @@ public final class DevShots {
         }
         if (tick == 122) {
             cs.sidebarArt.set("\u0410\u0432\u0442\u043e");
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1202,7 +1202,7 @@ public final class DevShots {
                 p.events().values().forEach(all::addAll);
                 for (Path f2 : all) {
                     try {
-                        SoundBuffer st = UserAudio.loadStatic(UserAudio.id(f2).method_45136("sounds/" + UserAudio.id(f2).method_12832() + ".ogg")).join();
+                        SoundBuffer st = UserAudio.loadStatic(UserAudio.id(f2).withPath("sounds/" + UserAudio.id(f2).getPath() + ".ogg")).join();
                         AstraClient.LOGGER.info("DevShots: \u0437\u0432\u0443\u043a {} \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d ({})", (Object)f2.getFileName(), (Object)(st != null ? "ok" : "null"));
                     }
                     catch (Exception e) {
@@ -1212,10 +1212,10 @@ public final class DevShots {
             }
             for (SoundPacks.Song s : SoundPacks.songs()) {
                 try {
-                    AudioStream st = UserAudio.loadStreamed(UserAudio.id(s.file()).method_45136("sounds/" + UserAudio.id(s.file()).method_12832() + ".ogg")).join();
+                    AudioStream st = UserAudio.loadStreamed(UserAudio.id(s.file()).withPath("sounds/" + UserAudio.id(s.file()).getPath() + ".ogg")).join();
                     try {
-                        int bytes = st.method_19720(65536).remaining();
-                        AstraClient.LOGGER.info("DevShots: \u043f\u0435\u0441\u043d\u044f \u00ab{}\u00bb \u2014 {} ({}), \u043f\u043e\u0442\u043e\u043a {} \u0431\u0430\u0439\u0442, {}", new Object[]{s.title(), s.artist(), s.source(), bytes, st.method_19719()});
+                        int bytes = st.read(65536).remaining();
+                        AstraClient.LOGGER.info("DevShots: \u043f\u0435\u0441\u043d\u044f \u00ab{}\u00bb \u2014 {} ({}), \u043f\u043e\u0442\u043e\u043a {} \u0431\u0430\u0439\u0442, {}", new Object[]{s.title(), s.artist(), s.source(), bytes, st.getFormat()});
                     }
                     finally {
                         if (st == null) continue;
@@ -1269,7 +1269,7 @@ public final class DevShots {
         }
         if (tick == 362) {
             gui = new ClickGuiScreen(null);
-            client.method_1507((Screen)gui);
+            client.setScreen((Screen)gui);
         }
         if (tick == 364) {
             gui.setCategory(Category.COSMETICS);
@@ -1284,7 +1284,7 @@ public final class DevShots {
             DevShots.shot(client, "packs_visual");
         }
         if (tick == 442) {
-            client.method_1507(null);
+            client.setScreen(null);
             ((ModeSetting)DevShots.setting(music, "\u0421\u0432\u043e\u0438 \u043f\u0435\u0441\u043d\u0438")).set("\u0412\u043c\u0435\u0441\u0442\u0435 \u0441\u043e \u0432\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u043c\u0438");
             phase = Phase.DONE;
             tick = 0;
@@ -1334,13 +1334,13 @@ public final class DevShots {
             DevShots.shot(client, "np_world");
         }
         if (tick == 152) {
-            client.field_1690.method_31043(CameraType.field_26665);
+            client.options.setCameraType(CameraType.THIRD_PERSON_BACK);
         }
         if (tick == 175) {
             DevShots.shot(client, "np_world_third");
         }
         if (tick == 177) {
-            client.field_1690.method_31043(CameraType.field_26664);
+            client.options.setCameraType(CameraType.FIRST_PERSON);
         }
         if (tick == 180) {
             DevShots.set(np, "\u0422\u0435\u043a\u0441\u0442 \u043f\u0435\u0441\u043d\u0438", "\u041d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435");
@@ -1364,13 +1364,13 @@ public final class DevShots {
             DevShots.shot(client, "np_compact");
         }
         if (tick == 217) {
-            client.method_1507((Screen)new PlayerScreen(null));
+            client.setScreen((Screen)new PlayerScreen(null));
         }
         if (tick == 250) {
             DevShots.shot(client, "np_player");
         }
         if (tick == 252) {
-            client.method_1507(null);
+            client.setScreen(null);
             DevShots.set(np, "\u0412\u0438\u0434 \u0432\u0438\u0434\u0436\u0435\u0442\u0430", "\u041a\u0430\u0440\u0442\u043e\u0447\u043a\u0430");
             DevShots.set(np, "\u0422\u0435\u043a\u0441\u0442 \u043f\u0435\u0441\u043d\u0438", "\u0412 \u043c\u0438\u0440\u0435");
             DevShots.set(np, "\u042d\u0444\u0444\u0435\u043a\u0442 \u043f\u043e\u044f\u0432\u043b\u0435\u043d\u0438\u044f", "\u0412\u043e\u043b\u043d\u0430");
@@ -1405,7 +1405,7 @@ public final class DevShots {
             input.scale.set(100.0);
             DevShots.set(input, "\u0428\u0438\u0440\u0438\u043d\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", 100.0);
             DevShots.set(input, "\u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", 14.0);
-            client.method_1507((Screen)new ChatScreen("\u0422\u0435\u0441\u0442 \u0432\u0432\u043e\u0434\u0430", false));
+            client.setScreen((Screen)new ChatScreen("\u0422\u0435\u0441\u0442 \u0432\u0432\u043e\u0434\u0430", false));
             AstraClient.LOGGER.info("DevShots: INPUT DEFAULT bounds={}", (Object)input.bounds());
         }
         if (tick == 8) {
@@ -1418,30 +1418,30 @@ public final class DevShots {
             DevShots.set(input, "\u0412\u044b\u0441\u043e\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", 24.0);
             DevShots.set(input, "\u041e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u0435 \u0441\u0442\u0440\u043e\u043a\u0438", "\u0421\u0432\u043e\u044f \u043f\u0430\u043d\u0435\u043b\u044c");
             DevShots.set(input, "\u0426\u0432\u0435\u0442 \u0442\u0435\u043a\u0441\u0442\u0430 \u0441\u0442\u0440\u043e\u043a\u0438", -8331009);
-            client.method_1507((Screen)new ChatScreen("", false));
-            Screen screen = client.field_1755;
-            EditBox field = screen.method_25396().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
+            client.setScreen((Screen)new ChatScreen("", false));
+            Screen screen = client.screen;
+            EditBox field = screen.children().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
             ChatInputHud.Bounds b = input.bounds();
-            if (field.method_46426() != b.x() + 4 || field.method_25368() != b.width() - 8) {
+            if (field.getX() != b.x() + 4 || field.getWidth() != b.width() - 8) {
                 throw new IllegalStateException("Input geometry regression");
             }
             for (char c : "\u043f\u0440\u0438\u0432\u0435\u0442".toCharArray()) {
-                screen.method_25400(new CharacterEvent((int)c, 0));
+                screen.charTyped(new CharacterEvent((int)c, 0));
             }
-            screen.method_25404(new KeyEvent(263, 0, 0));
-            screen.method_25404(new KeyEvent(259, 0, 0));
-            if (!field.method_1882().equals("\u043f\u0440\u0438\u0432\u0442")) {
-                throw new IllegalStateException("Input editing regression: " + field.method_1882());
+            screen.keyPressed(new KeyEvent(263, 0, 0));
+            screen.keyPressed(new KeyEvent(259, 0, 0));
+            if (!field.getValue().equals("\u043f\u0440\u0438\u0432\u0442")) {
+                throw new IllegalStateException("Input editing regression: " + field.getValue());
             }
-            screen.method_25402(new MouseButtonEvent((double)(field.method_46426() + 1), (double)(field.method_46427() + 3), new MouseButtonInfo(0, 0)), false);
-            screen.method_25400(new CharacterEvent(1071, 0));
-            if (!field.method_1882().startsWith("\u042f")) {
+            screen.mouseClicked(new MouseButtonEvent((double)(field.getX() + 1), (double)(field.getY() + 3), new MouseButtonInfo(0, 0)), false);
+            screen.charTyped(new CharacterEvent(1071, 0));
+            if (!field.getValue().startsWith("\u042f")) {
                 throw new IllegalStateException("Input cursor hit testing regression");
             }
-            String text = field.method_1882();
-            screen.method_25410(screen.field_22789, screen.field_22790);
-            EditBox resized = screen.method_25396().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
-            if (!resized.method_1882().equals(text) || resized.method_46426() != b.x() + 4) {
+            String text = field.getValue();
+            screen.resize(screen.width, screen.height);
+            EditBox resized = screen.children().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
+            if (!resized.getValue().equals(text) || resized.getX() != b.x() + 4) {
                 throw new IllegalStateException("Input resize regression");
             }
             AstraClient.LOGGER.info("DevShots: INPUT EDIT PASS \u2014 typing, arrows, deletion, cursor click, resize; {}", (Object)b);
@@ -1450,7 +1450,7 @@ public final class DevShots {
             DevShots.shot(client, "input_moved");
         }
         if (tick == 20) {
-            client.method_1507((Screen)new HudEditorScreen(null));
+            client.setScreen((Screen)new HudEditorScreen(null));
         }
         if (tick == 24) {
             ChatInputHud.Bounds b = input.bounds();
@@ -1458,9 +1458,9 @@ public final class DevShots {
             double y = (double)b.y() + (double)b.height() / 2.0;
             float oldX = input.getPosX();
             float oldY = input.getPosY();
-            client.field_1755.method_25402(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
-            client.field_1755.method_25403(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)), -80.0, 55.0);
-            client.field_1755.method_25406(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)));
+            client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
+            client.screen.mouseDragged(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)), -80.0, 55.0);
+            client.screen.mouseReleased(new MouseButtonEvent(x - 80.0, y + 55.0, new MouseButtonInfo(0, 0)));
             if (input.getPosX() == oldX && input.getPosY() == oldY) {
                 throw new IllegalStateException("HUD input drag regression");
             }
@@ -1478,16 +1478,16 @@ public final class DevShots {
         }
         if (tick == 32) {
             input.setPos(0.5f, 0.05f);
-            client.method_1507((Screen)new ChatScreen("/", false));
+            client.setScreen((Screen)new ChatScreen("/", false));
         }
         if (tick == 42) {
-            client.field_1755.method_25404(new KeyEvent(258, 0, 0));
+            client.screen.keyPressed(new KeyEvent(258, 0, 0));
         }
         if (tick == 48) {
             try {
                 Field sf = ChatScreen.class.getDeclaredField("chatInputSuggestor");
                 sf.setAccessible(true);
-                CommandSuggestions suggestor = (CommandSuggestions)sf.get(client.field_1755);
+                CommandSuggestions suggestor = (CommandSuggestions)sf.get(client.screen);
                 Field wf = suggestor.getClass().getDeclaredField("window");
                 wf.setAccessible(true);
                 Object window = wf.get(suggestor);
@@ -1498,7 +1498,7 @@ public final class DevShots {
                 af.setAccessible(true);
                 Rect2i area = (Rect2i)af.get(window);
                 ChatInputHud.Bounds b = input.bounds();
-                if (area.method_3322() < b.y() + b.height() || area.method_3322() + area.method_3320() > client.field_1755.field_22790) {
+                if (area.getY() < b.y() + b.height() || area.getY() + area.getHeight() > client.screen.height) {
                     throw new IllegalStateException("Top input completion bounds regression");
                 }
                 AstraClient.LOGGER.info("DevShots: INPUT COMPLETION PASS \u2014 menu below top input, inside window");
@@ -1544,14 +1544,14 @@ public final class DevShots {
                 }
                 Method mention = cls.getDeclaredMethod("mention", Component.class);
                 mention.setAccessible(true);
-                mention.invoke(null, Component.method_43470((String)("\u041f\u0440\u0438\u0432\u0435\u0442, " + client.field_1724.method_7334().name())));
+                mention.invoke(null, Component.literal((String)("\u041f\u0440\u0438\u0432\u0435\u0442, " + client.player.getGameProfile().name())));
                 Field lf = cls.getDeclaredField("lastMention");
                 lf.setAccessible(true);
                 long notified = lf.getLong(null);
                 if (notified <= 0L) {
                     throw new IllegalStateException("Incoming mention regression");
                 }
-                mention.invoke(null, Component.method_43470((String)("\u041f\u043e\u0432\u0442\u043e\u0440: " + client.field_1724.method_7334().name())));
+                mention.invoke(null, Component.literal((String)("\u041f\u043e\u0432\u0442\u043e\u0440: " + client.player.getGameProfile().name())));
                 if (lf.getLong(null) != notified) {
                     throw new IllegalStateException("Mention cooldown regression");
                 }
@@ -1562,9 +1562,9 @@ public final class DevShots {
                 throw new RuntimeException(e4);
             }
             input.setEnabled(false);
-            client.method_1507((Screen)new ChatScreen("\u0412\u0430\u043d\u0438\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043b\u0435", false));
-            EditBox field = client.field_1755.method_25396().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
-            if (field.method_46426() != 4 || field.method_46427() != client.field_1755.field_22790 - 12) {
+            client.setScreen((Screen)new ChatScreen("\u0412\u0430\u043d\u0438\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043b\u0435", false));
+            EditBox field = client.screen.children().stream().filter(e -> e instanceof EditBox).map(e -> (EditBox)e).findFirst().orElseThrow();
+            if (field.getX() != 4 || field.getY() != client.screen.height - 12) {
                 throw new IllegalStateException("Disabled input fallback regression");
             }
             AstraClient.LOGGER.info("DevShots: INPUT DISABLED PASS");
@@ -1572,7 +1572,7 @@ public final class DevShots {
         if (tick == 60) {
             input.setEnabled(true);
             input.setPos(0.52f, 0.45f);
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1589,25 +1589,25 @@ public final class DevShots {
             banner.setEnabled(true);
             banner.scale.set(100.0);
             banner.setPos(0.42f, 0.4f);
-            client.method_1507((Screen)new HudEditorScreen(null));
+            client.setScreen((Screen)new HudEditorScreen(null));
         }
         if (tick == 10) {
-            double x = banner.getX(client.field_1755.field_22789) + banner.scaledWidth() / 2.0f;
-            double y = banner.getY(client.field_1755.field_22790) + banner.scaledHeight() / 2.0f;
+            double x = banner.getX(client.screen.width) + banner.scaledWidth() / 2.0f;
+            double y = banner.getY(client.screen.height) + banner.scaledHeight() / 2.0f;
             float oldX = banner.getPosX();
             float oldY = banner.getPosY();
-            client.field_1755.method_25402(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
-            client.field_1755.method_25403(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)), 45.0, 70.0);
-            client.field_1755.method_25406(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)));
+            client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
+            client.screen.mouseDragged(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)), 45.0, 70.0);
+            client.screen.mouseReleased(new MouseButtonEvent(x + 45.0, y + 70.0, new MouseButtonInfo(0, 0)));
             if (banner.getPosX() == oldX && banner.getPosY() == oldY) {
                 throw new IllegalStateException("Banner drag regression");
             }
-            float cornerX = banner.getX(client.field_1755.field_22789) + banner.scaledWidth() + 1.5f;
-            float cornerY = banner.getY(client.field_1755.field_22790) + banner.scaledHeight() + 1.5f;
+            float cornerX = banner.getX(client.screen.width) + banner.scaledWidth() + 1.5f;
+            float cornerY = banner.getY(client.screen.height) + banner.scaledHeight() + 1.5f;
             double oldSize = (Double)banner.scale.get();
-            client.field_1755.method_25402(new MouseButtonEvent((double)cornerX, (double)cornerY, new MouseButtonInfo(0, 0)), false);
-            client.field_1755.method_25403(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)), 65.0, 20.0);
-            client.field_1755.method_25406(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)));
+            client.screen.mouseClicked(new MouseButtonEvent((double)cornerX, (double)cornerY, new MouseButtonInfo(0, 0)), false);
+            client.screen.mouseDragged(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)), 65.0, 20.0);
+            client.screen.mouseReleased(new MouseButtonEvent((double)(cornerX + 65.0f), (double)(cornerY + 20.0f), new MouseButtonInfo(0, 0)));
             if ((Double)banner.scale.get() <= oldSize || player.bannerSize() != ((Double)banner.scale.get()).doubleValue()) {
                 throw new IllegalStateException("Banner resize binding regression");
             }
@@ -1634,13 +1634,13 @@ public final class DevShots {
             DevShots.set(player, "\u041f\u043b\u0430\u0448\u043a\u0430 \u0441\u043c\u0435\u043d\u044b \u0442\u0440\u0435\u043a\u0430", true);
             DevShots.set(player, "\u041f\u043b\u0430\u0448\u043a\u0430: \u0432\u0440\u0435\u043c\u044f \u043f\u043e\u043a\u0430\u0437\u0430", 15.0);
             MediaBridge.devOverride(new NowPlaying(true, "Firefox.exe", "In Affliction", "Yakui The Maid", "", true, 0L, System.currentTimeMillis(), 180000L, "", false, false, false));
-            client.method_1507(null);
+            client.setScreen(null);
         }
         if (tick == 42) {
             if (!player.bannerVisible()) {
                 throw new IllegalStateException("Track change banner did not activate");
             }
-            if (banner.scaledWidth() > (float)(client.method_22683().method_4486() + 1)) {
+            if (banner.scaledWidth() > (float)(client.getWindow().getGuiScaledWidth() + 1)) {
                 throw new IllegalStateException("Banner screen bounds regression");
             }
             DevShots.shot(client, "track_banner_ingame");
@@ -1658,13 +1658,13 @@ public final class DevShots {
             if (player.bannerVisible()) {
                 throw new IllegalStateException("Banner expiry regression");
             }
-            client.method_1507((Screen)new HudEditorScreen(null));
+            client.setScreen((Screen)new HudEditorScreen(null));
         }
         if (tick == 50) {
-            float x = banner.getX(client.field_1755.field_22789) + 20.0f;
-            float y = banner.getY(client.field_1755.field_22790) + 20.0f;
-            client.field_1755.method_25402(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)), false);
-            client.field_1755.method_25406(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)));
+            float x = banner.getX(client.screen.width) + 20.0f;
+            float y = banner.getY(client.screen.height) + 20.0f;
+            client.screen.mouseClicked(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)), false);
+            client.screen.mouseReleased(new MouseButtonEvent((double)x, (double)y, new MouseButtonInfo(0, 0)));
             DevShots.shot(client, "track_banner_expired_editor");
             AstraClient.LOGGER.info("DevShots: TRACK BANNER EXPIRED PASS \u2014 editor preview still visible and selectable");
         }
@@ -1673,12 +1673,12 @@ public final class DevShots {
             MediaBridge.devOverride(new NowPlaying(true, "Firefox.exe", "\u041e\u0447\u0435\u043d\u044c \u0434\u043b\u0438\u043d\u043d\u043e\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043f\u0435\u0441\u043d\u0438 ".repeat(10), "\u041e\u0447\u0435\u043d\u044c \u0434\u043b\u0438\u043d\u043d\u043e\u0435 \u0438\u043c\u044f \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044f ".repeat(10), "", true, 0L, System.currentTimeMillis(), 180000L, "", false, false, false));
         }
         if (tick == 60) {
-            if (banner.scaledWidth() > (float)(client.method_22683().method_4486() + 1)) {
+            if (banner.scaledWidth() > (float)(client.getWindow().getGuiScaledWidth() + 1)) {
                 throw new IllegalStateException("Long banner overflow regression");
             }
             AstraClient.LOGGER.info("DevShots: TRACK BANNER LONG TITLE PASS");
             MediaBridge.devOverride(null);
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -1719,7 +1719,7 @@ public final class DevShots {
         try {
             Method method = module.getClass().getDeclaredMethod("worldPlacement", Camera.class, Vec3.class, Quaternionf.class, Float.TYPE);
             method.setAccessible(true);
-            Object placement = method.invoke((Object)module, client.field_1773.method_19418(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
+            Object placement = method.invoke((Object)module, client.gameRenderer.getMainCamera(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
             if (placement == null) {
                 throw new IllegalStateException("World lyrics culled unexpectedly");
             }
@@ -1790,13 +1790,13 @@ public final class DevShots {
             DevShots.set(module, "\u0412 \u043c\u0438\u0440\u0435: \u0432\u044b\u0441\u043e\u0442\u0430", 0.0);
             DevShots.set(module, "\u0412 \u043c\u0438\u0440\u0435: \u0440\u0430\u0441\u0441\u0442\u043e\u044f\u043d\u0438\u0435", 4.0);
             MediaBridge.devOverride(new NowPlaying(true, "Astra test", "\u0420\u0435\u0433\u0440\u0435\u0441\u0441\u0438\u044f \u0442\u0435\u043a\u0441\u0442\u0430", "Astra", "", false, 1000L, System.currentTimeMillis(), 300000L, "", false, false, false));
-            lyricsOriginalPosition = client.field_1724.method_73189();
-            lyricsOriginalYaw = client.field_1724.method_36454();
-            lyricsOriginalPitch = client.field_1724.method_36455();
-            lyricsOriginalGameMode = client.field_1761.method_2920().method_15434();
-            lyricsOrigin = client.field_1724.method_73189().method_1031(0.0, 24.0, 0.0);
+            lyricsOriginalPosition = client.player.position();
+            lyricsOriginalYaw = client.player.getYRot();
+            lyricsOriginalPitch = client.player.getXRot();
+            lyricsOriginalGameMode = client.gameMode.getPlayerMode().getSerializedName();
+            lyricsOrigin = client.player.position().add(0.0, 24.0, 0.0);
             DevShots.devCommand(client, "gamemode spectator @p");
-            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.field_1352, DevShots.lyricsOrigin.field_1351, DevShots.lyricsOrigin.field_1350));
+            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.x, DevShots.lyricsOrigin.y, DevShots.lyricsOrigin.z));
         }
         if (tick == 12) {
             DevShots.injectDevLyrics(List.of(new Lyrics.Line(0L, "\u0421\u0438\u044f\u0439 \u0441\u0440\u0435\u0434\u0438 \u0437\u0432\u0451\u0437\u0434"), new Lyrics.Line(100000L, "\u041b\u0435\u043f\u0435\u0441\u0442\u043a\u0438 \u0442\u0430\u043d\u0446\u0443\u044e\u0442 \u043f\u043e\u0434 \u043c\u0443\u0437\u044b\u043a\u0443"), new Lyrics.Line(200000L, "\u0422\u0432\u043e\u0439 \u043c\u0438\u0440 \u2014 \u0442\u0432\u043e\u0439 \u0440\u0438\u0442\u043c")));
@@ -1807,16 +1807,16 @@ public final class DevShots {
                 throw new IllegalStateException("No pinned world text");
             }
             lyricsWorldScale = DevShots.actualWorldScale(module, client);
-            lyricsApparent = lyricsWorldScale / (float)lyricsPinned.method_1022(client.field_1773.method_19418().method_71156());
+            lyricsApparent = lyricsWorldScale / (float)lyricsPinned.distanceTo(client.gameRenderer.getMainCamera().position());
             DevShots.shot(client, "world_lyrics_near");
         }
         if (tick == 32) {
-            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.field_1352, DevShots.lyricsOrigin.field_1351, DevShots.lyricsOrigin.field_1350 - 8.0));
+            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.x, DevShots.lyricsOrigin.y, DevShots.lyricsOrigin.z - 8.0));
         }
         if (tick == 44) {
             Vec3 at = (Vec3)DevShots.lyricField(module, "worldAnchor");
             float actual = DevShots.actualWorldScale(module, client);
-            float apparent = actual / (float)at.method_1022(client.field_1773.method_19418().method_71156());
+            float apparent = actual / (float)at.distanceTo(client.gameRenderer.getMainCamera().position());
             if (!at.equals((Object)lyricsPinned) || Math.abs(actual - lyricsWorldScale) > 1.0E-6f || apparent >= lyricsApparent) {
                 throw new IllegalStateException("Walking away enlarged or moved pinned lyrics");
             }
@@ -1824,7 +1824,7 @@ public final class DevShots {
             DevShots.shot(client, "world_lyrics_far");
         }
         if (tick == 46) {
-            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.field_1352, DevShots.lyricsOrigin.field_1351, DevShots.lyricsOrigin.field_1350 - 22.0));
+            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.x, DevShots.lyricsOrigin.y, DevShots.lyricsOrigin.z - 22.0));
         }
         if (tick == 58) {
             if (!lyricsPinned.equals(DevShots.lyricField(module, "worldAnchor"))) {
@@ -1832,10 +1832,10 @@ public final class DevShots {
             }
             DevShots.actualWorldScale(module, client);
             AstraClient.LOGGER.info("DevShots: WORLD LYRICS PIN PASS \u2014 no 20-block re-anchor");
-            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.field_1352, DevShots.lyricsOrigin.field_1351, DevShots.lyricsOrigin.field_1350));
+            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.x, DevShots.lyricsOrigin.y, DevShots.lyricsOrigin.z));
         }
         if (tick == 67) {
-            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.field_1352 + 2.0, DevShots.lyricsOrigin.field_1351, DevShots.lyricsOrigin.field_1350));
+            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", DevShots.lyricsOrigin.x + 2.0, DevShots.lyricsOrigin.y, DevShots.lyricsOrigin.z));
         }
         if (tick == 70) {
             MediaBridge.devOverride(module.track().withPosition(100500L));
@@ -1909,13 +1909,13 @@ public final class DevShots {
         }
         if (tick == 240) {
             Vec3 at = (Vec3)DevShots.lyricField(module, "worldAnchor");
-            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", at.field_1352, DevShots.lyricsOrigin.field_1351, at.field_1350 - 0.75));
+            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f 0 0", at.x, DevShots.lyricsOrigin.y, at.z - 0.75));
         }
         if (tick == 250) {
             try {
                 Method method = module.getClass().getDeclaredMethod("worldPlacement", Camera.class, Vec3.class, Quaternionf.class, Float.TYPE);
                 method.setAccessible(true);
-                Object placement = method.invoke((Object)module, client.field_1773.method_19418(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
+                Object placement = method.invoke((Object)module, client.gameRenderer.getMainCamera(), DevShots.lyricField(module, "worldAnchor"), DevShots.lyricField(module, "pinnedRot"), (Float)DevShots.lyricField(module, "worldReferenceDistance"));
                 if (placement == null) {
                     throw new IllegalStateException("Near camera unexpectedly culled");
                 }
@@ -1941,8 +1941,8 @@ public final class DevShots {
         if (tick == 255) {
             MediaBridge.devOverride(null);
             DevShots.devCommand(client, "gamemode " + lyricsOriginalGameMode + " @p");
-            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f %.3f %.3f", DevShots.lyricsOriginalPosition.field_1352, DevShots.lyricsOriginalPosition.field_1351, DevShots.lyricsOriginalPosition.field_1350, Float.valueOf(lyricsOriginalYaw), Float.valueOf(lyricsOriginalPitch)));
-            client.method_1507(null);
+            DevShots.devCommand(client, String.format(Locale.ROOT, "tp @p %.3f %.3f %.3f %.3f %.3f", DevShots.lyricsOriginalPosition.x, DevShots.lyricsOriginalPosition.y, DevShots.lyricsOriginalPosition.z, Float.valueOf(lyricsOriginalYaw), Float.valueOf(lyricsOriginalPitch)));
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -2020,7 +2020,7 @@ public final class DevShots {
         }
         if (tick == 48) {
             MediaBridge.devOverride(null);
-            client.method_1507(null);
+            client.setScreen(null);
             phase = Phase.DONE;
             tick = 0;
         }
@@ -2033,9 +2033,9 @@ public final class DevShots {
                 ModuleManager.byId("builder_canvas").setEnabled(true);
                 DevShots.set(ModuleManager.byId("builder_canvas"), "\u041f\u043e\u0432\u0435\u0440\u0445 \u0431\u043b\u043e\u043a\u043e\u0432", true);
                 CanvasBoard.tick();
-                builderYaw = client.field_1724.method_36454();
-                builderPitch = client.field_1724.method_36455();
-                client.field_1724.method_36457(0.0f);
+                builderYaw = client.player.getYRot();
+                builderPitch = client.player.getXRot();
+                client.player.setXRot(0.0f);
                 for (Module module : ModuleManager.all()) {
                     if (!(module instanceof HudModule)) continue;
                     module.setEnabled(false);
@@ -2063,15 +2063,15 @@ public final class DevShots {
                 g.setFont(new Font("SansSerif", 1, 32));
                 g.drawString("ASTRA / BUILD REFERENCE", 160, 570);
                 g.dispose();
-                Path file = client.field_1697.toPath().resolve("builder-reference.png");
+                Path file = client.gameDirectory.toPath().resolve("builder-reference.png");
                 ImageIO.write((RenderedImage)img, "png", file.toFile());
                 builderTest = CanvasBoard.importImage(file);
                 DevShots.builderTest.name = "\u0424\u0430\u0441\u0430\u0434 \u2014 \u0441\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u0440\u0435\u0444\u0435\u0440\u0435\u043d\u0441";
-                Vec3 pos = client.field_1724.method_33571().method_1019(client.field_1724.method_5828(1.0f).method_1021(6.0));
-                DevShots.builderTest.x = pos.field_1352;
-                DevShots.builderTest.y = pos.field_1351;
-                DevShots.builderTest.z = pos.field_1350;
-                DevShots.builderTest.yaw = Mth.method_15393((float)(180.0f - client.field_1724.method_36454()));
+                Vec3 pos = client.player.getEyePosition().add(client.player.getViewVector(1.0f).scale(6.0));
+                DevShots.builderTest.x = pos.x;
+                DevShots.builderTest.y = pos.y;
+                DevShots.builderTest.z = pos.z;
+                DevShots.builderTest.yaw = Mth.wrapDegrees((float)(180.0f - client.player.getYRot()));
                 CanvasBoard.put(builderTest);
                 if (CanvasBoard.texture(builderTest) == null) {
                     throw new IllegalStateException("image decode failed");
@@ -2090,16 +2090,16 @@ public final class DevShots {
             if (tick == 70) {
                 DevShots.builderTest.opacity = 1.0;
                 CanvasBoard.put(builderTest);
-                client.method_1507((Screen)new CanvasScreen(null));
+                client.setScreen((Screen)new CanvasScreen(null));
             }
             if (tick == 100) {
                 DevShots.shot(client, "builder_editor");
             }
             if (tick == 110) {
                 CanvasBoard.delete(builderTest);
-                client.method_1507(null);
-                client.field_1724.method_36456(builderYaw);
-                client.field_1724.method_36457(builderPitch);
+                client.setScreen(null);
+                client.player.setYRot(builderYaw);
+                client.player.setXRot(builderPitch);
                 AstraClient.LOGGER.info("DevShots: BUILDER PASS \u2014 import, world texture, opacity, editor, delete");
                 phase = Phase.DONE;
                 tick = 0;
@@ -2107,7 +2107,7 @@ public final class DevShots {
         }
         catch (Exception e) {
             AstraClient.LOGGER.error("BUILDER FAIL", (Throwable)e);
-            client.method_1592();
+            client.stop();
         }
     }
 
@@ -2119,14 +2119,14 @@ public final class DevShots {
             if (tick == 1) {
                 ModuleManager.byId("astra_online").setEnabled(false);
                 editorSource = new TitleScreen();
-                client.method_1507(editorSource);
+                client.setScreen(editorSource);
             }
             if (tick == 12) {
                 if (NativeScreenLayouts.entries(editorSource).isEmpty()) {
                     throw new AssertionError((Object)"no native button baselines");
                 }
                 editorSnapshot = NativeScreenLayouts.snapshot(editorSource);
-                client.method_1507((Screen)new NativeLayoutEditor(editorSource));
+                client.setScreen((Screen)new NativeLayoutEditor(editorSource));
             }
             if (tick == 30) {
                 if (!NativeScreenLayouts.rects(editorSource).containsKey("@splash") || !NativeScreenLayouts.rects(editorSource).containsKey("@version")) {
@@ -2141,14 +2141,14 @@ public final class DevShots {
                 edit.scale = 110.0f;
                 edit.accent = "22D3EE";
                 NativeScreenLayouts.apply(editorSource);
-                if (entry.widget().method_46426() != Math.round((float)entry.base().x() + 0.05f * (float)DevShots.editorSource.field_22789)) {
+                if (entry.widget().getX() != Math.round((float)entry.base().x() + 0.05f * (float)DevShots.editorSource.width)) {
                     throw new AssertionError((Object)"native hitbox mismatch");
                 }
                 NativeScreenLayouts.restore(editorSource, editorSnapshot);
                 for (int i = 0; i < 6; ++i) {
-                    client.method_1507((Screen)new NativeLayoutEditor(editorSource));
-                    client.method_1507(editorSource);
-                    long launchers = Screens.getButtons((Screen)editorSource).stream().filter(w -> w.method_25369().getString().equals("\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u043e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u044f")).count();
+                    client.setScreen((Screen)new NativeLayoutEditor(editorSource));
+                    client.setScreen(editorSource);
+                    long launchers = Screens.getButtons((Screen)editorSource).stream().filter(w -> w.getMessage().getString().equals("\u0420\u0435\u0434\u0430\u043a\u0442\u043e\u0440 \u043e\u0444\u043e\u0440\u043c\u043b\u0435\u043d\u0438\u044f")).count();
                     if (launchers != 1L) {
                         throw new AssertionError((Object)("duplicate editor buttons: " + launchers));
                     }
@@ -2158,34 +2158,34 @@ public final class DevShots {
                 }
                 AstraClient.LOGGER.info("DevShots: REOPEN PASS \u2014 six editor round trips, one launcher");
                 editorSource = new PauseScreen(true);
-                client.method_1507(editorSource);
+                client.setScreen(editorSource);
             }
             if (tick == 38) {
-                client.method_1507((Screen)new NativeLayoutEditor(editorSource));
+                client.setScreen((Screen)new NativeLayoutEditor(editorSource));
             }
             if (tick == 58) {
                 DevShots.shot(client, "editor_pause");
             }
             if (tick == 62) {
                 editorSource = new JoinMultiplayerScreen((Screen)new TitleScreen());
-                client.method_1507(editorSource);
+                client.setScreen(editorSource);
             }
             if (tick == 66) {
                 AtomicInteger count = new AtomicInteger();
-                button = Button.method_46430((Component)Component.method_43470((String)"Click regression probe"), b -> count.incrementAndGet()).method_46434(5, 5, 80, 20).method_46431();
+                button = Button.builder((Component)Component.literal((String)"Click regression probe"), b -> count.incrementAndGet()).bounds(5, 5, 80, 20).build();
                 String id = "regression-probe";
                 NativeScreenLayouts.entries(editorSource).add(new NativeScreenLayouts.Entry(id, (AbstractWidget)button, new NativeScreenLayouts.Base(5, 5, 80, 20, true)));
                 NativeScreenLayouts.Item o = NativeScreenLayouts.item(editorSource, id);
                 o.dx = 0.32f;
                 o.dy = 0.3f;
                 NativeScreenLayouts.apply(editorSource);
-                boolean allowed = ((ScreenMouseEvents.AllowMouseClick)ScreenMouseEvents.allowMouseClick((Screen)editorSource).invoker()).allowMouseClick(editorSource, new MouseButtonEvent((double)(button.method_46426() + 5), (double)(button.method_46427() + 5), new MouseButtonInfo(0, 0)));
+                boolean allowed = ((ScreenMouseEvents.AllowMouseClick)ScreenMouseEvents.allowMouseClick((Screen)editorSource).invoker()).allowMouseClick(editorSource, new MouseButtonEvent((double)(button.getX() + 5), (double)(button.getY() + 5), new MouseButtonInfo(0, 0)));
                 if (allowed || count.get() != 1) {
                     throw new AssertionError((Object)("moved button did not get exactly one click: " + count.get()));
                 }
                 o.dy = 1.0f;
                 NativeScreenLayouts.apply(editorSource);
-                if (button.method_46427() + button.method_25364() > DevShots.editorSource.field_22790) {
+                if (button.getY() + button.getHeight() > DevShots.editorSource.height) {
                     throw new AssertionError((Object)"button escaped preview");
                 }
                 NativeScreenLayouts.entries(editorSource).removeIf(e -> e.id().equals(id));
@@ -2193,22 +2193,22 @@ public final class DevShots {
                 AstraClient.LOGGER.info("DevShots: CLICK PASS \u2014 moved button gets exactly one action, bounds clamped");
             }
             if (tick == 68) {
-                client.method_1507((Screen)new NativeLayoutEditor(editorSource));
+                client.setScreen((Screen)new NativeLayoutEditor(editorSource));
             }
             if (tick == 88) {
                 DevShots.shot(client, "editor_multiplayer");
             }
             if (tick == 92) {
-                client.method_1507((Screen)new DecorEditorScreen(null));
+                client.setScreen((Screen)new DecorEditorScreen(null));
             }
-            if (tick == 110 && (button = client.field_1755) instanceof DecorEditorScreen) {
+            if (tick == 110 && (button = client.screen) instanceof DecorEditorScreen) {
                 editor = (DecorEditorScreen)button;
                 previewField = DecorEditorScreen.class.getDeclaredField("preview");
                 ((Field)previewField).setAccessible(true);
                 ClickGuiScreen preview = (ClickGuiScreen)((Field)previewField).get(editor);
                 preview.setCategory(Category.THEMES);
             }
-            if (tick == 120 && (previewField = client.field_1755) instanceof DecorEditorScreen) {
+            if (tick == 120 && (previewField = client.screen) instanceof DecorEditorScreen) {
                 editor = (DecorEditorScreen)previewField;
                 previewField = DecorEditorScreen.class.getDeclaredField("preview");
                 ((Field)previewField).setAccessible(true);
@@ -2247,17 +2247,17 @@ public final class DevShots {
                     throw new AssertionError((Object)"sounds category missing");
                 }
                 AstraClient.LOGGER.info("DevShots: CARDS PASS \u2014 collapsed by default, RMB expand, reset, separate sounds");
-                client.method_1507((Screen)new CanvasScreen(null));
+                client.setScreen((Screen)new CanvasScreen(null));
             }
             if (tick == 164) {
                 DevShots.shot(client, "editor_canvas_empty");
             }
             if (tick == 168) {
-                client.method_1507((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
+                client.setScreen((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
 
                     @Override
-                    public void method_25394(GuiGraphics ctx, int mx, int my, float delta) {
-                        super.method_25394(ctx, this.field_22789 / 2, this.field_22790 / 2 - 55, delta);
+                    public void render(GuiGraphics ctx, int mx, int my, float delta) {
+                        super.render(ctx, this.width / 2, this.height / 2 - 55, delta);
                     }
                 });
             }
@@ -2265,11 +2265,11 @@ public final class DevShots {
                 DevShots.shot(client, "wheel_love");
             }
             if (tick == 188) {
-                client.method_1507((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
+                client.setScreen((Screen)new EmoteWheelScreen(ModuleManager.get(EmoteCosmetic.class), -1){
 
                     @Override
-                    public void method_25394(GuiGraphics ctx, int mx, int my, float delta) {
-                        super.method_25394(ctx, this.field_22789 / 2 + 32, this.field_22790 / 2 + 45, delta);
+                    public void render(GuiGraphics ctx, int mx, int my, float delta) {
+                        super.render(ctx, this.width / 2 + 32, this.height / 2 + 45, delta);
                     }
                 });
             }
@@ -2277,7 +2277,7 @@ public final class DevShots {
                 DevShots.shot(client, "wheel_music");
             }
             if (tick == 208) {
-                client.method_1507(null);
+                client.setScreen(null);
                 AstraClient.LOGGER.info("DevShots: EDITORS PASS \u2014 native extras, repeat open, moved click, collapse, sounds, wheel, HUD-style inspector");
                 phase = Phase.DONE;
                 tick = 0;
@@ -2285,7 +2285,7 @@ public final class DevShots {
         }
         catch (Throwable e2) {
             AstraClient.LOGGER.error("EDITORS FAIL", e2);
-            client.method_1592();
+            client.stop();
         }
     }
 
@@ -2297,53 +2297,53 @@ public final class DevShots {
         ++tick;
         switch (phase.ordinal()) {
             case 0: {
-                if (ONLY.equals("menus") && client.method_18506() == null && titleTicks < 100 && (client.field_1755 instanceof TitleScreen || client.field_1755 instanceof AstraModsScreen)) {
+                if (ONLY.equals("menus") && client.getOverlay() == null && titleTicks < 100 && (client.screen instanceof TitleScreen || client.screen instanceof AstraModsScreen)) {
                     if (++titleTicks == 40) {
                         DevShots.shot(client, "menus_title");
                     }
                     if (titleTicks == 42) {
-                        client.method_1507((Screen)new AstraModsScreen(client.field_1755));
+                        client.setScreen((Screen)new AstraModsScreen(client.screen));
                     }
                     if (titleTicks == 75) {
                         DevShots.shot(client, "menus_mods");
                     }
                     if (titleTicks == 78) {
-                        client.method_1507((Screen)new TitleScreen());
+                        client.setScreen((Screen)new TitleScreen());
                     }
                     if (titleTicks < 100) {
                         tick = 0;
                         return;
                     }
                 }
-                if (!(client.field_1755 instanceof TitleScreen) || client.method_18506() != null || tick < 40) {
+                if (!(client.screen instanceof TitleScreen) || client.getOverlay() != null || tick < 40) {
                     return;
                 }
-                File saves = new File(client.field_1697, "saves");
+                File saves = new File(client.gameDirectory, "saves");
                 File[] worlds = saves.listFiles(File::isDirectory);
                 if (worlds != null && worlds.length > 0) {
                     AstraClient.LOGGER.info("DevShots: \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043c\u0438\u0440\u0430 {}", (Object)worlds[0].getName());
-                    client.method_41735().method_57784(worlds[0].getName(), () -> client.method_1507((Screen)new TitleScreen()));
+                    client.createWorldOpenFlows().openWorld(worlds[0].getName(), () -> client.setScreen((Screen)new TitleScreen()));
                     phase = Phase.LOADING;
                 } else {
-                    Screen back = client.field_1755;
-                    CreateWorldScreen.method_31130((Minecraft)client, () -> client.method_1507(back));
+                    Screen back = client.screen;
+                    CreateWorldScreen.openFresh((Minecraft)client, () -> client.setScreen(back));
                     phase = Phase.CREATE;
                 }
                 tick = 0;
                 return;
             }
             case 1: {
-                Screen worlds = client.field_1755;
+                Screen worlds = client.screen;
                 if (!(worlds instanceof CreateWorldScreen)) return;
                 CreateWorldScreen screen = (CreateWorldScreen)worlds;
                 if (tick < 20) {
                     return;
                 }
-                for (GuiEventListener e : screen.method_25396()) {
+                for (GuiEventListener e : screen.children()) {
                     Button b;
-                    if (!(e instanceof Button) || !(b = (Button)e).method_25369().getString().equals(Component.method_43471((String)"selectWorld.create").getString())) continue;
+                    if (!(e instanceof Button) || !(b = (Button)e).getMessage().getString().equals(Component.translatable((String)"selectWorld.create").getString())) continue;
                     AstraClient.LOGGER.info("DevShots: \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u0442\u0435\u0441\u0442\u043e\u0432\u043e\u0433\u043e \u043c\u0438\u0440\u0430");
-                    b.method_25306((InputWithModifiers)new KeyEvent(257, 0, 0));
+                    b.onPress((InputWithModifiers)new KeyEvent(257, 0, 0));
                     phase = Phase.LOADING;
                     tick = 0;
                     return;
@@ -2351,7 +2351,7 @@ public final class DevShots {
                 return;
             }
             case 2: {
-                if (client.field_1724 == null || client.field_1687 == null || client.field_1755 != null) {
+                if (client.player == null || client.level == null || client.screen != null) {
                     tick = 0;
                     return;
                 }
@@ -2516,19 +2516,19 @@ public final class DevShots {
                     DevShots.shot(client, "ingame_hud");
                 }
                 if (tick == 204) {
-                    client.field_1690.method_31043(CameraType.field_26665);
+                    client.options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 }
                 if (tick == 240) {
                     DevShots.shot(client, "ingame_cosmetics");
                 }
                 if (tick == 244) {
-                    client.field_1690.method_31043(CameraType.field_26666);
+                    client.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
                 }
                 if (tick == 270) {
                     DevShots.shot(client, "ingame_cosmetics_front");
                 }
                 if (tick == 274) {
-                    client.field_1690.method_31043(CameraType.field_26664);
+                    client.options.setCameraType(CameraType.FIRST_PERSON);
                 }
                 if (tick == 276) {
                     DevShots.devCommand(client, "summon minecraft:zombie ^ ^ ^3 {NoAI:1b,PersistenceRequired:1b,Silent:1b,ArmorItems:[{},{},{id:\"minecraft:diamond_chestplate\",count:1,components:{\"minecraft:enchantments\":{levels:{\"minecraft:protection\":1}}}},{}]}");
@@ -2543,17 +2543,17 @@ public final class DevShots {
                     DevShots.shot(client, "target_fx");
                 }
                 if (tick == 336) {
-                    client.field_1690.method_31043(CameraType.field_26665);
+                    client.options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 }
                 if (tick == 352) {
                     DevShots.shot(client, "target_fx_third");
                 }
                 if (tick == 354) {
-                    client.field_1690.method_31043(CameraType.field_26664);
+                    client.options.setCameraType(CameraType.FIRST_PERSON);
                 }
                 if (tick <= 358) return;
                 gui = new ClickGuiScreen(null);
-                client.method_1507((Screen)gui);
+                client.setScreen((Screen)gui);
                 phase = Phase.MENU;
                 step = 0;
                 tick = 0;
@@ -2614,7 +2614,7 @@ public final class DevShots {
             case 15: {
                 int i;
                 ChatLayoutHud layout = ChatLayoutHud.get();
-                ChatComponent hud = client.field_1705.method_1743();
+                ChatComponent hud = client.gui.getChat();
                 ChatHudAccessor access = (ChatHudAccessor)hud;
                 String[] styles = new String[]{"\u041d\u0435\u043e\u043d", "\u0421\u0442\u0435\u043a\u043b\u043e", "\u041f\u0443\u0437\u044b\u0440\u0438", "\u0413\u0440\u0430\u0434\u0438\u0435\u043d\u0442", "\u041c\u0438\u043d\u0438\u043c\u0430\u043b", "\u041a\u043b\u0430\u0441\u0441\u0438\u043a\u0430"};
                 if (tick == 1) {
@@ -2622,16 +2622,16 @@ public final class DevShots {
                     layout.setEnabled(true);
                     layout.resetPosition();
                     layout.scale.set(100.0);
-                    client.field_1690.method_42554().method_41748((Object)1.0);
-                    client.field_1690.method_42556().method_41748((Object)0.65);
-                    client.field_1690.method_41803().method_41748((Object)0.65);
-                    client.field_1690.method_42546().method_41748((Object)0.0);
-                    client.field_1690.method_42550().method_41748((Object)0.6);
-                    hud.method_1808(false);
+                    client.options.chatScale().set((Object)1.0);
+                    client.options.chatWidth().set((Object)0.65);
+                    client.options.chatHeightFocused().set((Object)0.65);
+                    client.options.chatLineSpacing().set((Object)0.0);
+                    client.options.textBackgroundOpacity().set((Object)0.6);
+                    hud.clearMessages(false);
                     for (i = 0; i < 80; ++i) {
-                        hud.method_1812((Component)Component.method_43470((String)("\u00a7b[G] \u00a7fAstra_" + i + " \u00a77\u25b8 \u00a7f\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u0441\u0442\u043e\u0440\u0438\u0438 \u2116" + i)));
+                        hud.addMessage((Component)Component.literal((String)("\u00a7b[G] \u00a7fAstra_" + i + " \u00a77\u25b8 \u00a7f\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u0438\u0441\u0442\u043e\u0440\u0438\u0438 \u2116" + i)));
                     }
-                    client.method_1507((Screen)new ChatScreen("", false));
+                    client.setScreen((Screen)new ChatScreen("", false));
                 }
                 for (i = 0; i < styles.length; ++i) {
                     if (tick == 5 + i * 20) {
@@ -2643,40 +2643,40 @@ public final class DevShots {
                 if (tick == 127) {
                     layout.setPos(0.6f, 0.43f);
                     layout.scale.set(120.0);
-                    client.field_1690.method_42554().method_41748((Object)0.7);
+                    client.options.chatScale().set((Object)0.7);
                     DevShots.set(layout, "\u0421\u0442\u0438\u043b\u044c \u0447\u0430\u0442\u0430", "\u0421\u0442\u0435\u043a\u043b\u043e");
                 }
                 if (tick == 135) {
                     double scale = ((ChatHudAccessor)hud).astra$chatScale();
-                    double sh = client.method_22683().method_4502();
-                    double sw = client.method_22683().method_4486();
+                    double sh = client.getWindow().getGuiScaledHeight();
+                    double sw = client.getWindow().getGuiScaledWidth();
                     float[] tr = ChatLayoutHud.transform((float)sw, (float)sh);
-                    double h = hud.method_1813() * access.astra$lineHeight();
+                    double h = hud.getLinesPerPage() * access.astra$lineHeight();
                     double bottom = Math.floor((sh - 40.0) / scale);
                     double vx = (Math.ceil((double)((ChatHudAccessor)hud).astra$width() / scale) + 10.0) * scale;
                     double vy = (bottom - 2.0) * scale;
                     double x = (double)tr[0] + vx * (double)tr[2];
                     double y = (double)tr[1] + (vy - (sh - 40.0)) * (double)tr[2];
-                    boolean clicked = client.field_1755.method_25402(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
+                    boolean clicked = client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false);
                     double topY = (double)tr[1] + ((bottom - h - 50.0) * scale - (sh - 40.0)) * (double)tr[2];
-                    boolean dragged = client.field_1755.method_25403(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)), 120.0, topY - y);
-                    int max = access.astra$visibleMessages().size() - hud.method_1813();
+                    boolean dragged = client.screen.mouseDragged(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)), 120.0, topY - y);
+                    int max = access.astra$visibleMessages().size() - hud.getLinesPerPage();
                     if (!clicked || !dragged || access.astra$scrolledLines() != max) {
                         throw new IllegalStateException("Scrollbar top regression: " + access.astra$scrolledLines() + " / " + max);
                     }
-                    boolean released = client.field_1755.method_25406(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)));
-                    client.field_1755.method_25403(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), 0.0, 0.0);
+                    boolean released = client.screen.mouseReleased(new MouseButtonEvent(x + 120.0, topY, new MouseButtonInfo(0, 0)));
+                    client.screen.mouseDragged(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), 0.0, 0.0);
                     if (!released || access.astra$scrolledLines() != max) {
                         throw new IllegalStateException("Scrollbar release regression");
                     }
-                    if (!client.field_1755.method_25402(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false) || access.astra$scrolledLines() != 0) {
+                    if (!client.screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false) || access.astra$scrolledLines() != 0) {
                         throw new IllegalStateException("Scrollbar track regression");
                     }
-                    client.field_1755.method_25406(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)));
-                    if (client.field_1755.method_25402(new MouseButtonEvent(x - 50.0, y, new MouseButtonInfo(0, 0)), false)) {
+                    client.screen.mouseReleased(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)));
+                    if (client.screen.mouseClicked(new MouseButtonEvent(x - 50.0, y, new MouseButtonInfo(0, 0)), false)) {
                         AstraClient.LOGGER.info("DevShots: normal chat click handled by vanilla");
                     }
-                    hud.method_1802(30);
+                    hud.scrollChat(30);
                     AstraClient.LOGGER.info("DevShots: CHAT SCROLLBAR PASS \u2014 transformed click, drag outside, endpoints, release, track");
                 }
                 if (tick == 145) {
@@ -2684,13 +2684,13 @@ public final class DevShots {
                 }
                 if (tick != 150) return;
                 ChatScrollbar small = new ChatScrollbar();
-                hud.method_1808(false);
-                hud.method_1812((Component)Component.method_43470((String)"\u041a\u043e\u0440\u043e\u0442\u043a\u0430\u044f \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u2014 \u0431\u0435\u0437 \u043f\u043e\u043b\u043e\u0441\u044b \u043f\u0440\u043e\u043a\u0440\u0443\u0442\u043a\u0438"));
+                hud.clearMessages(false);
+                hud.addMessage((Component)Component.literal((String)"\u041a\u043e\u0440\u043e\u0442\u043a\u0430\u044f \u0438\u0441\u0442\u043e\u0440\u0438\u044f \u2014 \u0431\u0435\u0437 \u043f\u043e\u043b\u043e\u0441\u044b \u043f\u0440\u043e\u043a\u0440\u0443\u0442\u043a\u0438"));
                 if (small.click(1.0, 1.0)) {
                     throw new IllegalStateException("Empty scrollbar regression");
                 }
                 AstraClient.LOGGER.info("DevShots: CHAT SHORT HISTORY PASS");
-                client.method_1507(null);
+                client.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
@@ -2732,25 +2732,25 @@ public final class DevShots {
                 if (tick == 1) {
                     chatLayout.setPos(0.62f, 0.45f);
                     chatLayout.scale.set(120.0);
-                    ChatComponent hud = client.field_1705.method_1743();
+                    ChatComponent hud = client.gui.getChat();
                     for (int i = 0; i < 6; ++i) {
-                        hud.method_1812((Component)Component.method_43470((String)("\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 " + i + " \u2014 \u0447\u0430\u0442 \u0441\u0434\u0432\u0438\u043d\u0443\u0442 \u0438 \u0443\u0432\u0435\u043b\u0438\u0447\u0435\u043d")));
+                        hud.addMessage((Component)Component.literal((String)("\u0421\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 " + i + " \u2014 \u0447\u0430\u0442 \u0441\u0434\u0432\u0438\u043d\u0443\u0442 \u0438 \u0443\u0432\u0435\u043b\u0438\u0447\u0435\u043d")));
                     }
                 }
                 if (tick == 5) {
-                    client.method_1507((Screen)new ChatScreen("", false));
+                    client.setScreen((Screen)new ChatScreen("", false));
                 }
                 if (tick == 20) {
                     DevShots.shot(client, "layout_chat");
                 }
                 if (tick == 22) {
-                    float sw = client.method_22683().method_4486();
-                    float sh = client.method_22683().method_4502();
+                    float sw = client.getWindow().getGuiScaledWidth();
+                    float sh = client.getWindow().getGuiScaledHeight();
                     float x = chatLayout.getX(sw) + 20.0f;
                     float y = chatLayout.getY(sh) + chatLayout.scaledHeight() - 6.0f;
                     boolean ok = ChatPatches.copyAt(x, y);
-                    AstraClient.LOGGER.info("DevShots: \u041f\u041a\u041c \u043f\u043e \u0441\u0434\u0432\u0438\u043d\u0443\u0442\u043e\u043c\u0443 \u0447\u0430\u0442\u0443 {} \u2192 \u00ab{}\u00bb", (Object)ok, (Object)client.field_1774.method_1460());
-                    client.method_1507((Screen)new HudEditorScreen(null));
+                    AstraClient.LOGGER.info("DevShots: \u041f\u041a\u041c \u043f\u043e \u0441\u0434\u0432\u0438\u043d\u0443\u0442\u043e\u043c\u0443 \u0447\u0430\u0442\u0443 {} \u2192 \u00ab{}\u00bb", (Object)ok, (Object)client.keyboardHandler.getClipboard());
+                    client.setScreen((Screen)new HudEditorScreen(null));
                 }
                 if (tick == 45) {
                     DevShots.shot(client, "layout_editor");
@@ -2758,30 +2758,30 @@ public final class DevShots {
                 if (tick != 47) return;
                 chatLayout.resetPosition();
                 chatLayout.scale.set(100.0);
-                client.method_1507(null);
+                client.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
             }
             case 14: {
-                ChatComponent hud = client.field_1705.method_1743();
+                ChatComponent hud = client.gui.getChat();
                 if (tick == 1) {
-                    hud.method_1812((Component)Component.method_43470((String)"\u00a76[G] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fStrawBag7774 \u00a76\u25b8 \u00a7f\u043a\u0442\u043e \u0422\u0438\u043c?"));
+                    hud.addMessage((Component)Component.literal((String)"\u00a76[G] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fStrawBag7774 \u00a76\u25b8 \u00a7f\u043a\u0442\u043e \u0422\u0438\u043c?"));
                     for (int i = 0; i < 3; ++i) {
-                        hud.method_1812((Component)Component.method_43470((String)"\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fMinor_GG \u00a76\u25b8 \u00a7f\u0434\u0430\u0439 \u0441\u0435\u0442"));
+                        hud.addMessage((Component)Component.literal((String)"\u00a7e[Spy] \u00a77[\u0418\u0433\u0440\u043e\u043a] \u00a7fMinor_GG \u00a76\u25b8 \u00a7f\u0434\u0430\u0439 \u0441\u0435\u0442"));
                     }
-                    hud.method_1812((Component)Component.method_43470((String)"\u00a7a[+] \u00a7fDima_070100 \u00a77/ahead"));
+                    hud.addMessage((Component)Component.literal((String)"\u00a7a[+] \u00a7fDima_070100 \u00a77/ahead"));
                 }
                 if (tick == 5) {
-                    client.method_1507((Screen)new ChatScreen("", false));
+                    client.setScreen((Screen)new ChatScreen("", false));
                 }
                 if (tick == 20) {
                     DevShots.shot(client, "chat_patches");
                 }
                 if (tick == 22) {
-                    float y = client.method_22683().method_4502() - 40 - 4;
+                    float y = client.getWindow().getGuiScaledHeight() - 40 - 4;
                     boolean ok = ChatPatches.copyAt(20.0, y);
-                    AstraClient.LOGGER.info("DevShots: \u041f\u041a\u041c-\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 {} \u2192 \u00ab{}\u00bb", (Object)ok, (Object)client.field_1774.method_1460());
+                    AstraClient.LOGGER.info("DevShots: \u041f\u041a\u041c-\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 {} \u2192 \u00ab{}\u00bb", (Object)ok, (Object)client.keyboardHandler.getClipboard());
                     ChatPatches.save();
                     try {
                         String json = Files.readString(ConfigManager.root().resolve("chat_history.json"));
@@ -2792,32 +2792,32 @@ public final class DevShots {
                     }
                 }
                 if (tick != 24) return;
-                client.method_1507(null);
+                client.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
             }
             case 13: {
                 if (tick == 1) {
-                    client.method_1507((Screen)new ChatScreen("/login mySecret123", false));
+                    client.setScreen((Screen)new ChatScreen("/login mySecret123", false));
                 }
                 if (tick == 15) {
                     DevShots.shot(client, "stream_login");
                 }
                 if (tick == 17) {
-                    client.method_1507((Screen)new ChatScreen("/reg pass123 pass123", false));
+                    client.setScreen((Screen)new ChatScreen("/reg pass123 pass123", false));
                 }
                 if (tick == 30) {
                     DevShots.shot(client, "stream_reg");
                 }
                 if (tick == 32) {
-                    client.method_1507((Screen)new ChatScreen("/l qwerty", false));
+                    client.setScreen((Screen)new ChatScreen("/l qwerty", false));
                 }
                 if (tick == 45) {
                     DevShots.shot(client, "stream_l");
                 }
                 if (tick != 47) return;
-                client.method_1507(null);
+                client.setScreen(null);
                 phase = Phase.DONE;
                 tick = 0;
                 return;
@@ -2879,12 +2879,12 @@ public final class DevShots {
             case 30: {
                 Screen screen;
                 if (tick == 1) {
-                    client.method_1507((Screen)new HudEditorScreen(null));
+                    client.setScreen((Screen)new HudEditorScreen(null));
                 }
                 if (tick == 30) {
                     DevShots.shot(client, "hud_editor");
                 }
-                if (tick == 32 && (screen = client.field_1755) instanceof HudEditorScreen) {
+                if (tick == 32 && (screen = client.screen) instanceof HudEditorScreen) {
                     HudEditorScreen editor = (HudEditorScreen)screen;
                     editor.select(ModuleManager.get(MinimapHud.class));
                 }
@@ -2899,7 +2899,7 @@ public final class DevShots {
             case 31: {
                 if (tick != 5) return;
                 AstraClient.LOGGER.info("DevShots: \u0433\u043e\u0442\u043e\u0432\u043e");
-                client.method_1592();
+                client.stop();
             }
         }
     }

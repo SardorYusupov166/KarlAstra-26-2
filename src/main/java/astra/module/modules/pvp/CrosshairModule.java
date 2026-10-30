@@ -52,34 +52,34 @@ extends Module {
     }
 
     public void renderCrosshair(GuiGraphics ctx, DeltaTracker tick) {
-        if (CrosshairModule.mc.field_1724 == null || CrosshairModule.mc.field_1690.field_1842) {
+        if (CrosshairModule.mc.player == null || CrosshairModule.mc.options.hideGui) {
             return;
         }
-        if (!CrosshairModule.mc.field_1690.method_31044().method_31034() && !((Boolean)this.thirdPerson.get()).booleanValue()) {
+        if (!CrosshairModule.mc.options.getCameraType().isFirstPerson() && !((Boolean)this.thirdPerson.get()).booleanValue()) {
             return;
         }
-        if (CrosshairModule.mc.field_1724.method_7325() && CrosshairModule.mc.field_1692 == null) {
+        if (CrosshairModule.mc.player.isSpectator() && CrosshairModule.mc.crosshairPickEntity == null) {
             return;
         }
         float dt = FrameStats.delta();
         float target = 0.0f;
         if (((Boolean)this.dynamic.get()).booleanValue()) {
-            double speed = CrosshairModule.mc.field_1724.method_18798().method_37267();
+            double speed = CrosshairModule.mc.player.getDeltaMovement().horizontalDistance();
             target = (float)Math.min(1.0, speed * 6.0);
-            if (CrosshairModule.mc.field_1724.field_6252) {
+            if (CrosshairModule.mc.player.swinging) {
                 target = Math.max(target, 0.8f);
             }
         }
         float sp = this.spread.update(target, dt);
-        boolean entity = CrosshairModule.mc.field_1765 != null && CrosshairModule.mc.field_1765.method_17783() == HitResult.Type.field_1331;
+        boolean entity = CrosshairModule.mc.hitResult != null && CrosshairModule.mc.hitResult.getType() == HitResult.Type.ENTITY;
         float tg = this.onTarget.update(entity && (Boolean)this.targetColor.get() != false ? 1.0f : 0.0f, dt);
         if (((Boolean)this.spin.get()).booleanValue()) {
             this.rotation = (this.rotation + dt * 90.0f) % 360.0f;
         }
-        float cx = (float)ctx.method_51421() / 2.0f;
-        float cy = (float)ctx.method_51443() / 2.0f;
+        float cx = (float)ctx.guiWidth() / 2.0f;
+        float cy = (float)ctx.guiHeight() / 2.0f;
         int col = ColorUtil.lerp(this.color.getColor(), -770210, tg);
-        float cd = (Boolean)this.cooldown.get() != false ? CrosshairModule.mc.field_1724.method_7261(0.0f) : 1.0f;
+        float cd = (Boolean)this.cooldown.get() != false ? CrosshairModule.mc.player.getAttackStrengthScale(0.0f) : 1.0f;
         this.draw(ctx, cx, cy, 1.0f, sp, col, (Boolean)this.spin.get() != false ? this.rotation : 0.0f, cd);
     }
 
@@ -88,7 +88,7 @@ extends Module {
         float th = this.thickness.getFloat() * k;
         float g = (this.gap.getFloat() + sp * 3.0f) * k;
         float len = 5.0f * s;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(cx, cy);
         if (rot != 0.0f) {

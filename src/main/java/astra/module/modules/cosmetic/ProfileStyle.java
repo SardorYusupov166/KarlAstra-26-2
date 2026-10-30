@@ -55,12 +55,12 @@ extends Module {
         if (((String)this.avatar.get()).startsWith("\u0410\u043d\u0438\u043c\u0435")) {
             int index = ((String)this.avatar.get()).length() > 6 ? ((String)this.avatar.get()).charAt(6) - 49 : 0;
             ArtManager.drawAvatar(ctx, index, x + r, y + r, size * 0.42f);
-        } else if (this.avatar.is("\u041b\u0438\u0446\u043e \u0441\u043a\u0438\u043d\u0430") && ProfileStyle.mc.field_1724 != null) {
+        } else if (this.avatar.is("\u041b\u0438\u0446\u043e \u0441\u043a\u0438\u043d\u0430") && ProfileStyle.mc.player != null) {
             Render2D.roundRect(ctx, ix - 1.0f, iy - 1.0f, inner + 2.0f, inner + 2.0f, 3.0f, t.bg());
-            PlayerFaceRenderer.method_52722((GuiGraphics)ctx, (PlayerSkin)ProfileStyle.mc.field_1724.method_52814(), (int)Math.round(ix), (int)Math.round(iy), (int)Math.round(inner));
+            PlayerFaceRenderer.draw((GuiGraphics)ctx, (PlayerSkin)ProfileStyle.mc.player.getSkin(), (int)Math.round(ix), (int)Math.round(iy), (int)Math.round(inner));
         } else {
             Render2D.circle(ctx, x + r, y + r, size * 0.4f, t.bg2());
-            String name = mc.method_1548().method_1676();
+            String name = mc.getUser().getName();
             Fonts.drawCentered(ctx, name.isEmpty() ? "A" : name.substring(0, 1).toUpperCase(), x + r, y + r - size * 0.17f, size * 0.36f, t.text(), true);
         }
         switch (f) {
@@ -112,7 +112,7 @@ extends Module {
             @Override
             public void render(UiContext ui, float x, float y, float w, float h) {
                 ProfileStyle.this.drawAvatar(ui.ctx, ui.theme, x + 4.0f, y + 2.0f, 40.0f);
-                Fonts.draw(ui.ctx, mc.method_1548().method_1676(), x + 52.0f, y + 9.0f, 8.5f, ui.theme.text(), true);
+                Fonts.draw(ui.ctx, mc.getUser().getName(), x + 52.0f, y + 9.0f, 8.5f, ui.theme.text(), true);
                 String tg = ProfileStyle.this.tag();
                 if (!tg.isEmpty()) {
                     float tw = Fonts.width(tg, 6.5f, true) + 10.0f;

@@ -14,8 +14,8 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 
 public record TintedVertexConsumers(MultiBufferSource delegate, int tint) implements MultiBufferSource
 {
-    public VertexConsumer method_73477(RenderType layer) {
-        return new Tinted(this.delegate.method_73477(layer), this.tint);
+    public VertexConsumer getBuffer(RenderType layer) {
+        return new Tinted(this.delegate.getBuffer(layer), this.tint);
     }
 
     private record Tinted(VertexConsumer delegate, int tint) implements VertexConsumer
@@ -28,49 +28,49 @@ public record TintedVertexConsumers(MultiBufferSource delegate, int tint) implem
             return a << 24 | r << 16 | g << 8 | b;
         }
 
-        public VertexConsumer method_22912(float x, float y, float z) {
-            this.delegate.method_22912(x, y, z);
+        public VertexConsumer addVertex(float x, float y, float z) {
+            this.delegate.addVertex(x, y, z);
             return this;
         }
 
-        public VertexConsumer method_1336(int red, int green, int blue, int alpha) {
+        public VertexConsumer setColor(int red, int green, int blue, int alpha) {
             int c = this.mul(alpha << 24 | red << 16 | green << 8 | blue);
-            this.delegate.method_1336(c >> 16 & 0xFF, c >> 8 & 0xFF, c & 0xFF, c >>> 24);
+            this.delegate.setColor(c >> 16 & 0xFF, c >> 8 & 0xFF, c & 0xFF, c >>> 24);
             return this;
         }
 
-        public VertexConsumer method_39415(int argb) {
-            this.delegate.method_39415(this.mul(argb));
+        public VertexConsumer setColor(int argb) {
+            this.delegate.setColor(this.mul(argb));
             return this;
         }
 
-        public VertexConsumer method_75298(float width) {
-            this.delegate.method_75298(width);
+        public VertexConsumer setLineWidth(float width) {
+            this.delegate.setLineWidth(width);
             return this;
         }
 
-        public VertexConsumer method_22913(float u, float v) {
-            this.delegate.method_22913(u, v);
+        public VertexConsumer setUv(float u, float v) {
+            this.delegate.setUv(u, v);
             return this;
         }
 
-        public VertexConsumer method_60796(int u, int v) {
-            this.delegate.method_60796(u, v);
+        public VertexConsumer setUv1(int u, int v) {
+            this.delegate.setUv1(u, v);
             return this;
         }
 
-        public VertexConsumer method_22921(int u, int v) {
-            this.delegate.method_22921(u, v);
+        public VertexConsumer setUv2(int u, int v) {
+            this.delegate.setUv2(u, v);
             return this;
         }
 
-        public VertexConsumer method_22914(float x, float y, float z) {
-            this.delegate.method_22914(x, y, z);
+        public VertexConsumer setNormal(float x, float y, float z) {
+            this.delegate.setNormal(x, y, z);
             return this;
         }
 
-        public void method_23919(float x, float y, float z, int color, float u, float v, int overlay, int light, float nx, float ny, float nz) {
-            this.delegate.method_23919(x, y, z, this.mul(color), u, v, overlay, light, nx, ny, nz);
+        public void addVertex(float x, float y, float z, int color, float u, float v, int overlay, int light, float nx, float ny, float nz) {
+            this.delegate.addVertex(x, y, z, this.mul(color), u, v, overlay, light, nx, ny, nz);
         }
     }
 }

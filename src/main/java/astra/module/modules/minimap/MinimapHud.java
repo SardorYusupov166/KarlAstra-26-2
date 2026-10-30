@@ -62,7 +62,7 @@ import org.joml.Matrix3x2fStack;
 public class MinimapHud
 extends HudModule {
     private static final int TEX = 256;
-    private static final Identifier TEXTURE_ID = Identifier.method_60655((String)"astra", (String)"minimap");
+    private static final Identifier TEXTURE_ID = Identifier.fromNamespaceAndPath((String)"astra", (String)"minimap");
     private final ModeSetting shape = this.add(new ModeSetting("\u0424\u043e\u0440\u043c\u0430", "\u041a\u0440\u0443\u0433", "\u041a\u0440\u0443\u0433", "\u041a\u0432\u0430\u0434\u0440\u0430\u0442"));
     private final NumberSetting zoom = this.add(new NumberSetting("\u041c\u0430\u0441\u0448\u0442\u0430\u0431", 100.0, 50.0, 400.0, 25.0).unit("%"));
     private final NumberSetting mapOpacity = this.add(new NumberSetting("\u041f\u0440\u043e\u0437\u0440\u0430\u0447\u043d\u043e\u0441\u0442\u044c \u043a\u0430\u0440\u0442\u044b", 95.0, 20.0, 100.0, 5.0).unit("%"));
@@ -89,8 +89,8 @@ extends HudModule {
 
     @Override
     public void onTick() {
-        ClientLevel world = MinimapHud.mc.field_1687;
-        if (world == null || MinimapHud.mc.field_1724 == null) {
+        ClientLevel world = MinimapHud.mc.level;
+        if (world == null || MinimapHud.mc.player == null) {
             return;
         }
         if (world != this.cachedWorld) {
@@ -98,9 +98,9 @@ extends HudModule {
             this.updatedAt.clear();
             this.cachedWorld = world;
         }
-        int pcx = MinimapHud.mc.field_1724.method_31477() >> 4;
-        int pcz = MinimapHud.mc.field_1724.method_31479() >> 4;
-        int radius = Math.min(MinimapHud.mc.field_1690.method_38521(), 8);
+        int pcx = MinimapHud.mc.player.getBlockX() >> 4;
+        int pcz = MinimapHud.mc.player.getBlockZ() >> 4;
+        int radius = Math.min(MinimapHud.mc.options.getEffectiveRenderDistance(), 8);
         long now = System.currentTimeMillis();
         int budget = 6;
         for (int r = 0; r <= radius && budget > 0; ++r) {
@@ -110,8 +110,8 @@ extends HudModule {
                     if (Math.max(Math.abs(dx), Math.abs(dz)) != r) continue;
                     int cx = pcx + dx;
                     int cz = pcz + dz;
-                    if (!world.method_2935().method_12123(cx, cz)) continue;
-                    long key2 = ChunkPos.method_8331((int)cx, (int)cz);
+                    if (!world.getChunkSource().hasChunk(cx, cz)) continue;
+                    long key2 = ChunkPos.asLong((int)cx, (int)cz);
                     Long last = this.updatedAt.get(key2);
                     long l = maxAge = r <= 1 ? 1000L : 4000L;
                     if (last != null && now - last < maxAge) continue;
@@ -122,7 +122,7 @@ extends HudModule {
             }
         }
         if (!((Boolean)this.explored.get()).booleanValue()) {
-            this.chunks.keySet().removeIf(key -> !world.method_2935().method_12123(ChunkPos.method_8325((long)key), ChunkPos.method_8332((long)key)));
+            this.chunks.keySet().removeIf(key -> !world.getChunkSource().hasChunk(ChunkPos.getX((long)key), ChunkPos.getZ((long)key)));
         }
         if (this.chunks.size() > 6000) {
             Iterator<Map.Entry<Long, Long>> it = this.updatedAt.entrySet().iterator();
@@ -134,8 +134,8 @@ extends HudModule {
             }
         }
         if (++this.ticks % 2 == 0) {
-            int bx = MinimapHud.mc.field_1724.method_31477();
-            int bz = MinimapHud.mc.field_1724.method_31479();
+            int bx = MinimapHud.mc.player.getBlockX();
+            int bz = MinimapHud.mc.player.getBlockZ();
             if (budget < 6 || bx != this.lastBuiltX || bz != this.lastBuiltZ || this.texture == null) {
                 this.lastBuiltX = bx;
                 this.lastBuiltZ = bz;
@@ -154,7 +154,7 @@ extends HudModule {
         int[] heights = new int[289];
         for (z = -1; z < 16; ++z) {
             for (x = 0; x < 16; ++x) {
-                heights[(z + 1) * 17 + x] = world.method_8624(Heightmap.Types.field_13202, baseX + x, baseZ + z) - 1;
+                heights[(z + 1) * 17 + x] = world.getHeight(Heightmap.Types.WORLD_SURFACE, baseX + x, baseZ + z) - 1;
             }
         }
         for (z = 0; z < 16; ++z) {
@@ -163,20 +163,20 @@ extends HudModule {
                 MapColor mapColor;
                 int depth;
                 int y = heights[(z + 1) * 17 + x];
-                pos.method_10103(baseX + x, y, baseZ + z);
-                BlockState state = world.method_8320((BlockPos)pos);
-                FluidState fluid = state.method_26227();
-                if (fluid.method_15767(FluidTags.field_15517)) {
-                    BlockPos.MutableBlockPos p = pos.method_25503();
-                    for (depth = 0; depth < 12 && world.method_8316((BlockPos)p).method_15767(FluidTags.field_15517); ++depth) {
-                        p.method_10100(0, -1, 0);
+                pos.set(baseX + x, y, baseZ + z);
+                BlockState state = world.getBlockState((BlockPos)pos);
+                FluidState fluid = state.getFluidState();
+                if (fluid.is(FluidTags.WATER)) {
+                    BlockPos.MutableBlockPos p = pos.mutable();
+                    for (depth = 0; depth < 12 && world.getFluidState((BlockPos)p).is(FluidTags.WATER); ++depth) {
+                        p.move(0, -1, 0);
                     }
                 }
-                if ((mapColor = state.method_26205((BlockGetter)world, (BlockPos)pos)) == MapColor.field_16008) {
+                if ((mapColor = state.getMapColor((BlockGetter)world, (BlockPos)pos)) == MapColor.NONE) {
                     colors[z * 16 + x] = 0;
                     continue;
                 }
-                int rgb = mapColor.field_16011;
+                int rgb = mapColor.col;
                 float shade = depth > 0 ? 1.0f - Math.min(0.45f, (float)depth * 0.04f) : (y > (north = heights[z * 17 + x]) ? 1.08f : (y < north ? 0.84f : 0.96f));
                 int r = Math.min(255, Math.round((float)(rgb >> 16 & 0xFF) * shade));
                 int g = Math.min(255, Math.round((float)(rgb >> 8 & 0xFF) * shade));
@@ -191,13 +191,13 @@ extends HudModule {
         NativeImage img;
         if (this.texture == null) {
             this.texture = new DynamicTexture(() -> "astra_minimap", 256, 256, true);
-            mc.method_1531().method_4616(TEXTURE_ID, (AbstractTexture)this.texture);
+            mc.getTextureManager().register(TEXTURE_ID, (AbstractTexture)this.texture);
         }
-        if ((img = this.texture.method_4525()) == null || MinimapHud.mc.field_1724 == null) {
+        if ((img = this.texture.getPixels()) == null || MinimapHud.mc.player == null) {
             return;
         }
-        this.texCenterX = MinimapHud.mc.field_1724.method_31477();
-        this.texCenterZ = MinimapHud.mc.field_1724.method_31479();
+        this.texCenterX = MinimapHud.mc.player.getBlockX();
+        this.texCenterZ = MinimapHud.mc.player.getBlockZ();
         int half = 128;
         int empty = -15857126;
         for (int tz = 0; tz < 256; ++tz) {
@@ -211,13 +211,13 @@ extends HudModule {
                 int cx = wx >> 4;
                 if (cx != lastCx) {
                     lastCx = cx;
-                    c = this.chunks.get(ChunkPos.method_8331((int)cx, (int)cz));
+                    c = this.chunks.get(ChunkPos.asLong((int)cx, (int)cz));
                 }
                 int col = c == null ? empty : c[row + (wx & 0xF)];
-                img.method_61941(tx, tz, col == 0 ? empty : col);
+                img.setPixel(tx, tz, col == 0 ? empty : col);
             }
         }
-        this.texture.method_4524();
+        this.texture.upload();
     }
 
     @Override
@@ -248,7 +248,7 @@ extends HudModule {
         float y = 92.0f;
         Theme t = MinimapHud.theme();
         if (((Boolean)this.coords.get()).booleanValue()) {
-            String s = MinimapHud.mc.field_1724 != null ? "X: " + MinimapHud.mc.field_1724.method_31477() + "  Y: " + MinimapHud.mc.field_1724.method_31478() + "  Z: " + MinimapHud.mc.field_1724.method_31479() : "X: 1236  Y: 98  Z: -452";
+            String s = MinimapHud.mc.player != null ? "X: " + MinimapHud.mc.player.getBlockX() + "  Y: " + MinimapHud.mc.player.getBlockY() + "  Z: " + MinimapHud.mc.player.getBlockZ() : "X: 1236  Y: 98  Z: -452";
             Fonts.drawCentered(ctx, s, w / 2.0f, y, 6.5f, t.text(), true);
             y += 10.0f;
         }
@@ -272,20 +272,20 @@ extends HudModule {
         }
         Render2D.roundRect(ctx, x, y, size, size, circle ? r : 8.0f, ColorUtil.withAlpha(t.bg(), 0.9f));
         float inner = r - 3.0f;
-        float yaw = MinimapHud.mc.field_1724 != null ? MinimapHud.mc.field_1724.method_36454() : 0.0f;
+        float yaw = MinimapHud.mc.player != null ? MinimapHud.mc.player.getYRot() : 0.0f;
         float f2 = rotation = (Boolean)this.rotate.get() != false ? -(yaw + 180.0f) : 0.0f;
-        if (this.texture != null && MinimapHud.mc.field_1724 != null) {
+        if (this.texture != null && MinimapHud.mc.player != null) {
             float blocksRadius = inner / (this.zoom.getFloat() / 100.0f) * 0.75f;
-            float offX = (float)(MinimapHud.mc.field_1724.method_23317() - ((double)this.texCenterX + 0.5));
-            float offZ = (float)(MinimapHud.mc.field_1724.method_23321() - ((double)this.texCenterZ + 0.5));
+            float offX = (float)(MinimapHud.mc.player.getX() - ((double)this.texCenterX + 0.5));
+            float offZ = (float)(MinimapHud.mc.player.getZ() - ((double)this.texCenterZ + 0.5));
             float u = (128.5f + offX) / 256.0f;
             float v = (128.5f + offZ) / 256.0f;
             float uvR = blocksRadius / 256.0f;
             col = ColorUtil.withAlpha(-1, this.mapOpacity.getFloat() / 100.0f);
             if (circle) {
-                Render2D.texturedCircle(ctx, this.texture.method_71659(), cx, cy, inner, u, v, uvR, -rotation, col);
+                Render2D.texturedCircle(ctx, this.texture.getTextureView(), cx, cy, inner, u, v, uvR, -rotation, col);
             } else {
-                Render2D.texturedSquare(ctx, this.texture.method_71659(), cx, cy, inner, u, v, uvR, -rotation, col);
+                Render2D.texturedSquare(ctx, this.texture.getTextureView(), cx, cy, inner, u, v, uvR, -rotation, col);
             }
         } else {
             Render2D.roundRect(ctx, cx - inner, cy - inner, inner * 2.0f, inner * 2.0f, circle ? inner : 6.0f, Paint.linear(cx - inner, cy - inner, cx + inner, cy + inner, -12875190, ColorUtil.lerp(-13738072, t.accent2(), 0.3f)));
@@ -306,12 +306,12 @@ extends HudModule {
                 Fonts.drawCentered(ctx, dirs[i], cx + dx, cy + dy - 3.2f, 6.0f, col, true);
             }
         }
-        if ((wps = WaypointsModule.get()) != null && wps.showOnMinimap() && MinimapHud.mc.field_1724 != null && !editor) {
+        if ((wps = WaypointsModule.get()) != null && wps.showOnMinimap() && MinimapHud.mc.player != null && !editor) {
             float blocksRadius = inner / (this.zoom.getFloat() / 100.0f) * 0.75f;
             float pxPerBlock = inner / blocksRadius;
             for (Waypoints.Waypoint w : Waypoints.here()) {
-                double dx = (double)w.x + 0.5 - MinimapHud.mc.field_1724.method_23317();
-                double dz = (double)w.z + 0.5 - MinimapHud.mc.field_1724.method_23321();
+                double dx = (double)w.x + 0.5 - MinimapHud.mc.player.getX();
+                double dz = (double)w.z + 0.5 - MinimapHud.mc.player.getZ();
                 double ang = Math.atan2(dz, dx) + Math.toRadians(rotation);
                 float dist = (float)Math.sqrt(dx * dx + dz * dz) * pxPerBlock;
                 boolean edge = dist > inner - 5.0f;
@@ -323,7 +323,7 @@ extends HudModule {
             }
         }
         float arrowRot = (Boolean)this.rotate.get() != false ? 0.0f : yaw + 180.0f;
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(cx, cy);
         m.rotate((float)Math.toRadians(arrowRot));
@@ -358,7 +358,7 @@ extends HudModule {
     }
 
     private static float wrap(float deg) {
-        return Mth.method_15393((float)deg);
+        return Mth.wrapDegrees((float)deg);
     }
 }
 

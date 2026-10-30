@@ -48,8 +48,8 @@ public final class LyricLightning {
 
     private static RenderType layer(boolean overlay) {
         String name = overlay ? "lyric_lightning_overlay" : "lyric_lightning_depth";
-        RenderPipeline pipeline = RenderPipelines.method_67887((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.field_56860}).withLocation(Identifier.method_60655((String)"astra", (String)("pipeline/" + name))).withVertexFormat(DefaultVertexFormat.field_1576, VertexFormat.Mode.field_27382).withBlend(BlendFunction.TRANSLUCENT).withCull(false).withDepthWrite(false).withDepthTestFunction(overlay ? DepthTestFunction.NO_DEPTH_TEST : DepthTestFunction.LEQUAL_DEPTH_TEST).build());
-        return RenderType.method_75940((String)("astra_" + name), (RenderSetup)RenderSetup.method_75927((RenderPipeline)pipeline).method_75929(4096).method_75937().method_75938());
+        RenderPipeline pipeline = RenderPipelines.register((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.DEBUG_FILLED_SNIPPET}).withLocation(Identifier.fromNamespaceAndPath((String)"astra", (String)("pipeline/" + name))).withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS).withBlend(BlendFunction.TRANSLUCENT).withCull(false).withDepthWrite(false).withDepthTestFunction(overlay ? DepthTestFunction.NO_DEPTH_TEST : DepthTestFunction.LEQUAL_DEPTH_TEST).build());
+        return RenderType.create((String)("astra_" + name), (RenderSetup)RenderSetup.builder((RenderPipeline)pipeline).bufferSize(4096).sortOnUpload().createRenderSetup());
     }
 
     public static float strikeAt(int index, int count, float duration) {
@@ -79,7 +79,7 @@ public final class LyricLightning {
             LyricFx.Glyph glyph = glyphs.get(i);
             if (glyph.ch.isBlank() || (since = age - LyricLightning.strikeAt(i, glyphs.size(), entryDuration)) < 0.0f || since > duration) continue;
             if (vertices == null) {
-                vertices = provider.method_73477(layer);
+                vertices = provider.getBuffer(layer);
             }
             ++active;
             float fade = 1.0f - since / duration;
@@ -113,7 +113,7 @@ public final class LyricLightning {
             }
         }
         if (vertices != null) {
-            provider.method_22994(layer);
+            provider.endBatch(layer);
         }
     }
 
@@ -126,10 +126,10 @@ public final class LyricLightning {
         }
         float nx = -dy / length * width / 2.0f;
         float ny = dx / length * width / 2.0f;
-        vertices.method_22918((Matrix4fc)matrix, a.x - nx, a.y - ny, -0.05f).method_39415(color);
-        vertices.method_22918((Matrix4fc)matrix, a.x + nx, a.y + ny, -0.05f).method_39415(color);
-        vertices.method_22918((Matrix4fc)matrix, b.x + nx, b.y + ny, -0.05f).method_39415(color);
-        vertices.method_22918((Matrix4fc)matrix, b.x - nx, b.y - ny, -0.05f).method_39415(color);
+        vertices.addVertex((Matrix4fc)matrix, a.x - nx, a.y - ny, -0.05f).setColor(color);
+        vertices.addVertex((Matrix4fc)matrix, a.x + nx, a.y + ny, -0.05f).setColor(color);
+        vertices.addVertex((Matrix4fc)matrix, b.x + nx, b.y + ny, -0.05f).setColor(color);
+        vertices.addVertex((Matrix4fc)matrix, b.x - nx, b.y - ny, -0.05f).setColor(color);
     }
 
     private static float noise(int a, int b) {

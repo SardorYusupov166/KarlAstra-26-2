@@ -40,30 +40,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ChatInputSuggestorMixin {
     @Shadow
     @Final
-    EditBox field_21599;
+    EditBox input;
     @Shadow
-    private int field_21608;
+    private int commandUsagePosition;
 
-    @Redirect(method={"method_23920", "method_44932"}, at={@At(value="FIELD", target="Lnet/minecraft/client/gui/screens/Screen;field_22790:I", opcode=180)})
+    @Redirect(method={"showSuggestions", "renderUsage"}, at={@At(value="FIELD", target="Lnet/minecraft/client/gui/screens/Screen;height:I", opcode=180)})
     private int astra$inputAnchor(Screen owner) {
         ChatInputHud layout = ChatInputHud.get();
-        return owner instanceof ChatScreen && layout != null && layout.isEnabled() ? this.field_21599.method_46427() + 12 : owner.field_22790;
+        return owner instanceof ChatScreen && layout != null && layout.isEnabled() ? this.input.getY() + 12 : owner.height;
     }
 
-    @Redirect(method={"method_44932"}, at={@At(value="FIELD", target="Lnet/minecraft/client/gui/components/CommandSuggestions;field_21608:I", opcode=180)})
+    @Redirect(method={"renderUsage"}, at={@At(value="FIELD", target="Lnet/minecraft/client/gui/components/CommandSuggestions;commandUsagePosition:I", opcode=180)})
     private int astra$usageX(CommandSuggestions self) {
         ChatInputHud layout = ChatInputHud.get();
-        return Minecraft.method_1551().field_1755 instanceof ChatScreen && layout != null && layout.isEnabled() ? this.field_21599.method_46426() : this.astra$originalUsageX();
+        return Minecraft.getInstance().screen instanceof ChatScreen && layout != null && layout.isEnabled() ? this.input.getX() : this.astra$originalUsageX();
     }
 
     @Unique
     private int astra$originalUsageX() {
-        return this.field_21608;
+        return this.commandUsagePosition;
     }
 
-    @Inject(method={"method_23931"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"formatChat"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$maskPassword(String original, int firstCharacterIndex, CallbackInfoReturnable<FormattedCharSequence> cir) {
-        FormattedCharSequence masked = StreamerProtect.maskInput(this.field_21599.method_1882(), original, firstCharacterIndex);
+        FormattedCharSequence masked = StreamerProtect.maskInput(this.input.getValue(), original, firstCharacterIndex);
         if (masked != null) {
             cir.setReturnValue((Object)masked);
         }

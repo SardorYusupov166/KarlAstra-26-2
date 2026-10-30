@@ -88,7 +88,7 @@ extends ModulesPage {
         Render2D.roundRect(ui.ctx, px, py, pw, ph, 10.0f, Paint.vertical(py, py + ph, ColorUtil.withAlpha(t.accent(), 0.1f), ColorUtil.withAlpha(t.accent2(), 0.16f)));
         float cx = px + pw / 2.0f;
         float floorY = py + ph - 52.0f;
-        Matrix3x2fStack mat = ui.ctx.method_51448();
+        Matrix3x2fStack mat = ui.ctx.pose();
         mat.pushMatrix();
         mat.translate(cx, floorY);
         mat.scale(1.0f, 0.28f);
@@ -102,11 +102,11 @@ extends ModulesPage {
         if (devYaw != null) {
             this.yaw = devYaw.floatValue();
         }
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.field_1724 != null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null) {
             float size = 70.0f;
             float center = floorY - size * 0.9f;
-            CosmeticsPage.drawPlayer(ui.ctx, (LivingEntity)mc.field_1724, px + 6.0f, center - 118.0f, px + pw - 6.0f, center + 118.0f, size, this.yaw);
+            CosmeticsPage.drawPlayer(ui.ctx, (LivingEntity)mc.player, px + 6.0f, center - 118.0f, px + pw - 6.0f, center + 118.0f, size, this.yaw);
         } else {
             Render2D.sparkle(ui.ctx, cx, py + ph * 0.38f, 22.0f, 0.0f, ColorUtil.withAlpha(t.accent2(), 0.8f));
             Fonts.drawCentered(ui.ctx, "\u0417\u0430\u0439\u0434\u0438\u0442\u0435 \u0432 \u043c\u0438\u0440,", cx, py + ph * 0.38f + 34.0f, 7.5f, t.text(), true);
@@ -127,7 +127,7 @@ extends ModulesPage {
     }
 
     private static void drawPlayer(GuiGraphics ctx, LivingEntity entity, float x1, float y1, float x2, float y2, float size, float yaw) {
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         Vector2f a = m.transformPosition(x1, y1, new Vector2f());
         Vector2f b = m.transformPosition(x2, y2, new Vector2f());
         float scale = (float)Math.sqrt(m.m00 * m.m00 + m.m01 * m.m01);
@@ -135,31 +135,31 @@ extends ModulesPage {
         int sy1 = Math.round(a.y);
         int sx2 = Math.round(b.x);
         int sy2 = Math.round(b.y);
-        float bodyYaw = entity.field_6283;
-        float entYaw = entity.method_36454();
-        float pitch = entity.method_36455();
-        float headYaw = entity.field_6241;
-        float lastHeadYaw = entity.field_6259;
-        entity.field_6283 = 180.0f + yaw;
-        entity.method_36456(180.0f + yaw);
-        entity.method_36457(0.0f);
-        entity.field_6241 = entity.method_36454();
-        entity.field_6259 = entity.method_36454();
+        float bodyYaw = entity.yBodyRot;
+        float entYaw = entity.getYRot();
+        float pitch = entity.getXRot();
+        float headYaw = entity.yHeadRot;
+        float lastHeadYaw = entity.yHeadRotO;
+        entity.yBodyRot = 180.0f + yaw;
+        entity.setYRot(180.0f + yaw);
+        entity.setXRot(0.0f);
+        entity.yHeadRot = entity.getYRot();
+        entity.yHeadRotO = entity.getYRot();
         Quaternionf rotation = new Quaternionf().rotateZ((float)Math.PI);
         Quaternionf camera = new Quaternionf().rotateX((float)Math.toRadians(-8.0));
         rotation.mul((Quaternionfc)camera);
-        float entityScale = entity.method_55693();
-        Vector3f translation = new Vector3f(0.0f, entity.method_17682() / 2.0f + 0.0625f * entityScale, 0.0f);
-        EntityRenderState renderState = Minecraft.method_1551().method_1561().method_3953((Entity)entity).method_62425((Entity)entity, 1.0f);
-        renderState.field_61820 = 0xF000F0;
-        renderState.field_61823.clear();
-        renderState.field_61821 = 0;
-        ctx.method_70856(renderState, size * scale / entityScale, translation, rotation, camera, sx1, sy1, sx2, sy2);
-        entity.field_6283 = bodyYaw;
-        entity.method_36456(entYaw);
-        entity.method_36457(pitch);
-        entity.field_6241 = headYaw;
-        entity.field_6259 = lastHeadYaw;
+        float entityScale = entity.getScale();
+        Vector3f translation = new Vector3f(0.0f, entity.getBbHeight() / 2.0f + 0.0625f * entityScale, 0.0f);
+        EntityRenderState renderState = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer((Entity)entity).createRenderState((Entity)entity, 1.0f);
+        renderState.lightCoords = 0xF000F0;
+        renderState.shadowPieces.clear();
+        renderState.outlineColor = 0;
+        ctx.submitEntityRenderState(renderState, size * scale / entityScale, translation, rotation, camera, sx1, sy1, sx2, sy2);
+        entity.yBodyRot = bodyYaw;
+        entity.setYRot(entYaw);
+        entity.setXRot(pitch);
+        entity.yHeadRot = headYaw;
+        entity.yHeadRotO = lastHeadYaw;
     }
 
     @Override

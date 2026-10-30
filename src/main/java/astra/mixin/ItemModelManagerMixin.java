@@ -30,12 +30,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={ItemModelResolver.class})
 public abstract class ItemModelManagerMixin {
-    @Inject(method={"method_65596"}, at={@At(value="TAIL")})
+    @Inject(method={"appendItemLayers"}, at={@At(value="TAIL")})
     private void astra$shieldTint(ItemStackRenderState state, ItemStack stack, ItemDisplayContext context, Level world, ItemOwner holder, int seed, CallbackInfo ci) {
-        int tint = ShieldStatus.tint(holder != null ? holder.method_72393() : null, stack);
+        int tint = ShieldStatus.tint(holder != null ? holder.asLivingEntity() : null, stack);
         ((TintedItemState)state).astra$setTint(tint);
         if (tint != 0) {
-            state.method_70946((Object)tint);
+            state.appendModelIdentityElement((Object)tint);
         }
     }
 }

@@ -37,21 +37,21 @@ extends PlayerCosmetic {
 
     @Override
     public void onTick() {
-        if (!((Boolean)this.particles.get()).booleanValue() || this.player() == null || AuraCosmetic.mc.field_1687 == null || mc.method_1493()) {
+        if (!((Boolean)this.particles.get()).booleanValue() || this.player() == null || AuraCosmetic.mc.level == null || mc.isPaused()) {
             return;
         }
         this.angle += 0.3f;
         float r = 0.75f * this.size();
         for (int i = 0; i < 2; ++i) {
             double a = (double)this.angle + (double)i * Math.PI;
-            double x = this.player().method_23317() + Math.cos(a) * (double)r;
-            double z = this.player().method_23321() + Math.sin(a) * (double)r;
-            double y = this.player().method_23318() + 0.15 + (Math.sin((double)this.angle * 0.5 + (double)i) + 1.0) * 0.55;
+            double x = this.player().getX() + Math.cos(a) * (double)r;
+            double z = this.player().getZ() + Math.sin(a) * (double)r;
+            double y = this.player().getY() + 0.15 + (Math.sin((double)this.angle * 0.5 + (double)i) + 1.0) * 0.55;
             AstraParticles.orb(x, y, z, 0.0, 0.01, 0.0, this.color.getColor(), 0.07f, 22);
         }
         if (AstraParticles.random().nextInt(3) == 0) {
             double a = AstraParticles.random().nextDouble() * Math.PI * 2.0;
-            AstraParticles.sparkle(this.player().method_23317() + Math.cos(a) * (double)r * 1.2, this.player().method_23318() + 0.1, this.player().method_23321() + Math.sin(a) * (double)r * 1.2, -1, 0.06f, 30);
+            AstraParticles.sparkle(this.player().getX() + Math.cos(a) * (double)r * 1.2, this.player().getY() + 0.1, this.player().getZ() + Math.sin(a) * (double)r * 1.2, -1, 0.06f, 30);
         }
     }
 }

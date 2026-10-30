@@ -56,7 +56,7 @@ public final class ArtManager {
     public static final Identifier BACKGROUND_MONO = ArtManager.gui("background_mono");
     public static final Identifier AVATAR_FALLBACK = ArtManager.gui("avatar_girl");
     public static final int AVATAR_SLOTS = 4;
-    private static final Identifier CUSTOM_ID = Identifier.method_60655((String)"astra", (String)"art/sidebar_custom");
+    private static final Identifier CUSTOM_ID = Identifier.fromNamespaceAndPath((String)"astra", (String)"art/sidebar_custom");
     private static final Map<Identifier, int[]> SIZES = new HashMap<Identifier, int[]>();
     public static final String AUTO = "\u0410\u0432\u0442\u043e";
     public static final String BUILTIN = "\u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439";
@@ -74,7 +74,7 @@ public final class ArtManager {
     }
 
     private static Identifier gui(String name) {
-        return Identifier.method_60655((String)"astra", (String)("textures/gui/" + name + ".png"));
+        return Identifier.fromNamespaceAndPath((String)"astra", (String)("textures/gui/" + name + ".png"));
     }
 
     public static Path artDir() {
@@ -83,16 +83,16 @@ public final class ArtManager {
 
     public static int[] size(Identifier id) {
         return SIZES.computeIfAbsent(id, key -> {
-            Optional res = Minecraft.method_1551().method_1478().method_14486(key);
+            Optional res = Minecraft.getInstance().getResourceManager().getResource(key);
             if (res.isEmpty()) {
                 return null;
             }
-            try (InputStream in = ((Resource)res.get()).method_14482();){
+            try (InputStream in = ((Resource)res.get()).open();){
                 int[] nArray;
                 block15: {
-                    NativeImage img = NativeImage.method_4309((InputStream)in);
+                    NativeImage img = NativeImage.read((InputStream)in);
                     try {
-                        nArray = new int[]{img.method_4307(), img.method_4323()};
+                        nArray = new int[]{img.getWidth(), img.getHeight()};
                         if (img == null) break block15;
                     }
                     catch (Throwable throwable) {
@@ -229,7 +229,7 @@ public final class ArtManager {
         g.dispose();
         ByteArrayOutputStream png = new ByteArrayOutputStream();
         ImageIO.write((RenderedImage)img, "png", png);
-        return NativeImage.method_4309((InputStream)new ByteArrayInputStream(png.toByteArray()));
+        return NativeImage.read((InputStream)new ByteArrayInputStream(png.toByteArray()));
     }
 
     private static void loadCustom() {
@@ -243,9 +243,9 @@ public final class ArtManager {
         }
         try {
             NativeImage image = ArtManager.readImage(file);
-            texW = image.method_4307();
-            texH = image.method_4323();
-            Minecraft.method_1551().method_1531().method_4616(CUSTOM_ID, (AbstractTexture)new DynamicTexture(() -> "astra_sidebar_art", image));
+            texW = image.getWidth();
+            texH = image.getHeight();
+            Minecraft.getInstance().getTextureManager().register(CUSTOM_ID, (AbstractTexture)new DynamicTexture(() -> "astra_sidebar_art", image));
             custom = true;
         }
         catch (Exception e) {
@@ -255,7 +255,7 @@ public final class ArtManager {
 
     public static void reload() {
         if (custom) {
-            Minecraft.method_1551().method_1531().method_4615(CUSTOM_ID);
+            Minecraft.getInstance().getTextureManager().release(CUSTOM_ID);
         }
         loaded = false;
         custom = false;

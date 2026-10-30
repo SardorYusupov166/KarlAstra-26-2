@@ -79,13 +79,13 @@ public final class AstraOnline {
 
     public static void tick(String address, String room, boolean sendMine) {
         JsonObject msg;
-        Minecraft mc = Minecraft.method_1551();
+        Minecraft mc = Minecraft.getInstance();
         if (lost) {
             lost = false;
             RemoteCosmetics.clear();
             friends = 0;
         }
-        if (mc.field_1724 == null || address.isBlank()) {
+        if (mc.player == null || address.isBlank()) {
             if (socket != null) {
                 AstraOnline.disconnect();
             }
@@ -93,7 +93,7 @@ public final class AstraOnline {
             return;
         }
         String want = address.trim() + "|" + room.trim();
-        if (!(socket == null || want.equals(target) && mc.field_1724.method_5667().equals(helloUuid))) {
+        if (!(socket == null || want.equals(target) && mc.player.getUUID().equals(helloUuid))) {
             AstraOnline.disconnect();
         }
         if (socket == null && System.currentTimeMillis() >= nextConnect) {
@@ -114,7 +114,7 @@ public final class AstraOnline {
 
     private static void connect(String address, String room, String want) {
         URI uri;
-        Minecraft mc = Minecraft.method_1551();
+        Minecraft mc = Minecraft.getInstance();
         try {
             uri = AstraOnline.normalize(address);
         }
@@ -124,8 +124,8 @@ public final class AstraOnline {
             return;
         }
         target = want;
-        helloUuid = mc.field_1724.method_5667();
-        String name = mc.field_1724.method_7334().name();
+        helloUuid = mc.player.getUUID();
+        String name = mc.player.getGameProfile().name();
         status = "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435\u2026";
         nextConnect = Long.MAX_VALUE;
         JsonObject hello = new JsonObject();

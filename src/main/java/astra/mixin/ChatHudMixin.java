@@ -31,17 +31,17 @@ public abstract class ChatHudMixin {
     private boolean astra$moved;
     private static final String RENDER = "render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/font/TextRenderer;IIIZZ)V";
 
-    @Inject(method={"method_75804(Lnet/minecraft/class_332;Lnet/minecraft/class_327;IIIZZ)V"}, at={@At(value="HEAD")})
+    @Inject(method={"render(Lnet/minecraft/class_332;Lnet/minecraft/class_327;IIIZZ)V"}, at={@At(value="HEAD")})
     private void astra$begin(GuiGraphics ctx, Font tr, int tick, int mx, int my, boolean focused, boolean insert, CallbackInfo ci) {
         this.astra$moved = ChatLayoutHud.begin(ctx);
         AnimeChatModule.chatPanel(ctx, tick, focused);
     }
 
-    @Inject(method={"method_75804(Lnet/minecraft/class_332;Lnet/minecraft/class_327;IIIZZ)V"}, at={@At(value="RETURN")})
+    @Inject(method={"render(Lnet/minecraft/class_332;Lnet/minecraft/class_327;IIIZZ)V"}, at={@At(value="RETURN")})
     private void astra$end(GuiGraphics ctx, Font tr, int tick, int mx, int my, boolean focused, boolean insert, CallbackInfo ci) {
         ChatScrollbar.render(ctx, focused);
         if (this.astra$moved) {
-            ctx.method_51448().popMatrix();
+            ctx.pose().popMatrix();
         }
         this.astra$moved = false;
     }

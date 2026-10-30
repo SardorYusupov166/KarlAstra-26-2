@@ -31,9 +31,9 @@ extends Module {
             return;
         }
         float dir = rightArm ? 1.0f : -1.0f;
-        matrices.method_46416(m.offsetX.getFloat() * dir, m.offsetY.getFloat(), m.offsetZ.getFloat());
+        matrices.translate(m.offsetX.getFloat() * dir, m.offsetY.getFloat(), m.offsetZ.getFloat());
         float s = m.scale.getFloat() / 100.0f;
-        matrices.method_22905(s, s, s);
+        matrices.scale(s, s, s);
     }
 
     public static int swingDuration(int vanilla) {

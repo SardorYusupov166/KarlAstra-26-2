@@ -52,7 +52,7 @@ extends HudModule {
 
     @Override
     public float width() {
-        return TrackBannerHud.player().bannerLayout(TrackBannerHud.mc.field_1755 instanceof HudEditorScreen || !TrackBannerHud.player().bannerVisible(), this.getScale()).width();
+        return TrackBannerHud.player().bannerLayout(TrackBannerHud.mc.screen instanceof HudEditorScreen || !TrackBannerHud.player().bannerVisible(), this.getScale()).width();
     }
 
     @Override

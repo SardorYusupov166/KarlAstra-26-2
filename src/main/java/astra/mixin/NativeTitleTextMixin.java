@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(value={TitleScreen.class})
 public class NativeTitleTextMixin {
-    @Redirect(method={"method_25394"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphics;method_25303(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V")})
+    @Redirect(method={"render"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V")})
     private void astra$version(GuiGraphics ctx, Font tr, String text, int x, int y, int color) {
         NativeScreenLayouts.footer((Screen)this, ctx, tr, text, x, y, color);
     }

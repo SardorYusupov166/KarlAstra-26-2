@@ -141,7 +141,7 @@ public final class GuiStyle {
             return false;
         }
         boolean move = o != null && (o.dx != 0.0f || o.dy != 0.0f || o.scale != 100.0f);
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         if (move) {
             float cx = x + w / 2.0f;
             float cy = y + h / 2.0f;
@@ -176,7 +176,7 @@ public final class GuiStyle {
             ui.my = f.my();
         }
         if (f.pushed()) {
-            ctx.method_51448().popMatrix();
+            ctx.pose().popMatrix();
         }
     }
 
@@ -200,7 +200,7 @@ public final class GuiStyle {
         if (!recording) {
             return;
         }
-        Matrix3x2f m = new Matrix3x2f((Matrix3x2fc)ctx.method_51448());
+        Matrix3x2f m = new Matrix3x2f((Matrix3x2fc)ctx.pose());
         Vector2f a = m.transformPosition(x, y, new Vector2f());
         Vector2f b = m.transformPosition(x + w, y + h, new Vector2f());
         HITS.add(new Hit(id, Math.min(a.x, b.x), Math.min(a.y, b.y), Math.max(a.x, b.x), Math.max(a.y, b.y)));

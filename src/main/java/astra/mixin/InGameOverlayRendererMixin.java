@@ -36,7 +36,7 @@ public abstract class InGameOverlayRendererMixin {
     @Unique
     private static boolean astra$fireMoved;
 
-    @Inject(method={"method_70939"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderItemActivationAnimation"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$totemHead(PoseStack matrices, float tickDelta, SubmitNodeCollector queue, CallbackInfo ci) {
         if (PvpTweaks.hideTotemAnimation()) {
             ci.cancel();
@@ -45,20 +45,20 @@ public abstract class InGameOverlayRendererMixin {
         float s = PvpTweaks.totemAnimationScale();
         boolean bl = this.astra$totemScaled = s != 1.0f;
         if (this.astra$totemScaled) {
-            matrices.method_22903();
-            matrices.method_22905(s, s, 1.0f);
+            matrices.pushPose();
+            matrices.scale(s, s, 1.0f);
         }
     }
 
-    @Inject(method={"method_70939"}, at={@At(value="RETURN")})
+    @Inject(method={"renderItemActivationAnimation"}, at={@At(value="RETURN")})
     private void astra$totemTail(PoseStack matrices, float tickDelta, SubmitNodeCollector queue, CallbackInfo ci) {
         if (this.astra$totemScaled) {
-            matrices.method_22909();
+            matrices.popPose();
             this.astra$totemScaled = false;
         }
     }
 
-    @Inject(method={"method_23070"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderFire"}, at={@At(value="HEAD")}, cancellable=true)
     private static void astra$fireHead(PoseStack matrices, MultiBufferSource consumers, TextureAtlasSprite sprite, CallbackInfo ci) {
         if (PvpTweaks.hideFire()) {
             ci.cancel();
@@ -67,27 +67,27 @@ public abstract class InGameOverlayRendererMixin {
         float offset = PvpTweaks.fireOffset();
         boolean bl = astra$fireMoved = offset > 0.0f;
         if (astra$fireMoved) {
-            matrices.method_22903();
-            matrices.method_46416(0.0f, -offset, 0.0f);
+            matrices.pushPose();
+            matrices.translate(0.0f, -offset, 0.0f);
         }
     }
 
-    @Inject(method={"method_23070"}, at={@At(value="RETURN")})
+    @Inject(method={"renderFire"}, at={@At(value="RETURN")})
     private static void astra$fireTail(PoseStack matrices, MultiBufferSource consumers, TextureAtlasSprite sprite, CallbackInfo ci) {
         if (astra$fireMoved) {
-            matrices.method_22909();
+            matrices.popPose();
             astra$fireMoved = false;
         }
     }
 
-    @Inject(method={"method_23068"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderTex"}, at={@At(value="HEAD")}, cancellable=true)
     private static void astra$inWall(TextureAtlasSprite sprite, PoseStack matrices, MultiBufferSource consumers, CallbackInfo ci) {
         if (PvpTweaks.hideInWall()) {
             ci.cancel();
         }
     }
 
-    @Inject(method={"method_23069"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"renderWater"}, at={@At(value="HEAD")}, cancellable=true)
     private static void astra$underwater(Minecraft client, PoseStack matrices, MultiBufferSource consumers, CallbackInfo ci) {
         if (PvpTweaks.hideUnderwater()) {
             ci.cancel();

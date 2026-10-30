@@ -67,13 +67,13 @@ extends HudModule {
     }
 
     private boolean pressed(KeyMapping key) {
-        return KeystrokesHud.mc.field_1724 != null && key.method_1434();
+        return KeystrokesHud.mc.player != null && key.isDown();
     }
 
     @Override
     protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
         float dt = FrameStats.delta();
-        this.draw(ctx, KeystrokesHud.theme(), w, dt, new boolean[]{this.pressed(KeystrokesHud.mc.field_1690.field_1894), this.pressed(KeystrokesHud.mc.field_1690.field_1913), this.pressed(KeystrokesHud.mc.field_1690.field_1881), this.pressed(KeystrokesHud.mc.field_1690.field_1849), this.pressed(KeystrokesHud.mc.field_1690.field_1886), this.pressed(KeystrokesHud.mc.field_1690.field_1904), this.pressed(KeystrokesHud.mc.field_1690.field_1832), this.pressed(KeystrokesHud.mc.field_1690.field_1903)});
+        this.draw(ctx, KeystrokesHud.theme(), w, dt, new boolean[]{this.pressed(KeystrokesHud.mc.options.keyUp), this.pressed(KeystrokesHud.mc.options.keyLeft), this.pressed(KeystrokesHud.mc.options.keyDown), this.pressed(KeystrokesHud.mc.options.keyRight), this.pressed(KeystrokesHud.mc.options.keyAttack), this.pressed(KeystrokesHud.mc.options.keyUse), this.pressed(KeystrokesHud.mc.options.keyShift), this.pressed(KeystrokesHud.mc.options.keyJump)});
     }
 
     private void draw(GuiGraphics ctx, Theme t, float w, float dt, boolean[] state) {
@@ -116,12 +116,12 @@ extends HudModule {
             @Override
             public void render(UiContext ui, float x, float y, float w, float h) {
                 float s = 1.05f;
-                Matrix3x2fStack m = ui.ctx.method_51448();
+                Matrix3x2fStack m = ui.ctx.pose();
                 m.pushMatrix();
                 m.translate(x + (w - KeystrokesHud.this.width() * s) / 2.0f, y);
                 m.scale(s, s);
-                boolean live = mc.field_1724 != null;
-                KeystrokesHud.this.draw(ui.ctx, ui.theme, KeystrokesHud.this.width(), ui.dt, new boolean[]{live && mc.field_1690.field_1894.method_1434(), live && mc.field_1690.field_1913.method_1434(), live && mc.field_1690.field_1881.method_1434(), live && mc.field_1690.field_1849.method_1434(), System.currentTimeMillis() - ClickTracker.lastClick(0) < 90L, System.currentTimeMillis() - ClickTracker.lastClick(1) < 90L, false, false});
+                boolean live = mc.player != null;
+                KeystrokesHud.this.draw(ui.ctx, ui.theme, KeystrokesHud.this.width(), ui.dt, new boolean[]{live && mc.options.keyUp.isDown(), live && mc.options.keyLeft.isDown(), live && mc.options.keyDown.isDown(), live && mc.options.keyRight.isDown(), System.currentTimeMillis() - ClickTracker.lastClick(0) < 90L, System.currentTimeMillis() - ClickTracker.lastClick(1) < 90L, false, false});
                 m.popMatrix();
             }
         };

@@ -77,11 +77,11 @@ extends ModulesPage {
             }
             if (mx >= (double)this.x && mx < (double)(this.x + 160.0f)) {
                 ScreenshotModule sm = ModuleManager.get(ScreenshotModule.class);
-                if (Minecraft.method_1551().field_1687 == null) {
+                if (Minecraft.getInstance().level == null) {
                     ReplaysPage.this.screen.toast("\u0421\u043a\u0440\u0438\u043d\u0448\u043e\u0442 \u043c\u043e\u0436\u043d\u043e \u0441\u0434\u0435\u043b\u0430\u0442\u044c \u0432 \u043c\u0438\u0440\u0435");
                 } else if (sm != null) {
                     sm.requestShot();
-                    ReplaysPage.this.screen.method_25419();
+                    ReplaysPage.this.screen.onClose();
                 }
                 return true;
             }
@@ -160,18 +160,18 @@ extends ModulesPage {
                 }
                 InputStream in = Files.newInputStream(f.toPath(), new OpenOption[0]);
                 try {
-                    NativeImage full = NativeImage.method_4309((InputStream)in);
+                    NativeImage full = NativeImage.read((InputStream)in);
                     int tw = 192;
                     int th = 108;
                     NativeImage small = new NativeImage(tw, th, false);
                     for (int y = 0; y < th; ++y) {
                         for (int x = 0; x < tw; ++x) {
-                            small.method_61941(x, y, full.method_61940(x * full.method_4307() / tw, y * full.method_4323() / th));
+                            small.setPixel(x, y, full.getPixel(x * full.getWidth() / tw, y * full.getHeight() / th));
                         }
                     }
                     full.close();
-                    Identifier tid = Identifier.method_60655((String)"astra", (String)("gallery/" + Integer.toHexString(key.hashCode())));
-                    Minecraft.method_1551().method_1531().method_4616(tid, (AbstractTexture)new DynamicTexture(() -> "astra_thumb", small));
+                    Identifier tid = Identifier.fromNamespaceAndPath((String)"astra", (String)("gallery/" + Integer.toHexString(key.hashCode())));
+                    Minecraft.getInstance().getTextureManager().register(tid, (AbstractTexture)new DynamicTexture(() -> "astra_thumb", small));
                     this.thumbs.put(key, tid);
                     identifier = tid;
                     if (in == null) break block13;
@@ -242,7 +242,7 @@ extends ModulesPage {
                 float cx = this.x + (float)(i % c) * (cw + 8.0f);
                 float cy = this.y + 26.0f + (float)(i / c) * (ch + 8.0f);
                 if (!(mx >= (double)cx) || !(mx < (double)(cx + cw)) || !(my >= (double)cy) || !(my < (double)(cy + ch))) continue;
-                Util.method_668().method_672(this.files.get(i));
+                Util.getPlatform().openFile(this.files.get(i));
                 return true;
             }
             return false;

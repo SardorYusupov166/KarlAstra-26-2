@@ -133,8 +133,8 @@ extends Module {
             return;
         }
         Theme t = ThemeManager.get();
-        float sw = ctx.method_51421();
-        float sh = ctx.method_51443();
+        float sw = ctx.guiWidth();
+        float sh = ctx.guiHeight();
         float hMul = this.height.getFloat() / 100.0f;
         float op = this.opacity.getFloat() / 100.0f;
         float prev = Render2D.alpha;

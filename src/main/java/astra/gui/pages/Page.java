@@ -47,9 +47,9 @@ public abstract class Page {
         this.scroll.update(this.scrollTarget, ui.dt);
         this.contentHeight = this.layout(this.y - this.scroll.get());
         ui.setClip(this.x, this.y, this.w, this.h);
-        ui.ctx.method_44379((int)Math.floor(this.x - 12.0f), (int)Math.floor(this.y), (int)Math.ceil(this.x + this.w + 12.0f), (int)Math.ceil(this.y + this.h));
+        ui.ctx.enableScissor((int)Math.floor(this.x - 12.0f), (int)Math.floor(this.y), (int)Math.ceil(this.x + this.w + 12.0f), (int)Math.ceil(this.y + this.h));
         this.renderContent(ui);
-        ui.ctx.method_44380();
+        ui.ctx.disableScissor();
         ui.clearClip();
         this.renderScrollbar(ui);
     }

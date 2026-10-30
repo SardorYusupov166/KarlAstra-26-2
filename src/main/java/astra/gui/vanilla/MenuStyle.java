@@ -57,7 +57,7 @@ public final class MenuStyle {
                 MenuStyle.replaceModsButton(screen);
             }
             if (screen instanceof PauseScreen && AstraWidgets.enabled()) {
-                Screens.getButtons((Screen)screen).removeIf(b -> b instanceof StringWidget && b.method_25369().getString().equals(screen.method_25440().getString()));
+                Screens.getButtons((Screen)screen).removeIf(b -> b instanceof StringWidget && b.getMessage().getString().equals(screen.getTitle().getString()));
                 ScreenEvents.afterRender((Screen)screen).register((s, ctx, mx, my, delta) -> MenuStyle.drawPauseLogo(s, ctx));
             }
         });
@@ -68,7 +68,7 @@ public final class MenuStyle {
             return;
         }
         Theme t = ThemeManager.get();
-        ctx.method_25296(0, 0, w, h, ColorUtil.withAlpha(t.bg(), 0.28f), ColorUtil.withAlpha(ColorUtil.lerp(t.bg(), t.accent(), 0.25f), 0.55f));
+        ctx.fillGradient(0, 0, w, h, ColorUtil.withAlpha(t.bg(), 0.28f), ColorUtil.withAlpha(ColorUtil.lerp(t.bg(), t.accent(), 0.25f), 0.55f));
         Render2D.shadow(ctx, -60.0f, h - 160, 300.0f, 200.0f, 100.0f, 120.0f, ColorUtil.withAlpha(t.accent(), 0.16f));
         Render2D.shadow(ctx, w - 240, -40.0f, 300.0f, 160.0f, 80.0f, 120.0f, ColorUtil.withAlpha(t.accent2(), 0.14f));
         NativeScreenLayouts.backdrop(NativeScreenLayouts.current(), ctx);
@@ -89,7 +89,7 @@ public final class MenuStyle {
         int minY = Integer.MAX_VALUE;
         for (AbstractWidget b : Screens.getButtons((Screen)screen)) {
             if (!(b instanceof Button)) continue;
-            minY = Math.min(minY, b.method_46427());
+            minY = Math.min(minY, b.getY());
         }
         List<NativeScreenLayouts.Entry> originals = NativeScreenLayouts.entries(screen);
         if (!originals.isEmpty()) {
@@ -102,7 +102,7 @@ public final class MenuStyle {
         float lh = lw * 280.0f / 720.0f;
         float y = Math.max(2.0f, (float)minY - lh - 6.0f);
         Theme t = ThemeManager.get();
-        NativeScreenLayouts.logo(screen, ctx, ((float)screen.field_22789 - lw) / 2.0f, y, lw, 1.0f);
+        NativeScreenLayouts.logo(screen, ctx, ((float)screen.width - lw) / 2.0f, y, lw, 1.0f);
     }
 
     private static void replaceModsButton(Screen screen) {
@@ -110,21 +110,21 @@ public final class MenuStyle {
             return;
         }
         List buttons = Screens.getButtons((Screen)screen);
-        String modmenu = Component.method_43471((String)"modmenu.title").getString();
+        String modmenu = Component.translatable((String)"modmenu.title").getString();
         ArrayList<AbstractWidget> found = new ArrayList<AbstractWidget>();
         for (AbstractWidget b : buttons) {
-            String m = b.method_25369().getString();
+            String m = b.getMessage().getString();
             if (!(b instanceof Button) || !m.equals("\u041c\u043e\u0434\u044b") && !m.equals("Mods") && !m.equals(modmenu) && !m.startsWith("\u041c\u043e\u0434\u044b (") && !m.startsWith("Mods (")) continue;
             found.add(b);
         }
         for (AbstractWidget old : found) {
-            Button mine = Button.method_46430((Component)Component.method_43470((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.method_1551().method_1507((Screen)new AstraModsScreen(screen))).method_46434(old.method_46426(), old.method_46427(), old.method_25368(), old.method_25364()).method_46431();
+            Button mine = Button.builder((Component)Component.literal((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.getInstance().setScreen((Screen)new AstraModsScreen(screen))).bounds(old.getX(), old.getY(), old.getWidth(), old.getHeight()).build();
             int i = buttons.indexOf(old);
             buttons.remove(old);
             buttons.add(Math.min(i, buttons.size()), mine);
         }
         if (found.isEmpty() && screen instanceof TitleScreen) {
-            buttons.add(Button.method_46430((Component)Component.method_43470((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.method_1551().method_1507((Screen)new AstraModsScreen(screen))).method_46434(4, 4, 60, 18).method_46431());
+            buttons.add(Button.builder((Component)Component.literal((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.getInstance().setScreen((Screen)new AstraModsScreen(screen))).bounds(4, 4, 60, 18).build());
         }
     }
 }

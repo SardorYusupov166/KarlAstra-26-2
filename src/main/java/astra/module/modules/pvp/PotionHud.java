@@ -58,32 +58,32 @@ extends HudModule {
 
     private List<Entry> entries(boolean editor) {
         ArrayList<Entry> list = new ArrayList<Entry>();
-        if (PotionHud.mc.field_1724 != null && PotionHud.mc.field_1687 != null) {
-            ArrayList<MobEffectInstance> effects = new ArrayList<MobEffectInstance>(PotionHud.mc.field_1724.method_6026());
+        if (PotionHud.mc.player != null && PotionHud.mc.level != null) {
+            ArrayList<MobEffectInstance> effects = new ArrayList<MobEffectInstance>(PotionHud.mc.player.getActiveEffects());
             if (this.sort.is("\u041f\u043e \u0432\u0440\u0435\u043c\u0435\u043d\u0438")) {
-                effects.sort(Comparator.comparingInt(MobEffectInstance::method_5584));
+                effects.sort(Comparator.comparingInt(MobEffectInstance::getDuration));
             } else {
-                effects.sort(Comparator.comparing(e -> Component.method_43471((String)e.method_5586()).getString()));
+                effects.sort(Comparator.comparing(e -> Component.translatable((String)e.getDescriptionId()).getString()));
             }
-            float tickRate = PotionHud.mc.field_1687.method_54719().method_54748();
+            float tickRate = PotionHud.mc.level.tickRateManager().tickrate();
             for (MobEffectInstance e2 : effects) {
-                String name = Component.method_43471((String)e2.method_5586()).getString() + PotionHud.roman(e2.method_5578() + 1);
-                String time = MobEffectUtil.method_5577((MobEffectInstance)e2, (float)1.0f, (float)tickRate).getString();
-                list.add(new Entry((Holder<MobEffect>)e2.method_5579(), name, time, e2.method_5591()));
+                String name = Component.translatable((String)e2.getDescriptionId()).getString() + PotionHud.roman(e2.getAmplifier() + 1);
+                String time = MobEffectUtil.formatDuration((MobEffectInstance)e2, (float)1.0f, (float)tickRate).getString();
+                list.add(new Entry((Holder<MobEffect>)e2.getEffect(), name, time, e2.isAmbient()));
             }
         }
         if (list.isEmpty() && editor) {
-            list.add(new Entry((Holder<MobEffect>)MobEffects.field_5904, "\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c II", "0:16", false));
-            list.add(new Entry((Holder<MobEffect>)MobEffects.field_5910, "\u0421\u0438\u043b\u0430 II", "0:16", false));
-            list.add(new Entry((Holder<MobEffect>)MobEffects.field_5898, "\u041f\u043e\u0433\u043b\u043e\u0449\u0435\u043d\u0438\u0435", "1:52", false));
-            list.add(new Entry((Holder<MobEffect>)MobEffects.field_5918, "\u041e\u0433\u043d\u0435\u0441\u0442\u043e\u0439\u043a\u043e\u0441\u0442\u044c", "4:52", false));
+            list.add(new Entry((Holder<MobEffect>)MobEffects.SPEED, "\u0421\u043a\u043e\u0440\u043e\u0441\u0442\u044c II", "0:16", false));
+            list.add(new Entry((Holder<MobEffect>)MobEffects.STRENGTH, "\u0421\u0438\u043b\u0430 II", "0:16", false));
+            list.add(new Entry((Holder<MobEffect>)MobEffects.ABSORPTION, "\u041f\u043e\u0433\u043b\u043e\u0449\u0435\u043d\u0438\u0435", "1:52", false));
+            list.add(new Entry((Holder<MobEffect>)MobEffects.FIRE_RESISTANCE, "\u041e\u0433\u043d\u0435\u0441\u0442\u043e\u0439\u043a\u043e\u0441\u0442\u044c", "4:52", false));
         }
         return list;
     }
 
     @Override
     public boolean shouldRender() {
-        return PotionHud.mc.field_1724 != null && !PotionHud.mc.field_1724.method_6026().isEmpty();
+        return PotionHud.mc.player != null && !PotionHud.mc.player.getActiveEffects().isEmpty();
     }
 
     private float rowH() {
@@ -116,7 +116,7 @@ extends HudModule {
         for (Entry e : this.entries(editor)) {
             float tx;
             int icon = small ? 10 : 16;
-            ctx.method_52706(RenderPipelines.field_56883, Gui.method_71644(e.type), 4, Math.round(y + (this.rowH() - (float)icon) / 2.0f), icon, icon);
+            ctx.blitSprite(RenderPipelines.GUI_TEXTURED, Gui.getMobEffectSprite(e.type), 4, Math.round(y + (this.rowH() - (float)icon) / 2.0f), icon, icon);
             float f = tx = small ? 18.0f : 25.0f;
             if (small) {
                 Fonts.draw(ctx, e.name, tx, y + 3.0f, 7.0f, t.text(), true);

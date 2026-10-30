@@ -20,7 +20,7 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 
 public abstract class Module {
-    protected static final Minecraft mc = Minecraft.method_1551();
+    protected static final Minecraft mc = Minecraft.getInstance();
     private final String id;
     private final String name;
     private final String description;
@@ -171,7 +171,7 @@ public abstract class Module {
     }
 
     protected static boolean inGame() {
-        return Module.mc.field_1724 != null && Module.mc.field_1687 != null;
+        return Module.mc.player != null && Module.mc.level != null;
     }
 }
 

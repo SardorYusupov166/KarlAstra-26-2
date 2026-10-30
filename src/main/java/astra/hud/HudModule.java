@@ -129,7 +129,7 @@ extends Module {
         float x = this.getX(screenW);
         float y = this.getY(screenH);
         float s = this.getScale();
-        Matrix3x2fStack m = ctx.method_51448();
+        Matrix3x2fStack m = ctx.pose();
         m.pushMatrix();
         m.translate(x, y);
         m.scale(s, s);

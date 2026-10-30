@@ -35,13 +35,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class NativeSplashMixin {
     @Shadow
     @Final
-    private Component field_44666;
+    private Component splash;
 
-    @Inject(method={"method_51453"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"render"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$splash(GuiGraphics ctx, int width, Font renderer, float alpha, CallbackInfo ci) {
         Screen screen = NativeScreenLayouts.current();
         if (screen instanceof TitleScreen) {
-            NativeScreenLayouts.splash(screen, ctx, renderer, this.field_44666, alpha);
+            NativeScreenLayouts.splash(screen, ctx, renderer, this.splash, alpha);
             ci.cancel();
         }
     }

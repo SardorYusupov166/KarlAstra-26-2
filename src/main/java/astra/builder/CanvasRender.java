@@ -41,7 +41,7 @@ public final class CanvasRender {
         if (result != null) {
             return result;
         }
-        result = RenderType.method_75940((String)("astra_canvas_" + n), (RenderSetup)RenderSetup.method_75927((RenderPipeline)pipelines[n]).method_75934("Sampler0", texture).method_75929(4096).method_75937().method_75938());
+        result = RenderType.create((String)("astra_canvas_" + n), (RenderSetup)RenderSetup.builder((RenderPipeline)pipelines[n]).withTexture("Sampler0", texture).bufferSize(4096).sortOnUpload().createRenderSetup());
         layers.put(key, result);
         if (layers.size() > 128) {
             layers.remove(layers.keySet().iterator().next());
@@ -51,7 +51,7 @@ public final class CanvasRender {
 
     static {
         for (int i = 0; i < 4; ++i) {
-            CanvasRender.pipelines[i] = RenderPipelines.method_67887((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.field_56864}).withLocation(Identifier.method_60655((String)"astra", (String)("pipeline/canvas_" + i))).withVertexFormat(DefaultVertexFormat.field_1575, VertexFormat.Mode.field_27382).withCull(false).withBlend(BlendFunction.TRANSLUCENT).withDepthWrite((i & 1) != 0).withDepthTestFunction((i & 2) != 0 ? DepthTestFunction.NO_DEPTH_TEST : DepthTestFunction.LEQUAL_DEPTH_TEST).build());
+            CanvasRender.pipelines[i] = RenderPipelines.register((RenderPipeline)RenderPipeline.builder((RenderPipeline.Snippet[])new RenderPipeline.Snippet[]{RenderPipelines.GUI_TEXTURED_SNIPPET}).withLocation(Identifier.fromNamespaceAndPath((String)"astra", (String)("pipeline/canvas_" + i))).withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS).withCull(false).withBlend(BlendFunction.TRANSLUCENT).withDepthWrite((i & 1) != 0).withDepthTestFunction((i & 2) != 0 ? DepthTestFunction.NO_DEPTH_TEST : DepthTestFunction.LEQUAL_DEPTH_TEST).build());
         }
     }
 }

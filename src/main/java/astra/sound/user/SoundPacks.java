@@ -363,7 +363,7 @@ public final class SoundPacks {
     public static void open(Path dir) {
         try {
             Files.createDirectories(dir, new FileAttribute[0]);
-            Util.method_668().method_672(dir.toFile());
+            Util.getPlatform().openFile(dir.toFile());
         }
         catch (Exception e) {
             AstraClient.LOGGER.warn("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043f\u0430\u043f\u043a\u0443 {}", (Object)dir, (Object)e);

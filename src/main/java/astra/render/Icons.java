@@ -456,7 +456,7 @@ public final class Icons {
                 p.star(12.0f, 12.0f, 10.0f);
             }
         }
-        Render2D.submit(ctx, p.m, RenderPipelines.field_56879, TextureSetup.method_70899());
+        Render2D.submit(ctx, p.m, RenderPipelines.GUI, TextureSetup.noTexture());
     }
 
     private static final class Pen {

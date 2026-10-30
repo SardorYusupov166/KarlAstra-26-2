@@ -43,14 +43,14 @@ extends Module {
 
     @Override
     public void onTick() {
-        if (AmbientParticles.mc.field_1687 == null || AmbientParticles.mc.field_1724 == null || mc.method_1493()) {
+        if (AmbientParticles.mc.level == null || AmbientParticles.mc.player == null || mc.isPaused()) {
             return;
         }
         ArrayList<Runnable> kinds = new ArrayList<Runnable>();
         Random r = AstraParticles.random();
         float rad = this.radius.getFloat();
         float sp = this.speed.getFloat() / 100.0f;
-        Vec3 c = AmbientParticles.mc.field_1724.method_73189();
+        Vec3 c = AmbientParticles.mc.player.position();
         if (((Boolean)this.sakura.get()).booleanValue()) {
             kinds.add(() -> {
                 double[] p = this.point(c, rad, 5.0 + r.nextDouble() * 7.0);
@@ -104,8 +104,8 @@ extends Module {
         double z;
         double y;
         Random r = AstraParticles.random();
-        double x = c.field_1352 + (r.nextDouble() * 2.0 - 1.0) * (double)rad;
-        if (AmbientParticles.mc.field_1687.method_22347(BlockPos.method_49637((double)x, (double)(y = c.field_1351 + dy), (double)(z = c.field_1350 + (r.nextDouble() * 2.0 - 1.0) * (double)rad)))) {
+        double x = c.x + (r.nextDouble() * 2.0 - 1.0) * (double)rad;
+        if (AmbientParticles.mc.level.isEmptyBlock(BlockPos.containing((double)x, (double)(y = c.y + dy), (double)(z = c.z + (r.nextDouble() * 2.0 - 1.0) * (double)rad)))) {
             double[] dArray2 = new double[3];
             dArray2[0] = x;
             dArray2[1] = y;

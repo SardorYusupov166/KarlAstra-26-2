@@ -136,11 +136,11 @@ public final class RemoteCosmetics {
         if (!showOthers || player == null) {
             return null;
         }
-        Remote r = BY_NAME.get(player.method_7334().name().toLowerCase(Locale.ROOT));
+        Remote r = BY_NAME.get(player.getGameProfile().name().toLowerCase(Locale.ROOT));
         if (r == null) {
             return null;
         }
-        NAME_BY_UUID.put(player.method_5667().toString(), r.name);
+        NAME_BY_UUID.put(player.getUUID().toString(), r.name);
         PlayerCosmetic m = r.mods.get(id);
         if (m == null || !m.isEnabled()) {
             return null;
@@ -150,12 +150,12 @@ public final class RemoteCosmetics {
     }
 
     public static void tick() {
-        Minecraft mc = Minecraft.method_1551();
-        if (!showOthers || mc.field_1687 == null || mc.field_1724 == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!showOthers || mc.level == null || mc.player == null) {
             return;
         }
-        for (Player p : mc.field_1687.method_18456()) {
-            if (p == mc.field_1724 || p.method_5767()) continue;
+        for (Player p : mc.level.players()) {
+            if (p == mc.player || p.isInvisible()) continue;
             for (String id : new String[]{"trail", "aura", "emotes"}) {
                 Object m = RemoteCosmetics.get(p, id);
                 if (m == null) continue;
@@ -163,7 +163,7 @@ public final class RemoteCosmetics {
                     ((Module)m).onTick();
                 }
                 catch (RuntimeException e) {
-                    AstraClient.LOGGER.debug("Astra Online: \u043e\u0448\u0438\u0431\u043a\u0430 {} \u0443 {}", new Object[]{id, p.method_5477().getString(), e});
+                    AstraClient.LOGGER.debug("Astra Online: \u043e\u0448\u0438\u0431\u043a\u0430 {} \u0443 {}", new Object[]{id, p.getName().getString(), e});
                 }
             }
         }
@@ -173,16 +173,16 @@ public final class RemoteCosmetics {
         if (!showEmotes) {
             return;
         }
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.field_1687 == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
             return;
         }
-        for (Player p : mc.field_1687.method_18456()) {
+        for (Player p : mc.level.players()) {
             EmoteCosmetic e;
             String name = NAME_BY_UUID.get(uuid);
-            boolean match = p.method_5667().toString().equals(uuid) || name != null && p.method_7334().name().equalsIgnoreCase(name);
+            boolean match = p.getUUID().toString().equals(uuid) || name != null && p.getGameProfile().name().equalsIgnoreCase(name);
             if (!match) continue;
-            Remote r = BY_NAME.get(p.method_7334().name().toLowerCase(Locale.ROOT));
+            Remote r = BY_NAME.get(p.getGameProfile().name().toLowerCase(Locale.ROOT));
             if (r == null) {
                 return;
             }
@@ -190,7 +190,7 @@ public final class RemoteCosmetics {
             if (playerCosmetic instanceof EmoteCosmetic && (e = (EmoteCosmetic)playerCosmetic).isEnabled()) {
                 e.owner = p;
                 e.remoteBurst(emote);
-                AstraClient.LOGGER.info("Astra Online: \u044d\u043c\u043e\u0446\u0438\u044f \u00ab{}\u00bb \u043e\u0442 {}", (Object)emote, (Object)p.method_7334().name());
+                AstraClient.LOGGER.info("Astra Online: \u044d\u043c\u043e\u0446\u0438\u044f \u00ab{}\u00bb \u043e\u0442 {}", (Object)emote, (Object)p.getGameProfile().name());
             }
             return;
         }

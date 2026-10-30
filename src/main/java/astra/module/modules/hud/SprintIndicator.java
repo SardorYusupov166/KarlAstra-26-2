@@ -14,7 +14,7 @@ extends StateIndicator {
 
     @Override
     protected boolean isActive() {
-        return SprintIndicator.mc.field_1724 != null && SprintIndicator.mc.field_1724.method_5624();
+        return SprintIndicator.mc.player != null && SprintIndicator.mc.player.isSprinting();
     }
 
     @Override

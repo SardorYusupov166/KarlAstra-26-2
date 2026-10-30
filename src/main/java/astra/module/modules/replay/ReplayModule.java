@@ -34,13 +34,13 @@ extends Module {
     }
 
     private File recordingsDir() {
-        return new File(ReplayModule.mc.field_1697, "replay_recordings");
+        return new File(ReplayModule.mc.gameDirectory, "replay_recordings");
     }
 
     private void openRecordings() {
         File dir = this.recordingsDir();
         dir.mkdirs();
-        Util.method_668().method_672(dir);
+        Util.getPlatform().openFile(dir);
     }
 
     private int recordingCount() {

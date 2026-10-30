@@ -64,12 +64,12 @@ extends HudModule {
 
     public static boolean replacing() {
         StatusBars m = StatusBars.get();
-        return m != null && m.isEnabled() && StatusBars.mc.field_1724 != null && StatusBars.mc.field_1761 != null && StatusBars.mc.field_1761.method_2908();
+        return m != null && m.isEnabled() && StatusBars.mc.player != null && StatusBars.mc.gameMode != null && StatusBars.mc.gameMode.canHurtPlayer();
     }
 
     public static boolean replacingXp() {
         StatusBars m = StatusBars.get();
-        return StatusBars.replacing() && (Boolean)m.xpBar.get() != false && StatusBars.mc.field_1724.method_45773() == null;
+        return StatusBars.replacing() && (Boolean)m.xpBar.get() != false && StatusBars.mc.player.jumpableVehicle() == null;
     }
 
     @Override
@@ -94,13 +94,13 @@ extends HudModule {
 
     private int[] healthColors(Player p, Theme t) {
         int[] nArray;
-        if (p != null && p.method_6059(MobEffects.field_5920)) {
+        if (p != null && p.hasEffect(MobEffects.WITHER)) {
             return new int[]{-11910056, -14015437};
         }
-        if (p != null && p.method_6059(MobEffects.field_5899)) {
+        if (p != null && p.hasEffect(MobEffects.POISON)) {
             return new int[]{-7610290, -11751600};
         }
-        if (p != null && p.method_32314()) {
+        if (p != null && p.isFullyFrozen()) {
             return new int[]{-4199937, -8530948};
         }
         switch ((String)this.healthStyle.get()) {
@@ -142,18 +142,18 @@ extends HudModule {
         Entity entity;
         LivingEntity mount;
         Theme t = StatusBars.theme();
-        LocalPlayer p = StatusBars.mc.field_1724;
+        LocalPlayer p = StatusBars.mc.player;
         float dt = FrameStats.delta();
-        float health = p != null ? p.method_6032() : 16.0f;
-        float maxHealth = p != null ? p.method_6063() : 20.0f;
-        float absorb = p != null ? p.method_6067() : 4.0f;
-        int food = p != null ? p.method_7344().method_7586() : 17;
-        float saturation = p != null ? p.method_7344().method_7589() : 5.0f;
-        int armor = p != null ? p.method_6096() : 12;
-        int air = p != null ? p.method_5669() : 300;
-        int maxAir = p != null ? p.method_5748() : 300;
-        boolean underwater = p != null && (p.method_5777(FluidTags.field_15517) || air < maxAir);
-        LivingEntity livingEntity = mount = p != null && (entity = p.method_5854()) instanceof LivingEntity ? (le = (LivingEntity)entity) : null;
+        float health = p != null ? p.getHealth() : 16.0f;
+        float maxHealth = p != null ? p.getMaxHealth() : 20.0f;
+        float absorb = p != null ? p.getAbsorptionAmount() : 4.0f;
+        int food = p != null ? p.getFoodData().getFoodLevel() : 17;
+        float saturation = p != null ? p.getFoodData().getSaturationLevel() : 5.0f;
+        int armor = p != null ? p.getArmorValue() : 12;
+        int air = p != null ? p.getAirSupply() : 300;
+        int maxAir = p != null ? p.getMaxAirSupply() : 300;
+        boolean underwater = p != null && (p.isEyeInFluid(FluidTags.WATER) || air < maxAir);
+        LivingEntity livingEntity = mount = p != null && (entity = p.getVehicle()) instanceof LivingEntity ? (le = (LivingEntity)entity) : null;
         if (this.shownHealth < 0.0f) {
             this.shownHealth = this.ghostHealth = health;
         }
@@ -188,7 +188,7 @@ extends HudModule {
         float total = Math.max(maxHealth, maxHealth + absorb);
         this.bar(ctx, t, 0.0f, row2, half, this.shownHealth / total, (Boolean)this.ghost.get() != false ? this.ghostHealth / total : -1.0f, absorb / total, hc[0], hc[1], Icon.HEART, hpText, low);
         if (mount != null) {
-            this.bar(ctx, t, half + 4.0f, row2, half, mount.method_6032() / mount.method_6063(), -1.0f, 0.0f, -680309, -2071990, Icon.HEART, (Boolean)this.numbers.get() != false ? StatusBars.fmt(mount.method_6032()) : null, false);
+            this.bar(ctx, t, half + 4.0f, row2, half, mount.getHealth() / mount.getMaxHealth(), -1.0f, 0.0f, -680309, -2071990, Icon.HEART, (Boolean)this.numbers.get() != false ? StatusBars.fmt(mount.getHealth()) : null, false);
         } else {
             int fc = this.foodColor.getColor();
             float x = half + 4.0f;
@@ -199,8 +199,8 @@ extends HudModule {
             }
         }
         if (((Boolean)this.xpBar.get()).booleanValue()) {
-            float xp = p != null ? p.field_7510 : 0.42f;
-            int level = p != null ? p.field_7520 : 30;
+            float xp = p != null ? p.experienceProgress : 0.42f;
+            int level = p != null ? p.experienceLevel : 30;
             float y = row2 + 9.0f + 4.0f;
             float bh = 3.2f;
             int xc = this.xpColor.getColor();

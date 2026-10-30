@@ -76,18 +76,18 @@ public final class CosmeticRenderer {
                 HaloCosmetic halo;
                 WingsCosmetic wings;
                 boolean remote;
-                Minecraft mc = Minecraft.method_1551();
-                if (mc.field_1724 == null || mc.field_1687 == null || state.field_53333) {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player == null || mc.level == null || state.isInvisible) {
                     return;
                 }
                 float time = (float)(System.currentTimeMillis() % 1000000L) / 1000.0f;
-                boolean bl = remote = state.field_53528 != mc.field_1724.method_5628();
+                boolean bl = remote = state.id != mc.player.getId();
                 if (!remote) {
                     wings = ModuleManager.get(WingsCosmetic.class);
                     halo = ModuleManager.get(HaloCosmetic.class);
                     aura = ModuleManager.get(AuraCosmetic.class);
                 } else {
-                    Entity entity = mc.field_1687.method_8469(state.field_53528);
+                    Entity entity = mc.level.getEntity(state.id);
                     if (!(entity instanceof Player)) {
                         return;
                     }
@@ -143,25 +143,25 @@ public final class CosmeticRenderer {
             if (!art) {
                 tex = CosmeticTextures.wing(wings.design().equals("Astra") ? "\u0410\u043d\u0433\u0435\u043b\u044c\u0441\u043a\u0438\u0435" : wings.design());
             }
-            RenderType layer = wings.solid() ? RenderTypes.method_75994((Identifier)tex) : (wings.glow() ? RenderTypes.method_76002((Identifier)tex) : RenderTypes.method_76000((Identifier)tex));
+            RenderType layer = wings.solid() ? RenderTypes.entityCutoutNoCull((Identifier)tex) : (wings.glow() ? RenderTypes.entityTranslucentEmissive((Identifier)tex) : RenderTypes.entityTranslucent((Identifier)tex));
             int lightValue = wings.glow() ? 0xF000F0 : light;
             int color = wings.color();
             float scale = wings.scale();
-            float speed = state.field_53411 ? 0.5f : 1.0f;
+            float speed = state.isFallFlying ? 0.5f : 1.0f;
             float flap = (float)Math.sin((double)(time * wings.flapSpeed() * speed) * Math.PI) * wings.flapAmount();
-            if (state.field_53334) {
+            if (state.isDiscrete) {
                 flap -= 10.0f;
             }
-            matrices.method_22903();
-            ((PlayerModel)this.method_17165()).field_3391.method_22703(matrices);
-            matrices.method_46416(0.0f, 0.16f - wings.heightOffset(), 0.22f + wings.distanceOffset());
+            matrices.pushPose();
+            ((PlayerModel)this.getParentModel()).body.translateAndRotate(matrices);
+            matrices.translate(0.0f, 0.16f - wings.heightOffset(), 0.22f + wings.distanceOffset());
             if (wings.pitchDegrees() != 0.0f) {
-                matrices.method_22907((Quaternionfc)Axis.field_40714.rotationDegrees(wings.pitchDegrees()));
+                matrices.mulPose((Quaternionfc)Axis.XP.rotationDegrees(wings.pitchDegrees()));
             }
             for (int side = -1; side <= 1; side += 2) {
-                matrices.method_22903();
-                matrices.method_22907((Quaternionfc)Axis.field_40716.rotationDegrees((float)(-side) * (wings.sweepDegrees() + flap)));
-                matrices.method_22907((Quaternionfc)Axis.field_40718.rotationDegrees((float)side * -wings.liftDegrees()));
+                matrices.pushPose();
+                matrices.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)(-side) * (wings.sweepDegrees() + flap)));
+                matrices.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)side * -wings.liftDegrees()));
                 float w = 1.05f * scale;
                 float h = 1.05f * scale;
                 float base = Math.max(0.0f, 0.04f + wings.spreadOffset());
@@ -173,7 +173,7 @@ public final class CosmeticRenderer {
                 float u1 = 1.0f;
                 float eps = 0.004f;
                 int inner = Feature.dim(color);
-                vcp.method_73483(matrices, layer, (e, vc) -> {
+                vcp.submitCustomGeometry(matrices, layer, (e, vc) -> {
                     Feature.vertex(vc, e, x0, y0, eps, u0, 0.0f, color, lightValue);
                     Feature.vertex(vc, e, x0, y1, eps, u0, 1.0f, color, lightValue);
                     Feature.vertex(vc, e, x1, y1, eps, u1, 1.0f, color, lightValue);
@@ -183,24 +183,24 @@ public final class CosmeticRenderer {
                     Feature.vertex(vc, e, x0, y1, -eps, u0, 1.0f, inner, lightValue);
                     Feature.vertex(vc, e, x0, y0, -eps, u0, 0.0f, inner, lightValue);
                 });
-                matrices.method_22909();
+                matrices.popPose();
             }
-            matrices.method_22909();
+            matrices.popPose();
         }
 
         private void renderHalo(PoseStack matrices, SubmitNodeCollector vcp, HaloCosmetic halo, float time) {
-            RenderType layer = RenderTypes.method_76002((Identifier)CosmeticTextures.white());
+            RenderType layer = RenderTypes.entityTranslucentEmissive((Identifier)CosmeticTextures.white());
             int color = halo.color();
-            matrices.method_22903();
-            ((PlayerModel)this.method_17165()).field_3391.method_22703(matrices);
+            matrices.pushPose();
+            ((PlayerModel)this.getParentModel()).body.translateAndRotate(matrices);
             float bob = (float)Math.sin((double)time * 2.2) * 0.02f;
-            matrices.method_46416(0.0f, -0.66f + bob, 0.0f);
+            matrices.translate(0.0f, -0.66f + bob, 0.0f);
             int full = 0xF000F0;
             float big = 0.22f;
             float tube = 0.022f;
             int segs = 48;
             int ring = 8;
-            vcp.method_73483(matrices, layer, (e, vc) -> {
+            vcp.submitCustomGeometry(matrices, layer, (e, vc) -> {
                 for (int i = 0; i < segs; ++i) {
                     double a0 = Math.PI * 2 * (double)i / (double)segs;
                     double a1 = Math.PI * 2 * (double)(i + 1) / (double)segs;
@@ -214,7 +214,7 @@ public final class CosmeticRenderer {
                     }
                 }
             });
-            matrices.method_22909();
+            matrices.popPose();
         }
 
         private static void torus(VertexConsumer vc, PoseStack.Pose e, double a, double b, float big, float tube, int color, int light) {
@@ -226,25 +226,25 @@ public final class CosmeticRenderer {
         }
 
         private void renderAura(PoseStack matrices, SubmitNodeCollector vcp, AuraCosmetic aura, float time) {
-            RenderType layer = RenderTypes.method_76002((Identifier)CosmeticTextures.auraCircle());
+            RenderType layer = RenderTypes.entityTranslucentEmissive((Identifier)CosmeticTextures.auraCircle());
             int color = aura.color();
             float pulse = 0.9f + 0.1f * (float)Math.sin(time * 3.0f);
             float r = 0.85f * aura.size() * pulse;
-            matrices.method_22903();
-            matrices.method_46416(0.0f, 1.44f, 0.0f);
-            matrices.method_22907((Quaternionfc)Axis.field_40716.rotationDegrees(time * 25.0f));
+            matrices.pushPose();
+            matrices.translate(0.0f, 1.44f, 0.0f);
+            matrices.mulPose((Quaternionfc)Axis.YP.rotationDegrees(time * 25.0f));
             int full = 0xF000F0;
-            vcp.method_73483(matrices, layer, (e, vc) -> {
+            vcp.submitCustomGeometry(matrices, layer, (e, vc) -> {
                 Feature.vertex(vc, e, -r, 0.0f, -r, 0.0f, 0.0f, color, full);
                 Feature.vertex(vc, e, -r, 0.0f, r, 0.0f, 1.0f, color, full);
                 Feature.vertex(vc, e, r, 0.0f, r, 1.0f, 1.0f, color, full);
                 Feature.vertex(vc, e, r, 0.0f, -r, 1.0f, 0.0f, color, full);
             });
-            matrices.method_22909();
+            matrices.popPose();
         }
 
         private static void vertex(VertexConsumer vc, PoseStack.Pose e, float x, float y, float z, float u, float v, int color, int light) {
-            vc.method_56824(e, x, y, z).method_39415(color).method_22913(u, v).method_22922(OverlayTexture.field_21444).method_60803(light).method_60831(e, 0.0f, -1.0f, 0.0f);
+            vc.addVertex(e, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(e, 0.0f, -1.0f, 0.0f);
         }
     }
 }

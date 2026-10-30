@@ -140,18 +140,18 @@ public final class CanvasBoard {
     }
 
     private static String worldIdentity(String legacy) {
-        Minecraft mc = Minecraft.method_1551();
-        if (mc.field_1687 == null) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
             return null;
         }
-        if (mc.method_1576() != null) {
+        if (mc.getSingleplayerServer() != null) {
             return legacy;
         }
-        ClientPacketListener handler = mc.method_1562();
+        ClientPacketListener handler = mc.getConnection();
         if (handler == null) {
             return null;
         }
-        return ServerIdentity.peer(handler.method_48296().method_10755());
+        return ServerIdentity.peer(handler.getConnection().getRemoteAddress());
     }
 
     private static String key() {
@@ -311,9 +311,9 @@ public final class CanvasBoard {
             if (w < 1 || h < 1 || w > 512 || h > 512) {
                 throw new IOException();
             }
-            NativeImage image = NativeImage.method_4309((InputStream)new ByteArrayInputStream(bytes));
-            Identifier id = Identifier.method_60655((String)"astra", (String)("canvas/" + c.id));
-            Minecraft.method_1551().method_1531().method_4616(id, (AbstractTexture)new DynamicTexture(() -> "astra_canvas", image));
+            NativeImage image = NativeImage.read((InputStream)new ByteArrayInputStream(bytes));
+            Identifier id = Identifier.fromNamespaceAndPath((String)"astra", (String)("canvas/" + c.id));
+            Minecraft.getInstance().getTextureManager().register(id, (AbstractTexture)new DynamicTexture(() -> "astra_canvas", image));
             textures.put(c.id, id);
             return id;
         }
@@ -324,10 +324,10 @@ public final class CanvasBoard {
     }
 
     private static void releaseTextures() {
-        TextureManager tm = Minecraft.method_1551().method_1531();
+        TextureManager tm = Minecraft.getInstance().getTextureManager();
         for (Identifier id : textures.values()) {
             if (id == null) continue;
-            tm.method_4615(id);
+            tm.release(id);
         }
         textures.clear();
     }

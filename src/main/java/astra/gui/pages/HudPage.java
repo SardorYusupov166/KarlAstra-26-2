@@ -80,9 +80,9 @@ extends ModulesPage {
             Render2D.outline(ui.ctx, sx, sy, sw, sh, 5.0f, 0.8f, ColorUtil.withAlpha(t.accent(), 0.6f));
             Render2D.dashedLine(ui.ctx, sx + sw / 2.0f, sy + 3.0f, sx + sw / 2.0f, sy + sh - 3.0f, 0.5f, 2.0f, 2.0f, ColorUtil.withAlpha(t.accent3(), 0.5f));
             Render2D.dashedLine(ui.ctx, sx + 3.0f, sy + sh / 2.0f, sx + sw - 3.0f, sy + sh / 2.0f, 0.5f, 2.0f, 2.0f, ColorUtil.withAlpha(t.accent3(), 0.5f));
-            Window window = Minecraft.method_1551().method_22683();
-            float gw = window.method_4486();
-            float gh = window.method_4502();
+            Window window = Minecraft.getInstance().getWindow();
+            float gw = window.getGuiScaledWidth();
+            float gh = window.getGuiScaledHeight();
             for (HudModule hud : ModuleManager.hudModules()) {
                 if (!hud.isEnabled()) continue;
                 float ex = sx + hud.getX(gw) / gw * sw;

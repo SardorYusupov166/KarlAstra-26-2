@@ -32,17 +32,17 @@ extends Module {
     @Override
     public void onTick() {
         boolean down;
-        boolean bl = down = PerspectiveModule.mc.field_1755 == null && this.key.isBound() && InputConstants.method_15987((Window)mc.method_22683(), (int)this.key.getKey());
+        boolean bl = down = PerspectiveModule.mc.screen == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
         if (this.mode.is("\u0423\u0434\u0435\u0440\u0436\u0430\u043d\u0438\u0435")) {
             if (down && !this.wasDown) {
-                this.before = PerspectiveModule.mc.field_1690.method_31044();
-                PerspectiveModule.mc.field_1690.method_31043(CameraType.field_26665);
+                this.before = PerspectiveModule.mc.options.getCameraType();
+                PerspectiveModule.mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             } else if (!down && this.wasDown && this.before != null) {
-                PerspectiveModule.mc.field_1690.method_31043(this.before);
+                PerspectiveModule.mc.options.setCameraType(this.before);
                 this.before = null;
             }
         } else if (down && !this.wasDown) {
-            PerspectiveModule.mc.field_1690.method_31043(PerspectiveModule.mc.field_1690.method_31044().method_31034() ? CameraType.field_26665 : CameraType.field_26664);
+            PerspectiveModule.mc.options.setCameraType(PerspectiveModule.mc.options.getCameraType().isFirstPerson() ? CameraType.THIRD_PERSON_BACK : CameraType.FIRST_PERSON);
         }
         this.wasDown = down;
     }
@@ -50,7 +50,7 @@ extends Module {
     @Override
     protected void onDisable() {
         if (this.before != null) {
-            PerspectiveModule.mc.field_1690.method_31043(this.before);
+            PerspectiveModule.mc.options.setCameraType(this.before);
             this.before = null;
         }
     }

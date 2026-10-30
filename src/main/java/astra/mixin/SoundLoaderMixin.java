@@ -26,16 +26,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value={SoundBufferLibrary.class})
 public abstract class SoundLoaderMixin {
-    @Inject(method={"method_19743(Lnet/minecraft/class_2960;)Ljava/util/concurrent/CompletableFuture;"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"getCompleteBuffer(Lnet/minecraft/class_2960;)Ljava/util/concurrent/CompletableFuture;"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$userStatic(Identifier id, CallbackInfoReturnable<CompletableFuture<SoundBuffer>> cir) {
-        if ("astra_user".equals(id.method_12836())) {
+        if ("astra_user".equals(id.getNamespace())) {
             cir.setReturnValue(UserAudio.loadStatic(id));
         }
     }
 
-    @Inject(method={"method_19744"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"getStream"}, at={@At(value="HEAD")}, cancellable=true)
     private void astra$userStreamed(Identifier id, boolean repeat, CallbackInfoReturnable<CompletableFuture<AudioStream>> cir) {
-        if ("astra_user".equals(id.method_12836())) {
+        if ("astra_user".equals(id.getNamespace())) {
             cir.setReturnValue(UserAudio.loadStreamed(id));
         }
     }

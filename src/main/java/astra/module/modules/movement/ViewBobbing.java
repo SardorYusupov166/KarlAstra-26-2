@@ -12,9 +12,9 @@ import astra.settings.NumberSetting;
 
 public class ViewBobbing
 extends Module {
-    private final BooleanSetting vanilla = this.add((BooleanSetting)new BooleanSetting("\u041f\u043e\u043a\u0430\u0447\u0438\u0432\u0430\u043d\u0438\u0435 \u043a\u0430\u043c\u0435\u0440\u044b", true).bind(() -> (Boolean)ViewBobbing.mc.field_1690.method_42448().method_41753(), v -> {
-        ViewBobbing.mc.field_1690.method_42448().method_41748(v);
-        ViewBobbing.mc.field_1690.method_1640();
+    private final BooleanSetting vanilla = this.add((BooleanSetting)new BooleanSetting("\u041f\u043e\u043a\u0430\u0447\u0438\u0432\u0430\u043d\u0438\u0435 \u043a\u0430\u043c\u0435\u0440\u044b", true).bind(() -> (Boolean)ViewBobbing.mc.options.bobView().get(), v -> {
+        ViewBobbing.mc.options.bobView().set(v);
+        ViewBobbing.mc.options.save();
     }));
     private final NumberSetting intensity = this.add(new NumberSetting("\u0418\u043d\u0442\u0435\u043d\u0441\u0438\u0432\u043d\u043e\u0441\u0442\u044c", 60.0, 0.0, 200.0, 5.0).unit("%"));
 

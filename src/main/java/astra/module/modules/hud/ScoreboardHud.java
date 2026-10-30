@@ -55,7 +55,7 @@ import net.minecraft.world.scores.Team;
 
 public class ScoreboardHud
 extends HudModule {
-    private static final Comparator<PlayerScoreEntry> ORDER = Comparator.comparing(PlayerScoreEntry::comp_2128).reversed().thenComparing(PlayerScoreEntry::comp_2127, String.CASE_INSENSITIVE_ORDER);
+    private static final Comparator<PlayerScoreEntry> ORDER = Comparator.comparing(PlayerScoreEntry::value).reversed().thenComparing(PlayerScoreEntry::owner, String.CASE_INSENSITIVE_ORDER);
     private final ModeSetting titleStyle = this.add(new ModeSetting("\u0417\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a", "\u0413\u0440\u0430\u0434\u0438\u0435\u043d\u0442 \u0442\u0435\u043c\u044b", "\u0413\u0440\u0430\u0434\u0438\u0435\u043d\u0442 \u0442\u0435\u043c\u044b", "\u041a\u0430\u043a \u043d\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0435", "\u0421\u0432\u043e\u0439 \u0446\u0432\u0435\u0442"));
     private final ColorSetting titleColor = this.add((ColorSetting)new ColorSetting("\u0426\u0432\u0435\u0442 \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0430", -45608).visibleWhen(() -> this.titleStyle.is("\u0421\u0432\u043e\u0439 \u0446\u0432\u0435\u0442")));
     private final ModeSetting numbers = this.add(new ModeSetting("\u0427\u0438\u0441\u043b\u0430 \u0441\u043f\u0440\u0430\u0432\u0430", "\u0426\u0432\u0435\u0442 \u0442\u0435\u043c\u044b", "\u0426\u0432\u0435\u0442 \u0442\u0435\u043c\u044b", "\u041a\u0430\u043a \u043d\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0435", "\u0421\u043a\u0440\u044b\u0442\u044c"));
@@ -63,7 +63,7 @@ extends HudModule {
     private final BooleanSetting separator = this.add(new BooleanSetting("\u041b\u0438\u043d\u0438\u044f \u043f\u043e\u0434 \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u043e\u043c", true));
     private final BooleanSetting lineShadow = this.add(new BooleanSetting("\u0422\u0435\u043d\u044c \u0442\u0435\u043a\u0441\u0442\u0430", true));
     private final NumberSetting lineGap = this.add(new NumberSetting("\u041c\u0435\u0436\u0441\u0442\u0440\u043e\u0447\u043d\u044b\u0439 \u0438\u043d\u0442\u0435\u0440\u0432\u0430\u043b", 2.0, 0.0, 6.0, 0.5));
-    private Component title = Component.method_43470((String)"Astra Anime");
+    private Component title = Component.literal((String)"Astra Anime");
     private final List<Line> lines = new ArrayList<Line>();
     private float cachedW = 110.0f;
     private float cachedH = 80.0f;
@@ -84,15 +84,15 @@ extends HudModule {
 
     private Objective objective() {
         DisplaySlot slot;
-        if (ScoreboardHud.mc.field_1687 == null || ScoreboardHud.mc.field_1724 == null) {
+        if (ScoreboardHud.mc.level == null || ScoreboardHud.mc.player == null) {
             return null;
         }
-        Scoreboard sb = ScoreboardHud.mc.field_1687.method_8428();
-        PlayerTeam team = sb.method_1164(ScoreboardHud.mc.field_1724.method_5820());
-        if (team != null && (slot = DisplaySlot.method_52622((ChatFormatting)team.method_1202())) != null && sb.method_1189(slot) != null) {
-            return sb.method_1189(slot);
+        Scoreboard sb = ScoreboardHud.mc.level.getScoreboard();
+        PlayerTeam team = sb.getPlayersTeam(ScoreboardHud.mc.player.getScoreboardName());
+        if (team != null && (slot = DisplaySlot.teamColorToSlot((ChatFormatting)team.getColor())) != null && sb.getDisplayObjective(slot) != null) {
+            return sb.getDisplayObjective(slot);
         }
-        return sb.method_1189(DisplaySlot.field_45157);
+        return sb.getDisplayObjective(DisplaySlot.SIDEBAR);
     }
 
     private boolean collect() {
@@ -101,23 +101,23 @@ extends HudModule {
         if (obj == null) {
             return false;
         }
-        Scoreboard sb = obj.method_1117();
-        NumberFormat fmt = obj.method_55380((NumberFormat)StyledFormat.field_47567);
-        this.title = obj.method_1114();
-        sb.method_1184(obj).stream().filter(e -> !e.method_55385()).sorted(ORDER).limit(15L).forEach(e -> {
-            PlayerTeam team = sb.method_1164(e.comp_2127());
-            this.lines.add(new Line((Component)PlayerTeam.method_1142((Team)team, (Component)e.method_55387()), (Component)e.method_55386(fmt)));
+        Scoreboard sb = obj.getScoreboard();
+        NumberFormat fmt = obj.numberFormatOrDefault((NumberFormat)StyledFormat.SIDEBAR_DEFAULT);
+        this.title = obj.getDisplayName();
+        sb.listPlayerScores(obj).stream().filter(e -> !e.isHidden()).sorted(ORDER).limit(15L).forEach(e -> {
+            PlayerTeam team = sb.getPlayersTeam(e.owner());
+            this.lines.add(new Line((Component)PlayerTeam.formatNameForTeam((Team)team, (Component)e.ownerName()), (Component)e.formatValue(fmt)));
         });
         return true;
     }
 
     private void sample() {
         this.lines.clear();
-        this.title = Component.method_43470((String)"ASTRA SERVER").method_27695(new ChatFormatting[]{ChatFormatting.field_1065, ChatFormatting.field_1067});
+        this.title = Component.literal((String)"ASTRA SERVER").withStyle(new ChatFormatting[]{ChatFormatting.GOLD, ChatFormatting.BOLD});
         String[][] rows = new String[][]{{"\u041d\u0438\u043a: ", "Player"}, {"\u0411\u0430\u043b\u0430\u043d\u0441: ", "5k"}, {"\u0423\u0431\u0438\u0439\u0441\u0442\u0432: ", "12"}, {"\u0421\u043c\u0435\u0440\u0442\u0435\u0439: ", "3"}, {"", ""}, {"play.astra.gg", ""}};
         int v = rows.length;
         for (String[] r : rows) {
-            this.lines.add(new Line((Component)Component.method_43470((String)r[0]).method_27692(ChatFormatting.field_1068).method_10852((Component)Component.method_43470((String)r[1]).method_27692(ChatFormatting.field_1076)), (Component)Component.method_43470((String)String.valueOf(v--)).method_27692(ChatFormatting.field_1061)));
+            this.lines.add(new Line((Component)Component.literal((String)r[0]).withStyle(ChatFormatting.WHITE).append((Component)Component.literal((String)r[1]).withStyle(ChatFormatting.LIGHT_PURPLE)), (Component)Component.literal((String)String.valueOf(v--)).withStyle(ChatFormatting.RED)));
         }
     }
 
@@ -145,14 +145,14 @@ extends HudModule {
         if (this.font.is("Minecraft")) {
             return t;
         }
-        return t.method_27661().method_27696(Style.field_24360.method_27704((FontDescription)new FontDescription.Resource(Fonts.REGULAR)));
+        return t.copy().withStyle(Style.EMPTY.withFont((FontDescription)new FontDescription.Resource(Fonts.REGULAR)));
     }
 
     private Component styledBold(Component t) {
         if (this.font.is("Minecraft")) {
             return t;
         }
-        return t.method_27661().method_27696(Style.field_24360.method_27704((FontDescription)new FontDescription.Resource(Fonts.BOLD)));
+        return t.copy().withStyle(Style.EMPTY.withFont((FontDescription)new FontDescription.Resource(Fonts.BOLD)));
     }
 
     @Override
@@ -166,13 +166,13 @@ extends HudModule {
         }
         Theme t = ScoreboardHud.theme();
         int acc = this.accentColor();
-        Font tr = ScoreboardHud.mc.field_1772;
+        Font tr = ScoreboardHud.mc.font;
         float pad = 6.0f;
         float lh = 9.0f + this.lineGap.getFloat();
         boolean showNums = !this.numbers.is("\u0421\u043a\u0440\u044b\u0442\u044c");
-        float maxW = titleW = (float)tr.method_27525((FormattedText)this.styledBold(this.title));
+        float maxW = titleW = (float)tr.width((FormattedText)this.styledBold(this.title));
         for (Line l : this.lines) {
-            float lw = tr.method_27525((FormattedText)this.styled(l.name())) + (showNums ? tr.method_27525((FormattedText)this.styled(l.score())) + 10 : 0);
+            float lw = tr.width((FormattedText)this.styled(l.name())) + (showNums ? tr.width((FormattedText)this.styled(l.score())) + 10 : 0);
             maxW = Math.max(maxW, lw);
         }
         this.cachedW = Math.max(70.0f, maxW + pad * 2.0f);
@@ -185,7 +185,7 @@ extends HudModule {
         } else if (this.titleStyle.is("\u0421\u0432\u043e\u0439 \u0446\u0432\u0435\u0442")) {
             Fonts.drawCentered(ctx, plain, w / 2.0f, ty, 9.0f, this.titleColor.getColor(), true);
         } else {
-            ctx.method_51439(tr, this.styledBold(this.title), (int)((w - titleW) / 2.0f), (int)ty, -1, ((Boolean)this.lineShadow.get()).booleanValue());
+            ctx.drawString(tr, this.styledBold(this.title), (int)((w - titleW) / 2.0f), (int)ty, -1, ((Boolean)this.lineShadow.get()).booleanValue());
         }
         float y = ty + 11.0f;
         if (((Boolean)this.separator.get()).booleanValue()) {
@@ -197,14 +197,14 @@ extends HudModule {
         }
         int alpha = (int)(255.0f * Render2D.alpha) << 24;
         for (Line l : this.lines) {
-            ctx.method_51439(tr, this.styled(l.name()), (int)pad, (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
+            ctx.drawString(tr, this.styled(l.name()), (int)pad, (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
             if (showNums) {
                 Component sc = this.styled(l.score());
-                int sw = tr.method_27525((FormattedText)sc);
+                int sw = tr.width((FormattedText)sc);
                 if (this.numbers.is("\u0426\u0432\u0435\u0442 \u0442\u0435\u043c\u044b")) {
                     Fonts.drawRight(ctx, sc.getString(), w - pad, y, 9.0f, ColorUtil.brighten(acc, 0.25f), false);
                 } else {
-                    ctx.method_51439(tr, sc, (int)(w - pad - (float)sw), (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
+                    ctx.drawString(tr, sc, (int)(w - pad - (float)sw), (int)y, 0xFFFFFF | alpha, ((Boolean)this.lineShadow.get()).booleanValue());
                 }
             }
             y += lh;
