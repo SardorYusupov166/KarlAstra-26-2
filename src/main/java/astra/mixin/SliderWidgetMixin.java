@@ -29,7 +29,7 @@ public abstract class SliderWidgetMixin {
     @Shadow
     protected double value;
 
-    @Inject(method={"renderWidget"}, at=@At(value="HEAD"), cancellable=true)
+    @Inject(method={"extractWidgetRenderState"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$render(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;

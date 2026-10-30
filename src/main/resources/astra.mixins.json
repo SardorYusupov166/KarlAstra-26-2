@@ -38,7 +38,8 @@
     "WorldMixin",
     "NativeSplashMixin",
     "NativeTitleTextMixin",
-    "NativeCopyrightMixin"
+    "NativeCopyrightMixin",
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

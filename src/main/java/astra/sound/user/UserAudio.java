@@ -69,38 +69,17 @@ public final class UserAudio {
     }
 
     public static CompletableFuture<SoundBuffer> loadStatic(Identifier location) {
-        return STATIC.computeIfAbsent(UserAudio.key(location), k -> CompletableFuture.supplyAsync(() -> {
-            SoundBuffer soundBuffer;
-            block8: {
-                Path f = UserAudio.file(location);
-                FloatSampleSource s = Decoders.open(f);
-                try {
-                    ByteBuffer data = s.readAll();
-                    UserAudio.normalize(data);
-                    soundBuffer = new SoundBuffer(data, s.getFormat());
-                    if (s == null) break block8;
-                }
-                catch (Throwable throwable) {
-                    try {
-                        if (s != null) {
-                            try {
-                                s.close();
-                            }
-                            catch (Throwable throwable2) {
-                                throwable.addSuppressed(throwable2);
-                            }
-                        }
-                        throw throwable;
-                    }
-                    catch (Exception e) {
-                        AstraClient.LOGGER.warn("\u0421\u0432\u043e\u0439 \u0437\u0432\u0443\u043a \u043d\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u043b\u0441\u044f: {} ({})", (Object)f.getFileName(), (Object)e.getMessage());
-                        throw new CompletionException(e);
-                    }
-                }
-                s.close();
+        return STATIC.computeIfAbsent(key(location), k -> CompletableFuture.supplyAsync(() -> {
+            Path file = file(location);
+            try (FloatSampleSource source = Decoders.open(file)) {
+                ByteBuffer data = source.readAll();
+                normalize(data);
+                return new SoundBuffer(data, source.getFormat());
+            } catch (Exception e) {
+                AstraClient.LOGGER.warn("Unable to load custom sound {}", file, e);
+                throw new CompletionException(e);
             }
-            return soundBuffer;
-        }, (Executor)Util.nonCriticalIoPool()));
+        }, Util.nonCriticalIoPool()));
     }
 
     private static void normalize(ByteBuffer data) {

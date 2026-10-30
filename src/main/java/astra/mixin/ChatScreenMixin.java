@@ -111,7 +111,7 @@ extends Screen {
         return (ActiveTextCollector.ClickableStyleFinder)original.call(new Object[]{tr, (int)ChatLayoutHud.unmapX(x), (int)ChatLayoutHud.unmapY(y)});
     }
 
-    @Redirect(method={"render"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"), require=0)
+    @Redirect(method={"extractRenderState"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"), require=0)
     private void astra$input(GuiGraphicsExtractor ctx, int x1, int y1, int x2, int y2, int color) {
         ChatInputHud input = ChatInputHud.get();
         if (input != null && input.isEnabled()) {

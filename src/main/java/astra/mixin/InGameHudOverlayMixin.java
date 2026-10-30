@@ -13,7 +13,7 @@
 package astra.mixin;
 
 import astra.module.modules.pvp.PvpTweaks;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,9 +21,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value={Gui.class})
+@Mixin(value={Hud.class})
 public abstract class InGameHudOverlayMixin {
-    @Inject(method={"renderTextureOverlay"}, at=@At(value="HEAD"), cancellable=true)
+    @Inject(method={"extractTextureOverlay"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$hideOverlay(GuiGraphicsExtractor context, Identifier texture, float opacity, CallbackInfo ci) {
         if (PvpTweaks.hideHudOverlay(texture)) {
             ci.cancel();

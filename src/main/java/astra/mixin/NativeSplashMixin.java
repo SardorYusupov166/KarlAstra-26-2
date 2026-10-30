@@ -37,7 +37,7 @@ public class NativeSplashMixin {
     @Final
     private Component splash;
 
-    @Inject(method={"render"}, at=@At(value="HEAD"), cancellable=true)
+    @Inject(method={"extractRenderState"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$splash(GuiGraphicsExtractor ctx, int width, Font renderer, float alpha, CallbackInfo ci) {
         Screen screen = NativeScreenLayouts.current();
         if (screen instanceof TitleScreen) {

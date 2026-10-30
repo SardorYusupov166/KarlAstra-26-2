@@ -44,13 +44,13 @@ public abstract class ChatInputSuggestorMixin {
     @Shadow
     private int commandUsagePosition;
 
-    @Redirect(method={"showSuggestions", "renderUsage"}, at=@At(value="FIELD", target="Lnet/minecraft/client/gui/screens/Screen;height:I", opcode=180))
+    @Redirect(method={"showSuggestions", "extractUsage"}, at=@At(value="FIELD", target="Lnet/minecraft/client/gui/screens/Screen;height:I", opcode=180))
     private int astra$inputAnchor(Screen owner) {
         ChatInputHud layout = ChatInputHud.get();
         return owner instanceof ChatScreen && layout != null && layout.isEnabled() ? this.input.getY() + 12 : owner.height;
     }
 
-    @Redirect(method={"renderUsage"}, at=@At(value="FIELD", target="Lnet/minecraft/client/gui/components/CommandSuggestions;commandUsagePosition:I", opcode=180))
+    @Redirect(method={"extractUsage"}, at=@At(value="FIELD", target="Lnet/minecraft/client/gui/components/CommandSuggestions;commandUsagePosition:I", opcode=180))
     private int astra$usageX(CommandSuggestions self) {
         ChatInputHud layout = ChatInputHud.get();
         return Minecraft.getInstance().gui.screen() instanceof ChatScreen && layout != null && layout.isEnabled() ? this.input.getX() : this.astra$originalUsageX();

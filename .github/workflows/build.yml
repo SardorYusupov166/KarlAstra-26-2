@@ -22,6 +22,12 @@ jobs:
           cache-read-only: false
       - name: Build all recovered sources
         run: gradle build --stacktrace --console=plain
+      - name: Boot client and render title and ClickGUI with software OpenGL
+        env:
+          LIBGL_ALWAYS_SOFTWARE: 'true'
+        run: |
+          timeout 480s xvfb-run -a gradle runClient -PsmokeTest --console=plain
+          grep -q 'ASTRA_SMOKE_TEST_PASS' run/logs/latest.log
       - uses: actions/upload-artifact@v4
         if: success()
         with:
@@ -33,3 +39,10 @@ jobs:
         with:
           name: build-reports
           path: build/reports/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: client-logs
+          path: |
+            run/logs/
+            run/crash-reports/

@@ -33,7 +33,7 @@ public abstract class ScreenBackgroundMixin {
     @Shadow
     public int height;
 
-    @Inject(method={"renderPanorama"}, at=@At(value="TAIL"))
+    @Inject(method={"extractPanorama"}, at=@At(value="TAIL"))
     private void astra$menuBackground(GuiGraphicsExtractor ctx, float delta, CallbackInfo ci) {
         if ((Object)this instanceof ClickGuiScreen) {
             return;
@@ -41,7 +41,7 @@ public abstract class ScreenBackgroundMixin {
         MenuStyle.drawMenuBackground(ctx, this.width, this.height);
     }
 
-    @Inject(method={"renderBackground"}, at=@At(value="TAIL"))
+    @Inject(method={"extractBackground"}, at=@At(value="TAIL"))
     private void astra$pauseBackdrop(GuiGraphicsExtractor ctx, int mx, int my, float delta, CallbackInfo ci) {
         if ((Object)this instanceof PauseScreen) {
             Screen screen = (Screen)(Object)this;

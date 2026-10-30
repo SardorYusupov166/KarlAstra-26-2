@@ -35,12 +35,12 @@ public abstract class PlayerListHudMixin {
     @Unique
     private boolean astra$moved;
 
-    @Inject(method={"render"}, at=@At(value="HEAD"))
+    @Inject(method={"extractRenderState"}, at=@At(value="HEAD"))
     private void astra$begin(GuiGraphicsExtractor ctx, int sw, Scoreboard sb, Objective obj, CallbackInfo ci) {
         this.astra$moved = TabLayoutHud.begin(ctx);
     }
 
-    @Inject(method={"render"}, at=@At(value="RETURN"))
+    @Inject(method={"extractRenderState"}, at=@At(value="RETURN"))
     private void astra$end(GuiGraphicsExtractor ctx, int sw, Scoreboard sb, Objective obj, CallbackInfo ci) {
         if (this.astra$moved) {
             ctx.pose().popMatrix();
@@ -48,7 +48,7 @@ public abstract class PlayerListHudMixin {
         this.astra$moved = false;
     }
 
-    @Redirect(method={"render"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
+    @Redirect(method={"extractRenderState"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"))
     private void astra$fill(GuiGraphicsExtractor ctx, int x1, int y1, int x2, int y2, int color) {
         if (AnimeChatModule.tabStyled()) {
             AnimeChatModule.tabFill(ctx, x1, y1, x2, y2, color);
@@ -57,7 +57,7 @@ public abstract class PlayerListHudMixin {
         }
     }
 
-    @Inject(method={"renderPingIcon"}, at=@At(value="HEAD"), cancellable=true)
+    @Inject(method={"extractPingIcon"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$ping(GuiGraphicsExtractor ctx, int width, int x, int y, PlayerInfo entry, CallbackInfo ci) {
         if (!AnimeChatModule.pingNumbers()) {
             return;

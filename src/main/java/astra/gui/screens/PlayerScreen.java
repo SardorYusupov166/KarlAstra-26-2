@@ -281,28 +281,28 @@ extends Screen {
         Lyrics.Status st = Lyrics.status();
         switch (st) {
             case LOADING: {
-                String string = "\u0418\u0449\u0435\u043c \u0442\u0435\u043a\u0441\u0442 \u043f\u0435\u0441\u043d\u0438\u2026";
+                msg = "\u0418\u0449\u0435\u043c \u0442\u0435\u043a\u0441\u0442 \u043f\u0435\u0441\u043d\u0438\u2026";
                 break;
             }
             case NOT_FOUND: {
-                String string = "\u0422\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u043f\u0435\u0441\u043d\u0438 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d";
+                msg = "\u0422\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u043f\u0435\u0441\u043d\u0438 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d";
                 break;
             }
             case ERROR: {
-                String string = "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0442\u0435\u043a\u0441\u0442 (\u043d\u0435\u0442 \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442\u0430?)";
+                msg = "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0442\u0435\u043a\u0441\u0442 (\u043d\u0435\u0442 \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442\u0430?)";
                 break;
             }
             case NONE: {
-                String string;
+                
                 if (np.hasTrack()) {
-                    string = "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0442\u0435\u043a\u0441\u0442\u043e\u0432 \u0432\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u0430 \u0432 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445";
+                    msg = "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0442\u0435\u043a\u0441\u0442\u043e\u0432 \u0432\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u0430 \u0432 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445";
                     break;
                 }
-                string = "\u0412\u043a\u043b\u044e\u0447\u0438\u0442\u0435 \u043c\u0443\u0437\u044b\u043a\u0443";
+                msg = "\u0412\u043a\u043b\u044e\u0447\u0438\u0442\u0435 \u043c\u0443\u0437\u044b\u043a\u0443";
                 break;
             }
             default: {
-                String string = msg = null;
+                msg = null;
             }
         }
         if (msg != null) {

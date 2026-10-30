@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={GuiRenderState.class})
 public abstract class GuiRenderStateMixin {
-    @Inject(method={"submitItem", "submitText", "submitPicturesInPictureState", "submitGuiElement", "submitBlitToCurrentLayer", "submitGlyphToCurrentLayer", "nextStratum", "up", "blurBeforeThisStratum"}, at=@At(value="HEAD"))
+    @Inject(method={"addItem", "addText", "addPicturesInPictureState", "addGuiElement", "addBlitToCurrentLayer", "addGlyphToCurrentLayer", "nextStratum", "up", "blurBeforeThisStratum"}, at=@At(value="HEAD"))
     private void astra$flushShapes(CallbackInfo ci) {
         if (!Render2D.flushing) {
             Render2D.flushBatch();

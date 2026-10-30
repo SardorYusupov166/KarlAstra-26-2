@@ -35,7 +35,7 @@ public abstract class PressableWidgetMixin {
     @Unique
     private boolean astra$labelDrawn;
 
-    @Inject(method={"renderDefaultSprite"}, at=@At(value="HEAD"), cancellable=true)
+    @Inject(method={"extractDefaultSprite"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$background(GuiGraphicsExtractor ctx, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;
@@ -47,7 +47,7 @@ public abstract class PressableWidgetMixin {
         ci.cancel();
     }
 
-    @Inject(method={"renderDefaultLabel"}, at=@At(value="HEAD"), cancellable=true)
+    @Inject(method={"extractDefaultLabel"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$label(ActiveTextCollector drawer, CallbackInfo ci) {
         if (this.astra$labelDrawn) {
             this.astra$labelDrawn = false;

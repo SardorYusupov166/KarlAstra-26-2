@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={LogoRenderer.class})
 public abstract class LogoDrawerMixin {
-    @Inject(method={"renderLogo(Lnet/minecraft/class_332;IFI)V"}, at=@At(value="HEAD"), cancellable=true)
+    @Inject(method={"extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IFI)V"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$logo(GuiGraphicsExtractor ctx, int screenWidth, float alpha, int y, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;

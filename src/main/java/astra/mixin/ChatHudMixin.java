@@ -31,15 +31,15 @@ public abstract class ChatHudMixin {
     private boolean astra$moved;
     private static final String RENDER = "render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/font/TextRenderer;IIIZZ)V";
 
-    @Inject(method={"render(Lnet/minecraft/class_332;Lnet/minecraft/class_327;IIIZZ)V"}, at=@At(value="HEAD"))
-    private void astra$begin(GuiGraphicsExtractor ctx, Font tr, int tick, int mx, int my, boolean focused, boolean insert, CallbackInfo ci) {
+    @Inject(method={"extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V"}, at=@At(value="HEAD"))
+    private void astra$begin(GuiGraphicsExtractor ctx, Font tr, int tick, int mx, int my, ChatComponent.DisplayMode mode, boolean insert, CallbackInfo ci) {
         this.astra$moved = ChatLayoutHud.begin(ctx);
-        AnimeChatModule.chatPanel(ctx, tick, focused);
+        AnimeChatModule.chatPanel(ctx, tick, ((ChatComponent)(Object)this).isChatFocused());
     }
 
-    @Inject(method={"render(Lnet/minecraft/class_332;Lnet/minecraft/class_327;IIIZZ)V"}, at=@At(value="RETURN"))
-    private void astra$end(GuiGraphicsExtractor ctx, Font tr, int tick, int mx, int my, boolean focused, boolean insert, CallbackInfo ci) {
-        ChatScrollbar.render(ctx, focused);
+    @Inject(method={"extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/gui/Font;IIILnet/minecraft/client/gui/components/ChatComponent$DisplayMode;Z)V"}, at=@At(value="RETURN"))
+    private void astra$end(GuiGraphicsExtractor ctx, Font tr, int tick, int mx, int my, ChatComponent.DisplayMode mode, boolean insert, CallbackInfo ci) {
+        ChatScrollbar.render(ctx, ((ChatComponent)(Object)this).isChatFocused());
         if (this.astra$moved) {
             ctx.pose().popMatrix();
         }

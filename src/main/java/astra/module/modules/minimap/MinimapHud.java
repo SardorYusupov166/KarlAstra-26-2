@@ -161,7 +161,7 @@ extends HudModule {
             for (x = 0; x < 16; ++x) {
                 int north;
                 MapColor mapColor;
-                int depth;
+                int depth = 0;
                 int y = heights[(z + 1) * 17 + x];
                 pos.set(baseX + x, y, baseZ + z);
                 BlockState state = world.getBlockState((BlockPos)pos);

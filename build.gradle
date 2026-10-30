@@ -9,6 +9,12 @@ base { archivesName = project.archives_base_name }
 
 loom { accessWidenerPath = file('src/main/resources/astra.accesswidener') }
 
+if (project.hasProperty('smokeTest')) {
+    loom.runs.client {
+        vmArg '-Dastra.smokeTest=true'
+    }
+}
+
 repositories { mavenCentral() }
 
 dependencies {

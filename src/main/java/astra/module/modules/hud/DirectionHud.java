@@ -75,35 +75,35 @@ extends HudModule {
                 String label;
                 switch (norm) {
                     case 0: {
-                        String string = "N";
+                        label = "N";
                         break;
                     }
                     case 45: {
-                        String string = "NE";
+                        label = "NE";
                         break;
                     }
                     case 90: {
-                        String string = "E";
+                        label = "E";
                         break;
                     }
                     case 135: {
-                        String string = "SE";
+                        label = "SE";
                         break;
                     }
                     case 180: {
-                        String string = "S";
+                        label = "S";
                         break;
                     }
                     case 225: {
-                        String string = "SW";
+                        label = "SW";
                         break;
                     }
                     case 270: {
-                        String string = "W";
+                        label = "W";
                         break;
                     }
                     default: {
-                        String string = label = "NW";
+                        label = "NW";
                     }
                 }
                 int col = norm % 90 == 0 ? (norm == 0 ? this.accentColor() : t.text()) : t.textDim();

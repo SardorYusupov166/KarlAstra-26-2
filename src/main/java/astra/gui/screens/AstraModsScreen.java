@@ -136,49 +136,19 @@ extends Screen {
         return true;
     }
 
-    private static Identifier icon(ModContainer c) {
-        String id;
-        block10: {
-            Identifier identifier;
-            block11: {
-                id = c.getMetadata().getId();
-                if (ICONS.containsKey(id)) {
-                    return ICONS.get(id);
-                }
-                if (NO_ICON.containsKey(id)) {
-                    return null;
-                }
-                Optional<String> path = c.getMetadata().getIconPath(64);
-                Optional file = path.flatMap(arg_0 -> ((ModContainer)c).findPath(arg_0));
-                if (!file.isPresent()) break block10;
-                InputStream in = Files.newInputStream((Path)file.get(), new OpenOption[0]);
-                try {
-                    NativeImage img = NativeImage.read((InputStream)in);
-                    Identifier tex = Identifier.fromNamespaceAndPath((String)"astra", (String)("modicon/" + id.replaceAll("[^a-z0-9_.-]", "_")));
-                    Minecraft.getInstance().getTextureManager().register(tex, (AbstractTexture)new DynamicTexture(() -> "astra_modicon", img));
-                    ICONS.put(id, tex);
-                    identifier = tex;
-                    if (in == null) break block11;
-                }
-                catch (Throwable throwable) {
-                    try {
-                        if (in != null) {
-                            try {
-                                in.close();
-                            }
-                            catch (Throwable throwable2) {
-                                throwable.addSuppressed(throwable2);
-                            }
-                        }
-                        throw throwable;
-                    }
-                    catch (Exception e) {
-                        AstraClient.LOGGER.debug("\u0418\u043a\u043e\u043d\u043a\u0430 \u043c\u043e\u0434\u0430 {} \u043d\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u043b\u0430\u0441\u044c", (Object)id, (Object)e);
-                    }
-                }
-                in.close();
-            }
-            return identifier;
+    private static Identifier icon(ModContainer container) {
+        String id = container.getMetadata().getId();
+        if (ICONS.containsKey(id)) return ICONS.get(id);
+        if (NO_ICON.containsKey(id)) return null;
+        Optional<Path> file = container.getMetadata().getIconPath(64).flatMap(container::findPath);
+        if (file.isPresent()) {
+            try (InputStream in = Files.newInputStream(file.get())) {
+                NativeImage image = NativeImage.read(in);
+                Identifier texture = Identifier.fromNamespaceAndPath("astra", "modicon/" + id.replaceAll("[^a-z0-9_.-]", "_"));
+                Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(() -> "astra_modicon", image));
+                ICONS.put(id, texture);
+                return texture;
+            } catch (Exception e) { AstraClient.LOGGER.debug("Unable to load mod icon {}", id, e); }
         }
         NO_ICON.put(id, true);
         return null;

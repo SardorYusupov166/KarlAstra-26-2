@@ -233,6 +233,7 @@ implements ClientModInitializer {
         AnimeChatModule.init();
         AstraParticles.init();
         DevShots.init();
+        astra.utils.ClientSmokeTest.init();
         LOGGER.info("Astra Anime Client \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d: {} \u043c\u043e\u0434\u0443\u043b\u0435\u0439", (Object)ModuleManager.all().size());
     }
 
