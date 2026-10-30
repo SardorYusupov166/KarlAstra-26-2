@@ -1,0 +1,82 @@
+{
+ "targets": {
+  "swap": {}
+ },
+ "passes": [
+  {
+   "vertex_shader": "minecraft:post/blit",
+   "fragment_shader": "astra:post/grade",
+   "inputs": [
+    {
+     "sampler_name": "In",
+     "target": "minecraft:main"
+    }
+   ],
+   "output": "swap",
+   "uniforms": {
+    "GradeConfig": [
+     {
+      "name": "TintR",
+      "type": "float",
+      "value": 0.86
+     },
+     {
+      "name": "TintG",
+      "type": "float",
+      "value": 0.9
+     },
+     {
+      "name": "TintB",
+      "type": "float",
+      "value": 1.14
+     },
+     {
+      "name": "Saturation",
+      "type": "float",
+      "value": 0.25
+     },
+     {
+      "name": "Contrast",
+      "type": "float",
+      "value": 1.08
+     },
+     {
+      "name": "Brightness",
+      "type": "float",
+      "value": 0.94
+     },
+     {
+      "name": "Vignette",
+      "type": "float",
+      "value": 0.35
+     }
+    ]
+   }
+  },
+  {
+   "vertex_shader": "minecraft:post/blit",
+   "fragment_shader": "minecraft:post/blit",
+   "inputs": [
+    {
+     "sampler_name": "In",
+     "target": "swap"
+    }
+   ],
+   "uniforms": {
+    "BlitConfig": [
+     {
+      "name": "ColorModulate",
+      "type": "vec4",
+      "value": [
+       1.0,
+       1.0,
+       1.0,
+       1.0
+      ]
+     }
+    ]
+   },
+   "output": "minecraft:main"
+  }
+ ]
+}

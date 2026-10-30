@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "astra",
+  "version": "0.1.0+1.21.11",
+  "name": "Astra Anime Client",
+  "description": "✿ Аниме-клиент в стиле сакуры и неона для Minecraft 1.21.11 ✿\n\n• ClickGUI на Right Shift: 10 категорий в стиле стекла и неона\n• HUD-модули и редактор HUD с пресетами\n• PvP HUD, Target HUD и эффекты цели\n• Визуалы: цветокоррекция, свои частицы, мерцание зачарованной брони\n• Косметика: крылья, нимб, плащи, ауры, следы и эмоции\n• Аниме-озвучка событий и лоу-фай музыка вместо игровой\n• Миникарта, реплеи, профили и темы\n\nТолько клиентские функции, никаких читов ♡",
+  "authors": [
+    {
+      "name": "Adelionis"
+    }
+  ],
+  "license": "MIT",
+  "icon": "assets/astra/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "astra.AstraClient"
+    ]
+  },
+  "mixins": [
+    "astra.mixins.json"
+  ],
+  "accessWidener": "astra.accesswidener",
+  "depends": {
+    "fabricloader": "\u003e\u003d0.17.0",
+    "minecraft": "~1.21.11",
+    "java": "\u003e\u003d21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "iris": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": []
+    }
+  },
+  "jars": [
+    {
+      "file": "META-INF/jars/jlayer-1.0.1.jar"
+    }
+  ]
+}

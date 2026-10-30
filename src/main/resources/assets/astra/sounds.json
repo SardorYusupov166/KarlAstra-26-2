@@ -1,0 +1,668 @@
+{
+  "hit_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hit_1",
+        "stream": false
+      }
+    ]
+  },
+  "hit_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hit_2",
+        "stream": false
+      }
+    ]
+  },
+  "hit_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hit_3",
+        "stream": false
+      }
+    ]
+  },
+  "hit_5": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hit_5",
+        "stream": false
+      }
+    ]
+  },
+  "hit_6": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hit_6",
+        "stream": false
+      }
+    ]
+  },
+  "hit_7": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hit_7",
+        "stream": false
+      }
+    ]
+  },
+  "crit_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:crit_1",
+        "stream": false
+      }
+    ]
+  },
+  "crit_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:crit_2",
+        "stream": false
+      }
+    ]
+  },
+  "crit_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:crit_3",
+        "stream": false
+      }
+    ]
+  },
+  "crit_4": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:crit_4",
+        "stream": false
+      }
+    ]
+  },
+  "kill_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_1",
+        "stream": false
+      }
+    ]
+  },
+  "kill_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_2",
+        "stream": false
+      }
+    ]
+  },
+  "kill_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_3",
+        "stream": false
+      }
+    ]
+  },
+  "kill_4": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_4",
+        "stream": false
+      }
+    ]
+  },
+  "kill_5": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_5",
+        "stream": false
+      }
+    ]
+  },
+  "join_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:join_1",
+        "stream": false
+      }
+    ]
+  },
+  "join_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:join_2",
+        "stream": false
+      }
+    ]
+  },
+  "menu_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:menu_1",
+        "stream": false
+      }
+    ]
+  },
+  "menu_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:menu_2",
+        "stream": false
+      }
+    ]
+  },
+  "emote_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:emote_1",
+        "stream": false
+      }
+    ]
+  },
+  "emote_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:emote_2",
+        "stream": false
+      }
+    ]
+  },
+  "emote_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:emote_3",
+        "stream": false
+      }
+    ]
+  },
+  "emote_4": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:emote_4",
+        "stream": false
+      }
+    ]
+  },
+  "music_lofi_loop": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "astra:music/music_lofi_loop",
+        "stream": true
+      }
+    ]
+  },
+  "music_lofi_again": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "astra:music/music_lofi_again",
+        "stream": true
+      }
+    ]
+  },
+  "music_freame": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "astra:music/music_freame",
+        "stream": true
+      }
+    ]
+  },
+  "music_yoiyami_core": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "astra:music/music_yoiyami_core",
+        "stream": true
+      }
+    ]
+  },
+  "music_first_light": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "astra:music/music_first_light",
+        "stream": true
+      }
+    ]
+  },
+  "lowhp_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:lowhp_1",
+        "stream": false
+      }
+    ]
+  },
+  "combo_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:combo_1",
+        "stream": false
+      }
+    ]
+  },
+  "combo_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:combo_2",
+        "stream": false
+      }
+    ]
+  },
+  "combo_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:combo_3",
+        "stream": false
+      }
+    ]
+  },
+  "hurt_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hurt_1",
+        "stream": false
+      }
+    ]
+  },
+  "hurt_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hurt_2",
+        "stream": false
+      }
+    ]
+  },
+  "hurt_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hurt_3",
+        "stream": false
+      }
+    ]
+  },
+  "death_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:death_1",
+        "stream": false
+      }
+    ]
+  },
+  "death_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:death_2",
+        "stream": false
+      }
+    ]
+  },
+  "editor_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:editor_1",
+        "stream": false
+      }
+    ]
+  },
+  "zoom_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:zoom_1",
+        "stream": false
+      }
+    ]
+  },
+  "zoom_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:zoom_2",
+        "stream": false
+      }
+    ]
+  },
+  "zoom_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:zoom_3",
+        "stream": false
+      }
+    ]
+  },
+  "join_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:join_3",
+        "stream": false
+      }
+    ]
+  },
+  "close_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:close_1",
+        "stream": false
+      }
+    ]
+  },
+  "close_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:close_2",
+        "stream": false
+      }
+    ]
+  },
+  "close_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:close_3",
+        "stream": false
+      }
+    ]
+  },
+  "respawn_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:respawn_1",
+        "stream": false
+      }
+    ]
+  },
+  "respawn_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:respawn_2",
+        "stream": false
+      }
+    ]
+  },
+  "leave_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:leave_1",
+        "stream": false
+      }
+    ]
+  },
+  "break_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:break_1",
+        "stream": false
+      }
+    ]
+  },
+  "weapon_low_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:weapon_low_1",
+        "stream": false
+      }
+    ]
+  },
+  "armor_low_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:armor_low_1",
+        "stream": false
+      }
+    ]
+  },
+  "toggle_on_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:toggle_on_1",
+        "stream": false
+      }
+    ]
+  },
+  "toggle_off_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:toggle_off_1",
+        "stream": false
+      }
+    ]
+  },
+  "crit_5": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:crit_5",
+        "stream": false
+      }
+    ]
+  },
+  "kill_6": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_6",
+        "stream": false
+      }
+    ]
+  },
+  "kill_7": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_7",
+        "stream": false
+      }
+    ]
+  },
+  "kill_8": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_8",
+        "stream": false
+      }
+    ]
+  },
+  "kill_9": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_9",
+        "stream": false
+      }
+    ]
+  },
+  "join_4": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:join_4",
+        "stream": false
+      }
+    ]
+  },
+  "menu_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:menu_3",
+        "stream": false
+      }
+    ]
+  },
+  "hurt_4": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hurt_4",
+        "stream": false
+      }
+    ]
+  },
+  "death_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:death_3",
+        "stream": false
+      }
+    ]
+  },
+  "idle_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:idle_1",
+        "stream": false
+      }
+    ]
+  },
+  "fight_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:fight_1",
+        "stream": false
+      }
+    ]
+  },
+  "miss_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:miss_1",
+        "stream": false
+      }
+    ]
+  },
+  "kill_noweapon_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:kill_noweapon_1",
+        "stream": false
+      }
+    ]
+  },
+  "board_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:board_1",
+        "stream": false
+      }
+    ]
+  },
+  "board_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:board_2",
+        "stream": false
+      }
+    ]
+  },
+  "board_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:board_3",
+        "stream": false
+      }
+    ]
+  },
+  "totem_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:totem_1",
+        "stream": false
+      }
+    ]
+  },
+  "totem_2": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:totem_2",
+        "stream": false
+      }
+    ]
+  },
+  "totem_3": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:totem_3",
+        "stream": false
+      }
+    ]
+  },
+  "hit_8": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:hit_8",
+        "stream": false
+      }
+    ]
+  },
+  "target_1": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "astra:target_1",
+        "stream": false
+      }
+    ]
+  }
+}
