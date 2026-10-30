@@ -280,6 +280,10 @@ implements PopupHost {
             m.popMatrix();
             Render2D.alpha = 1.0f;
         }
+        if (this.minecraft.player == null) {
+            SoundsModule sounds = ModuleManager.get(SoundsModule.class);
+            if (sounds != null) sounds.renderHud(ctx);
+        }
     }
 
     private void renderWindow(UiContext ui) {

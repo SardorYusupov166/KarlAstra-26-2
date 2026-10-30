@@ -129,6 +129,7 @@ public final class ClientSmokeTest {
             if (!profile.tag().equals("CI Sakura")) throw new IllegalStateException("Custom tag did not survive persistence");
             String[] caption = sounds.welcomeCaption("join_1");
             if (!caption[0].equals("Привет, игрок!") || !caption[1].equals("Проверка 26.2")) throw new IllegalStateException("Welcome did not survive persistence");
+            sounds.previewWelcome();
             AstraClient.LOGGER.info("ASTRA_PERSONALIZATION_TEST_PASS: avatar upload, tag and welcome disk round trip");
         } catch (Exception e) {
             throw new IllegalStateException("Personalization smoke test failed", e);
