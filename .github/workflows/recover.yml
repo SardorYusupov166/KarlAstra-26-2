@@ -1,0 +1,58 @@
+name: Recover original Astra sources
+on:
+  push:
+    paths: ['.port-input/**', '.github/workflows/recover.yml', 'tools/recover.gradle']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Restore supplied JAR
+        run: |
+          mkdir -p recovery
+          cat .port-input/astra.part00 .port-input/astra.part01 > recovery/astra-original.jar
+          echo "sha256:"
+          sha256sum recovery/astra-original.jar
+          cp tools/recover.gradle recovery/build.gradle
+          printf "pluginManagement { repositories { maven { url = 'https://maven.fabricmc.net/' }; gradlePluginPortal() } }\nrootProject.name = 'astra-recovery'\n" > recovery/settings.gradle
+      - name: Remap original intermediary bytecode to Mojang names
+        run: gradle -p recovery recoverJar --stacktrace
+      - name: Decompile supplied mod and restore resources
+        run: |
+          curl --fail --location --retry 3 -o recovery/cfr.jar https://repo.maven.apache.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
+          java -jar recovery/cfr.jar recovery/build/libs/astra-named.jar --outputdir src/main/java --silent true
+          python3 - <<'PY'
+          import zipfile,pathlib
+          with zipfile.ZipFile('recovery/build/libs/astra-named.jar') as z:
+              for n in z.namelist():
+                  if n.endswith('/') or n.endswith('.class') or n.startswith('META-INF/'):
+                      continue
+                  p=pathlib.Path('src/main/resources')/n
+                  p.parent.mkdir(parents=True,exist_ok=True)
+                  p.write_bytes(z.read(n))
+          PY
+      - name: Preserve recovered sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src
+          git commit -m "Recover original Astra sources and resources from supplied 1.21.11 JAR"
+          git push
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: astra-recovery
+          path: |
+            src
+            recovery/build/libs
+          retention-days: 7

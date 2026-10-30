@@ -1,0 +1,17 @@
+plugins {
+    id 'fabric-loom' version '1.14.10'
+}
+repositories { mavenCentral() }
+dependencies {
+    minecraft "com.mojang:minecraft:1.21.11"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:0.19.5"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.141.5+1.21.11"
+}
+tasks.register('recoverJar', net.fabricmc.loom.task.RemapJarTask) {
+    inputFile = layout.projectDirectory.file('astra-original.jar')
+    archiveFileName = 'astra-named.jar'
+    sourceNamespace = 'intermediary'
+    targetNamespace = 'named'
+    addNestedDependencies = false
+}
