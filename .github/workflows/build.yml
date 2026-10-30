@@ -21,13 +21,18 @@ jobs:
           gradle-version: '9.5.1'
           cache-read-only: false
       - name: Build all recovered sources
-        run: gradle build --stacktrace --console=plain
+        run: |
+          chmod +x gradlew
+          ./gradlew build --stacktrace --console=plain
       - name: Boot client and render title and ClickGUI with software OpenGL
         env:
           LIBGL_ALWAYS_SOFTWARE: 'true'
+          ALSOFT_DRIVERS: 'null'
         run: |
-          timeout 480s xvfb-run -a gradle runClient -PsmokeTest --console=plain
+          timeout 480s xvfb-run -a ./gradlew runClient -PsmokeTest --console=plain
           grep -q 'ASTRA_SMOKE_TEST_PASS' run/logs/latest.log
+          grep -q 'ASTRA_PERSONALIZATION_TEST_PASS' run/logs/latest.log
+          grep -q 'ASTRA_MIXIN_TEST_PASS' run/logs/latest.log
       - uses: actions/upload-artifact@v4
         if: success()
         with:
@@ -46,3 +51,4 @@ jobs:
           path: |
             run/logs/
             run/crash-reports/
+            run/screenshots/

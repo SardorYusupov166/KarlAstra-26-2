@@ -28,7 +28,12 @@ public final class ClientSmokeTest {
         if (!Boolean.getBoolean("astra.smokeTest")) return;
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!opened) {
-                if (!(client.gui.screen() instanceof TitleScreen)) return;
+                if (!client.isGameLoadFinished() || client.gui.overlay() != null) return;
+                if (!(client.gui.screen() instanceof TitleScreen)) {
+                    client.gui.setScreen(new TitleScreen());
+                    ticks = 0;
+                    return;
+                }
                 if (++ticks < 40) return;
                 verifyPersonalization();
                 ClickGuiScreen screen = new ClickGuiScreen(null);
@@ -36,12 +41,57 @@ public final class ClientSmokeTest {
                 client.gui.setScreen(screen);
                 opened = true;
                 ticks = 0;
-            } else if (++ticks >= 60) {
+            } else if (++ticks == 30) {
+                net.minecraft.client.Screenshot.grab(client.gameDirectory, "astra-smoke-profile.png",
+                        client.gameRenderer.mainRenderTarget(), 1, message -> AstraClient.LOGGER.info("Smoke screenshot: {}", message.getString()));
+            } else if (ticks >= 60) {
                 AstraClient.LOGGER.info("ASTRA_SMOKE_TEST_PASS: title and ClickGUI rendered");
                 ConfigManager.applyModules(original, true, false);
                 client.stop();
             }
         });
+    }
+
+    private static void verifyMixinTargets() throws ClassNotFoundException {
+        String[] targets = {
+            "net.minecraft.client.Camera",
+            "net.minecraft.client.ClientClockManager",
+            "net.minecraft.client.Minecraft",
+            "net.minecraft.client.MouseHandler",
+            "net.minecraft.client.gui.Hud",
+            "net.minecraft.client.gui.components.AbstractButton",
+            "net.minecraft.client.gui.components.AbstractSliderButton",
+            "net.minecraft.client.gui.components.AbstractWidget",
+            "net.minecraft.client.gui.components.ChatComponent",
+            "net.minecraft.client.gui.components.CommandSuggestions",
+            "net.minecraft.client.gui.components.CommandSuggestions$SuggestionsList",
+            "net.minecraft.client.gui.components.LogoRenderer",
+            "net.minecraft.client.gui.components.PlainTextButton",
+            "net.minecraft.client.gui.components.PlayerTabOverlay",
+            "net.minecraft.client.gui.components.SplashRenderer",
+            "net.minecraft.client.gui.render.GuiRenderer",
+            "net.minecraft.client.gui.screens.ChatScreen",
+            "net.minecraft.client.gui.screens.Screen",
+            "net.minecraft.client.gui.screens.TitleScreen",
+            "net.minecraft.client.multiplayer.ClientPacketListener",
+            "net.minecraft.client.particle.ParticleEngine",
+            "net.minecraft.client.player.AbstractClientPlayer",
+            "net.minecraft.client.renderer.GameRenderer",
+            "net.minecraft.client.renderer.ItemInHandRenderer",
+            "net.minecraft.client.renderer.ScreenEffectRenderer",
+            "net.minecraft.client.renderer.item.ItemModelResolver",
+            "net.minecraft.client.renderer.item.ItemStackRenderState",
+            "net.minecraft.client.renderer.special.ShieldSpecialRenderer",
+            "net.minecraft.client.renderer.state.gui.GuiRenderState",
+            "net.minecraft.client.sounds.MusicManager",
+            "net.minecraft.client.sounds.SoundBufferLibrary",
+            "net.minecraft.world.entity.LivingEntity",
+            "net.minecraft.world.level.Level",
+            "net.minecraft.client.gui.components.ChatComponent$DrawingBackgroundGraphicsAccess",
+            "net.minecraft.client.gui.components.ChatComponent$DrawingFocusedGraphicsAccess"
+        };
+        for (String target : targets) Class.forName(target, false, ClientSmokeTest.class.getClassLoader());
+        AstraClient.LOGGER.info("ASTRA_MIXIN_TEST_PASS: all {} target classes transformed", targets.length);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -52,6 +102,7 @@ public final class ClientSmokeTest {
 
     private static void verifyPersonalization() {
         try {
+            verifyMixinTargets();
             original = ConfigManager.serializeModules(true);
             ProfileStyle profile = ProfileStyle.get();
             SoundsModule sounds = ModuleManager.get(SoundsModule.class);
