@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -212,15 +214,34 @@ public final class ArtManager {
     }
 
     public static NativeImage readImage(Path file) throws Exception {
-        BufferedImage src = ImageIO.read(file.toFile());
+        if (Files.size(file) > 32L * 1024 * 1024) {
+            throw new IllegalArgumentException("Изображение слишком большое: " + file.getFileName());
+        }
+        BufferedImage src;
+        try (ImageInputStream input = ImageIO.createImageInputStream(file.toFile())) {
+            if (input == null) throw new IllegalArgumentException("Не удалось открыть изображение: " + file.getFileName());
+            var readers = ImageIO.getImageReaders(input);
+            if (!readers.hasNext()) throw new IllegalArgumentException("Формат не поддерживается: " + file.getFileName());
+            ImageReader reader = readers.next();
+            try {
+                reader.setInput(input);
+                if ((long) reader.getWidth(0) * reader.getHeight(0) > 16_000_000L) {
+                    throw new IllegalArgumentException("Слишком высокое разрешение: " + file.getFileName());
+                }
+                src = reader.read(0);
+            } finally {
+                reader.dispose();
+            }
+        }
         if (src == null) {
             throw new IllegalArgumentException("\u0424\u043e\u0440\u043c\u0430\u0442 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442\u0441\u044f: " + String.valueOf(file.getFileName()));
         }
         int w = src.getWidth();
         int h = src.getHeight();
-        if (w > 1024) {
-            h = Math.max(1, Math.round((float)h * 1024.0f / (float)w));
-            w = 1024;
+        if (Math.max(w, h) > 1024) {
+            float scale = 1024.0f / Math.max(w, h);
+            w = Math.max(1, Math.round(w * scale));
+            h = Math.max(1, Math.round(h * scale));
         }
         BufferedImage img = new BufferedImage(w, h, 2);
         Graphics2D g = img.createGraphics();

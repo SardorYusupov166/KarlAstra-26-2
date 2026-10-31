@@ -11,6 +11,7 @@ package astra.module.modules.cosmetic;
 import astra.gui.UiContext;
 import astra.decor.DecorManager;
 import astra.settings.StringSetting;
+import astra.settings.ButtonSetting;
 import java.util.ArrayList;
 import java.util.List;
 import astra.gui.components.CardPreview;
@@ -29,11 +30,25 @@ import astra.theme.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.util.Util;
+import java.nio.file.Files;
 
 public class ProfileStyle
 extends Module {
     private static final String CUSTOM_AVATAR_PREFIX = "Файл: ";
     private final ModeSetting avatar = this.add(new ModeSetting("\u0410\u0432\u0430\u0442\u0430\u0440", "\u0410\u043d\u0438\u043c\u0435 1", "\u0410\u043d\u0438\u043c\u0435 1", "\u0410\u043d\u0438\u043c\u0435 2", "\u0410\u043d\u0438\u043c\u0435 3", "\u0410\u043d\u0438\u043c\u0435 4", "\u041b\u0438\u0446\u043e \u0441\u043a\u0438\u043d\u0430", "\u0418\u043d\u0438\u0446\u0438\u0430\u043b").dynamic(ProfileStyle::avatarOptions));
+    private final ButtonSetting openImages = this.add(new ButtonSetting("Папка изображений", "Открыть папку изображений", () -> {
+        try {
+            Files.createDirectories(ArtManager.artDir());
+            Util.getPlatform().openFile(ArtManager.artDir().toFile());
+        } catch (Exception e) {
+            astra.AstraClient.LOGGER.warn("Не удалось открыть папку изображений", e);
+        }
+    }));
+    private final ButtonSetting refreshImages = this.add(new ButtonSetting("Список изображений", "Обновить список", () -> {
+        DecorManager.refreshImages();
+        ArtManager.reload();
+    }));
     private final ModeSetting frame = this.add(new ModeSetting("\u0420\u0430\u043c\u043a\u0430 \u043f\u0440\u043e\u0444\u0438\u043b\u044f", "\u0421\u0430\u043a\u0443\u0440\u0430", "\u0421\u0430\u043a\u0443\u0440\u0430", "\u041d\u0435\u043e\u043d", "\u0417\u0432\u0451\u0437\u0434\u044b", "\u0411\u0435\u0437 \u0440\u0430\u043c\u043a\u0438"));
     private final ModeSetting badge = this.add(new ModeSetting("\u0418\u043a\u043e\u043d\u043a\u0430", "\u0417\u0432\u0435\u0437\u0434\u0430", "\u0417\u0432\u0435\u0437\u0434\u0430", "\u0421\u0435\u0440\u0434\u0446\u0435", "\u041a\u043e\u0440\u043e\u043d\u0430", "\u041c\u0435\u0434\u0430\u043b\u044c"));
     private final ModeSetting tag = this.add(new ModeSetting("\u0422\u0435\u0433", "Astra", "Astra", "Sakura", "VIP", "\u041d\u0435\u0442", "Свой"));

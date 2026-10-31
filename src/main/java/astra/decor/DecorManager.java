@@ -133,8 +133,11 @@ public final class DecorManager {
         if (failed != null && System.currentTimeMillis() - failed < 3000L) {
             return null;
         }
-        Path f = ArtManager.artDir().resolve(image);
+        Path f = ArtManager.artDir().resolve(image).normalize();
         try {
+            if (!f.getParent().equals(ArtManager.artDir().normalize())) {
+                throw new IllegalArgumentException("Изображение вне папки art");
+            }
             if (!Files.isRegularFile(f, new LinkOption[0])) {
                 throw new IllegalStateException("\u043d\u0435\u0442 \u0444\u0430\u0439\u043b\u0430");
             }
@@ -169,6 +172,12 @@ public final class DecorManager {
             }
             catch (Exception exception) {}
         }
+    }
+
+    public static void refreshImages() {
+        lastStampCheck = 0L;
+        DecorManager.checkStamps();
+        FAILED.clear();
     }
 
     public static void renderMenu(GuiGraphicsExtractor ctx, String depth, float designW) {

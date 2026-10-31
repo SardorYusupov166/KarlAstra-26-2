@@ -10,6 +10,7 @@ import astra.module.Category;
 import astra.module.Module;
 import astra.module.ModuleManager;
 import astra.module.modules.cosmetic.ProfileStyle;
+import astra.module.modules.hud.CompanionHud;
 import astra.module.modules.cosmetic.SoundsModule;
 import astra.render.ArtManager;
 import astra.settings.Setting;
@@ -52,6 +53,7 @@ public final class ClientSmokeTest {
             } else if (hudEditor) {
                 if (!(client.gui.screen() instanceof HudEditorScreen)) throw new IllegalStateException("HUD editor closed during smoke test");
                 if (++ticks >= 40) {
+                    verifyAvatarRemoval();
                     AstraClient.LOGGER.info("ASTRA_HUD_EDITOR_TEST_PASS: editor rendered before joining a world");
                     AstraClient.LOGGER.info("ASTRA_SMOKE_TEST_PASS: title and ClickGUI rendered");
                     ConfigManager.applyModules(original, false, false);
@@ -140,6 +142,23 @@ public final class ClientSmokeTest {
         AstraClient.LOGGER.info("ASTRA_MIXIN_TEST_PASS: all {} target classes transformed", targets.length);
     }
 
+    private static void verifyAvatarRemoval() {
+        try {
+            Files.deleteIfExists(ArtManager.artDir().resolve("smoke-avatar.png"));
+            DecorManager.refreshImages();
+            if (ProfileStyle.avatarOptions().contains("Файл: smoke-avatar.png")) throw new IllegalStateException("Deleted avatar still offered");
+            if (DecorManager.texture("smoke-avatar.png") != null) throw new IllegalStateException("Deleted avatar still cached");
+            Path broken = ArtManager.artDir().resolve("smoke-broken.png");
+            Files.write(broken, new byte[]{1, 2, 3, 4});
+            DecorManager.refreshImages();
+            if (DecorManager.texture("smoke-broken.png") != null) throw new IllegalStateException("Broken image was accepted");
+            Files.deleteIfExists(broken);
+            AstraClient.LOGGER.info("ASTRA_AVATAR_REMOVAL_TEST_PASS: deleted image evicted and fallback available");
+        } catch (Exception e) {
+            throw new IllegalStateException("Avatar removal smoke test failed", e);
+        }
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static void set(Module module, String name, Object value) {
         Setting setting = module.getSettings().stream().filter(s -> s.getName().equals(name)).findFirst().orElseThrow();
@@ -159,6 +178,13 @@ public final class ClientSmokeTest {
             javax.imageio.ImageIO.write(image, "png", avatar.toFile());
             if (!ProfileStyle.avatarOptions().contains("Файл: smoke-avatar.png")) throw new IllegalStateException("Avatar scan failed");
             if (DecorManager.texture("smoke-avatar.png") == null) throw new IllegalStateException("Avatar upload failed");
+            CompanionHud companion = ModuleManager.get(CompanionHud.class);
+            set(companion, "Картинка", "smoke-avatar.png");
+            set(profile, "Аватар", "Файл: smoke-avatar.png");
+            set(profile, "Аватар", "Аниме 2");
+            if (!companion.getSettings().stream().filter(s -> s.getName().equals("Картинка")).findFirst().orElseThrow().get().equals("smoke-avatar.png")) {
+                throw new IllegalStateException("Avatar choice changed the companion image");
+            }
             set(profile, "Аватар", "Файл: smoke-avatar.png");
             set(profile, "Тег", "Свой");
             set(profile, "Свой тег", "  CI Sakura  ");
@@ -173,6 +199,8 @@ public final class ClientSmokeTest {
             ConfigManager.applyModules(ConfigManager.readJson(file), false, false);
             Files.deleteIfExists(file);
             if (!profile.tag().equals("CI Sakura")) throw new IllegalStateException("Custom tag did not survive persistence");
+            if (!profile.getSettings().stream().filter(s -> s.getName().equals("Аватар")).findFirst().orElseThrow().get().equals("Файл: smoke-avatar.png")) throw new IllegalStateException("Avatar choice did not survive persistence");
+            if (!companion.getSettings().stream().filter(s -> s.getName().equals("Картинка")).findFirst().orElseThrow().get().equals("smoke-avatar.png")) throw new IllegalStateException("Companion image did not survive persistence");
             String[] caption = sounds.welcomeCaption("join_1");
             if (!caption[0].equals("Привет, игрок!") || !caption[1].equals("Проверка 26.2")) throw new IllegalStateException("Welcome did not survive persistence");
             sounds.previewWelcome();
