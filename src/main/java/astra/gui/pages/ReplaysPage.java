@@ -144,59 +144,24 @@ extends ModulesPage {
             return 26.0f + (float)rows * (this.cellH() + 8.0f);
         }
 
-        private Identifier thumbnail(File f) {
-            Identifier identifier;
-            block13: {
-                String key = f.getName() + ":" + f.lastModified();
-                Identifier id = this.thumbs.get(key);
-                if (id != null || this.thumbs.containsKey(key)) {
-                    return id;
-                }
-                if (this.counter++ % 2 != 0) {
-                    return null;
-                }
-                if (System.currentTimeMillis() - f.lastModified() < 3000L) {
-                    return null;
-                }
-                InputStream in = Files.newInputStream(f.toPath(), new OpenOption[0]);
-                try {
-                    NativeImage full = NativeImage.read((InputStream)in);
-                    int tw = 192;
-                    int th = 108;
-                    NativeImage small = new NativeImage(tw, th, false);
-                    for (int y = 0; y < th; ++y) {
-                        for (int x = 0; x < tw; ++x) {
-                            small.setPixel(x, y, full.getPixel(x * full.getWidth() / tw, y * full.getHeight() / th));
-                        }
-                    }
-                    full.close();
-                    Identifier tid = Identifier.fromNamespaceAndPath((String)"astra", (String)("gallery/" + Integer.toHexString(key.hashCode())));
-                    Minecraft.getInstance().getTextureManager().register(tid, (AbstractTexture)new DynamicTexture(() -> "astra_thumb", small));
-                    this.thumbs.put(key, tid);
-                    identifier = tid;
-                    if (in == null) break block13;
-                }
-                catch (Throwable throwable) {
-                    try {
-                        if (in != null) {
-                            try {
-                                in.close();
-                            }
-                            catch (Throwable throwable2) {
-                                throwable.addSuppressed(throwable2);
-                            }
-                        }
-                        throw throwable;
-                    }
-                    catch (Exception e) {
-                        AstraClient.LOGGER.warn("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u043c\u0438\u043d\u0438\u0430\u0442\u044e\u0440\u0443 {}", (Object)f, (Object)e);
-                        this.thumbs.put(key, null);
-                        return null;
-                    }
-                }
-                in.close();
+        private Identifier thumbnail(File file) {
+            String key = file.getName() + ":" + file.lastModified();
+            if (thumbs.containsKey(key)) return thumbs.get(key);
+            if (counter++ % 2 != 0 || System.currentTimeMillis() - file.lastModified() < 3000L) return null;
+            try (InputStream in = Files.newInputStream(file.toPath()); NativeImage full = NativeImage.read(in)) {
+                int width = 192, height = 108;
+                NativeImage small = new NativeImage(width, height, false);
+                for (int y=0; y<height; y++) for (int x=0; x<width; x++)
+                    small.setPixel(x, y, full.getPixel(x * full.getWidth() / width, y * full.getHeight() / height));
+                Identifier id = Identifier.fromNamespaceAndPath("astra", "gallery/" + Integer.toHexString(key.hashCode()));
+                Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(() -> "astra_thumb", small));
+                thumbs.put(key, id);
+                return id;
+            } catch (Exception e) {
+                AstraClient.LOGGER.warn("Unable to load thumbnail {}", file, e);
+                thumbs.put(key, null);
+                return null;
             }
-            return identifier;
         }
 
         @Override

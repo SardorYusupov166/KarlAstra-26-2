@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.input.CharacterEvent
  *  net.minecraft.client.input.KeyEvent
@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -132,8 +132,8 @@ implements PopupHost {
             Widget w;
             if (this.selected != null) {
                 HudModule sel = this.selected;
-                this.rows.add(SettingRows.create(new NumberSetting("\u041f\u043e\u0437\u0438\u0446\u0438\u044f X", 0.0, 0.0, Math.max(1.0f, (float)this.width - sel.scaledWidth()), 1.0).bind(() -> Math.round(sel.getX(this.width)), v -> sel.setTopLeft(v.floatValue(), sel.getY(this.height), this.width, this.height)), this));
-                this.rows.add(SettingRows.create(new NumberSetting("\u041f\u043e\u0437\u0438\u0446\u0438\u044f Y", 0.0, 0.0, Math.max(1.0f, (float)this.height - sel.scaledHeight()), 1.0).bind(() -> Math.round(sel.getY(this.height)), v -> sel.setTopLeft(sel.getX(this.width), v.floatValue(), this.width, this.height)), this));
+                this.rows.add(SettingRows.create(new NumberSetting("\u041f\u043e\u0437\u0438\u0446\u0438\u044f X", 0.0, 0.0, Math.max(1.0f, (float)this.width - sel.scaledWidth()), 1.0).bind(() -> (double)Math.round(sel.getX(this.width)), v -> sel.setTopLeft(v.floatValue(), sel.getY(this.height), this.width, this.height)), this));
+                this.rows.add(SettingRows.create(new NumberSetting("\u041f\u043e\u0437\u0438\u0446\u0438\u044f Y", 0.0, 0.0, Math.max(1.0f, (float)this.height - sel.scaledHeight()), 1.0).bind(() -> (double)Math.round(sel.getY(this.height)), v -> sel.setTopLeft(sel.getX(this.width), v.floatValue(), this.width, this.height)), this));
                 for (Setting<?> setting : sel.getSettings()) {
                     w = SettingRows.create(setting, this);
                     if (w == null) continue;
@@ -190,9 +190,9 @@ implements PopupHost {
         }
     }
 
-    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         if (this.minecraft.level == null) {
-            this.renderPanorama(ctx, delta);
+            this.extractPanorama(ctx, delta);
         }
         Theme t = ThemeManager.get();
         ctx.fillGradient(0, 0, this.width, this.height, ColorUtil.withAlpha(t.bg(), 0.28f), ColorUtil.withAlpha(t.bg(), 0.42f));
@@ -201,7 +201,7 @@ implements PopupHost {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         long now = System.nanoTime();
         float dt = this.lastFrame == 0L ? 0.016f : Math.min(0.1f, (float)(now - this.lastFrame) / 1.0E9f);
         this.lastFrame = now;
@@ -239,7 +239,7 @@ implements PopupHost {
         }
     }
 
-    private void renderGrid(GuiGraphics ctx, Theme t) {
+    private void renderGrid(GuiGraphicsExtractor ctx, Theme t) {
         HudEditorPrefs p = this.prefs();
         if (((Boolean)p.showGrid.get()).booleanValue()) {
             float g = p.gridSize.getFloat();
@@ -259,7 +259,7 @@ implements PopupHost {
         Render2D.dashedLine(ctx, 0.0f, (float)this.height / 2.0f, this.width, (float)this.height / 2.0f, 0.6f, 4.0f, 4.0f, center);
     }
 
-    private void renderElements(GuiGraphics ctx, Theme t, float mx, float my) {
+    private void renderElements(GuiGraphicsExtractor ctx, Theme t, float mx, float my) {
         HudModule hovered = this.elementAt(mx, my);
         for (HudModule hud : ModuleManager.hudModules()) {
             if (!hud.isEnabled()) continue;
@@ -302,7 +302,7 @@ implements PopupHost {
         }
     }
 
-    private void renderGuides(GuiGraphics ctx, Theme t) {
+    private void renderGuides(GuiGraphicsExtractor ctx, Theme t) {
         int col = ColorUtil.withAlpha(t.accent3(), 0.95f);
         for (float[] g : this.guides) {
             if (g[0] == 0.0f) {
@@ -837,7 +837,7 @@ implements PopupHost {
 
     public void onClose() {
         ConfigManager.save();
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     @Override
@@ -893,7 +893,7 @@ implements PopupHost {
     public boolean charTyped(CharacterEvent input) {
         boolean handled = false;
         for (char ch : input.codepointAsString().toCharArray()) {
-            handled |= this.charTyped(ch, input.modifiers());
+            handled |= this.charTyped(ch, 0);
         }
         return handled;
     }

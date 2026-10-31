@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.module.modules.visual;
 
@@ -24,7 +24,7 @@ import astra.settings.NumberSetting;
 import astra.theme.Theme;
 import astra.theme.ThemeManager;
 import astra.utils.FrameStats;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class VisualizerModule
 extends Module {
@@ -122,7 +122,7 @@ extends Module {
         };
     }
 
-    public void renderOverlay(GuiGraphics ctx) {
+    public void renderOverlay(GuiGraphicsExtractor ctx) {
         int n = Math.min(64, this.bars.getInt());
         float[] lv = this.levels(n, FrameStats.delta());
         float max = 0.0f;

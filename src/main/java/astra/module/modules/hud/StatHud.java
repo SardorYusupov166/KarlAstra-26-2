@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.module.modules.hud;
 
@@ -12,7 +12,7 @@ import astra.render.Fonts;
 import astra.render.Icon;
 import astra.settings.ModeSetting;
 import astra.theme.Theme;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public abstract class StatHud
 extends HudModule {
@@ -48,7 +48,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = StatHud.theme();
         if (this.card()) {
             Fonts.drawCentered(ctx, this.label(), w / 2.0f, 4.5f, 6.0f, t.textDim(), true);

@@ -4,7 +4,7 @@
  * Could not load the following classes:
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.Font
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.network.chat.Component
  *  net.minecraft.network.chat.FontDescription
  *  net.minecraft.network.chat.FontDescription$Resource
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.FormattedText;
@@ -62,7 +62,7 @@ public final class AstraWidgets {
         return t.copy().withStyle(Style.EMPTY.withFont((FontDescription)new FontDescription.Resource(Fonts.BOLD)));
     }
 
-    private static void label(GuiGraphics ctx, Component msg, float x, float y, float w, float h, int color) {
+    private static void label(GuiGraphicsExtractor ctx, Component msg, float x, float y, float w, float h, int color) {
         Font tr = Minecraft.getInstance().font;
         Component t = AstraWidgets.bold(msg);
         float tw = tr.width((FormattedText)t);
@@ -71,14 +71,14 @@ public final class AstraWidgets {
         m.pushMatrix();
         m.translate(x + w / 2.0f, y + h / 2.0f);
         m.scale(s, s);
-        ctx.drawString(tr, t, (int)(-tw / 2.0f), -4, color, true);
+        ctx.text(tr, t, (int)(-tw / 2.0f), -4, color, true);
         m.popMatrix();
     }
 
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void button(GuiGraphics ctx, Object widget, int x, int y, int w, int h, Component message, boolean active, boolean hovered, float alpha) {
+    public static void button(GuiGraphicsExtractor ctx, Object widget, int x, int y, int w, int h, Component message, boolean active, boolean hovered, float alpha) {
         GuiStyle.record(ctx, "style.button", x, y, w, h);
         Theme t = NativeScreenLayouts.theme(widget, GuiStyle.theme("style.button", ThemeManager.get()));
         float prev = Render2D.alpha;
@@ -105,7 +105,7 @@ public final class AstraWidgets {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void slider(GuiGraphics ctx, Object widget, int x, int y, int w, int h, Component message, double value, boolean active, boolean hovered, float alpha) {
+    public static void slider(GuiGraphicsExtractor ctx, Object widget, int x, int y, int w, int h, Component message, double value, boolean active, boolean hovered, float alpha) {
         GuiStyle.record(ctx, "style.slider", x, y, w, h);
         Theme t = GuiStyle.theme("style.slider", ThemeManager.get());
         float prev = Render2D.alpha;

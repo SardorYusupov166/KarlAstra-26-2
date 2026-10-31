@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.gui.components;
 
@@ -15,7 +15,7 @@ import astra.render.Icons;
 import astra.render.Paint;
 import astra.render.Render2D;
 import astra.theme.Theme;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public final class UiDraw {
     public static final float TOGGLE_W = 22.0f;
@@ -31,7 +31,7 @@ public final class UiDraw {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void card(GuiGraphics ctx, Theme t, float x, float y, float w, float h, float r, float hover, boolean active) {
+    public static void card(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, float h, float r, float hover, boolean active) {
         GuiStyle.record(ctx, "style.card", x, y, w, h);
         t = GuiStyle.theme("style.card", t);
         r = GuiStyle.radius("style.card", r);
@@ -56,7 +56,7 @@ public final class UiDraw {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void toggle(GuiGraphics ctx, Theme t, float x, float y, float progress, float hover) {
+    public static void toggle(GuiGraphicsExtractor ctx, Theme t, float x, float y, float progress, float hover) {
         GuiStyle.record(ctx, "style.toggle", x, y, 22.0f, 12.0f);
         t = GuiStyle.theme("style.toggle", t);
         float styleAlphaPrev = GuiStyle.styleAlpha("style.toggle");
@@ -84,7 +84,7 @@ public final class UiDraw {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void sliderTrack(GuiGraphics ctx, Theme t, float x, float y, float w, float pct, float hover) {
+    public static void sliderTrack(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, float pct, float hover) {
         GuiStyle.record(ctx, "style.slider", x, y - 5.0f, w, 10.0f);
         t = GuiStyle.theme("style.slider", t);
         float styleAlphaPrev = GuiStyle.styleAlpha("style.slider");
@@ -110,7 +110,7 @@ public final class UiDraw {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void dropdownBox(GuiGraphics ctx, Theme t, float x, float y, float w, float h, String value, float hover, boolean open) {
+    public static void dropdownBox(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, float h, String value, float hover, boolean open) {
         GuiStyle.record(ctx, "style.dropdown", x, y, w, h);
         t = GuiStyle.theme("style.dropdown", t);
         float styleAlphaPrev = GuiStyle.styleAlpha("style.dropdown");
@@ -130,7 +130,7 @@ public final class UiDraw {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void button(GuiGraphics ctx, Theme t, float x, float y, float w, float h, String label, Icon icon, float hover, boolean primary) {
+    public static void button(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, float h, String label, Icon icon, float hover, boolean primary) {
         GuiStyle.record(ctx, "style.button", x, y, w, h);
         t = GuiStyle.theme("style.button", t);
         float styleAlphaPrev = GuiStyle.styleAlpha("style.button");
@@ -171,7 +171,7 @@ public final class UiDraw {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void iconButton(GuiGraphics ctx, Theme t, float x, float y, float size, Icon icon, float hover) {
+    public static void iconButton(GuiGraphicsExtractor ctx, Theme t, float x, float y, float size, Icon icon, float hover) {
         GuiStyle.record(ctx, "style.button", x, y, size, size);
         t = GuiStyle.theme("style.button", t);
         float styleAlphaPrev = GuiStyle.styleAlpha("style.button");
@@ -189,7 +189,7 @@ public final class UiDraw {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public static void iconBadge(GuiGraphics ctx, Theme t, float x, float y, float size, Icon icon, boolean active) {
+    public static void iconBadge(GuiGraphicsExtractor ctx, Theme t, float x, float y, float size, Icon icon, boolean active) {
         GuiStyle.record(ctx, "style.badge", x, y, size, size);
         t = GuiStyle.theme("style.badge", t);
         float styleAlphaPrev = GuiStyle.styleAlpha("style.badge");
@@ -207,7 +207,7 @@ public final class UiDraw {
         }
     }
 
-    public static void keyCap(GuiGraphics ctx, Theme t, float x, float y, float w, float h, String label, float pressed, float textSize) {
+    public static void keyCap(GuiGraphicsExtractor ctx, Theme t, float x, float y, float w, float h, String label, float pressed, float textSize) {
         if (pressed > 0.01f && UiDraw.glowStrength() > 0.0f) {
             Render2D.glow(ctx, x, y, w, h, 3.5f, 6.0f, ColorUtil.withAlpha(t.accent(), 0.5f * pressed * UiDraw.glowStrength()));
         }

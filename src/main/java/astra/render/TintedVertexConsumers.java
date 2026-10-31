@@ -3,16 +3,16 @@
  * 
  * Could not load the following classes:
  *  com.mojang.blaze3d.vertex.VertexConsumer
- *  net.minecraft.client.renderer.MultiBufferSource
+ *  astra.render.WorldBuffers
  *  net.minecraft.client.renderer.rendertype.RenderType
  */
 package astra.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import astra.render.WorldBuffers;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
-public record TintedVertexConsumers(MultiBufferSource delegate, int tint) implements MultiBufferSource
+public record TintedVertexConsumers(WorldBuffers delegate, int tint) implements WorldBuffers
 {
     public VertexConsumer getBuffer(RenderType layer) {
         return new Tinted(this.delegate.getBuffer(layer), this.tint);

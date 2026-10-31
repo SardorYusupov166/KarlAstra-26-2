@@ -10,15 +10,15 @@
  *  com.mojang.brigadier.arguments.StringArgumentType
  *  com.mojang.brigadier.builder.LiteralArgumentBuilder
  *  com.mojang.brigadier.context.CommandContext
- *  net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+ *  net.fabricmc.fabric.api.client.command.v2.ClientCommands
  *  net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
- *  net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+ *  net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
  *  net.minecraft.client.Camera
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.Font
  *  net.minecraft.client.gui.Font$DisplayMode
- *  net.minecraft.client.renderer.MultiBufferSource
- *  net.minecraft.client.renderer.MultiBufferSource$BufferSource
+ *  astra.render.WorldBuffers
+ *  astra.render.WorldBuffers$BufferSource
  *  net.minecraft.client.renderer.blockentity.BeaconRenderer
  *  net.minecraft.client.renderer.rendertype.RenderTypes
  *  net.minecraft.client.renderer.texture.OverlayTexture
@@ -51,13 +51,13 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.List;
 import java.util.Locale;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
+import astra.render.WorldBuffers;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -106,7 +106,7 @@ extends Module {
 
     private static void say(String text) {
         if (WaypointsModule.mc.gui != null) {
-            WaypointsModule.mc.gui.getChat().addMessage((Component)Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)text).withColor(15261170)));
+            WaypointsModule.mc.gui.hud.getChat().addClientSystemMessage((Component)Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)text).withColor(15261170)));
         }
     }
 
@@ -145,7 +145,7 @@ extends Module {
             return;
         }
         Window window = mc.getWindow();
-        boolean canUse = WaypointsModule.mc.screen == null;
+        boolean canUse = WaypointsModule.mc.gui.screen() == null;
         boolean bl = add = canUse && this.addKey.isBound() && InputConstants.isKeyDown((Window)window, (int)this.addKey.getKey());
         if (add && !this.addWasDown) {
             this.addHere(Waypoints.nextName());
@@ -164,17 +164,17 @@ extends Module {
         this.wasDead = dead;
     }
 
-    public void renderWorld(WorldRenderContext ctx) {
-        if (WaypointsModule.mc.player == null || WaypointsModule.mc.level == null || WaypointsModule.mc.options.hideGui) {
+    public void renderWorld(LevelRenderContext ctx) {
+        if (WaypointsModule.mc.player == null || WaypointsModule.mc.level == null || WaypointsModule.mc.gui.hud.isHidden()) {
             return;
         }
         List<Waypoints.Waypoint> list = Waypoints.here();
         if (list.isEmpty()) {
             return;
         }
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
         Vec3 cam = camera.position();
-        MultiBufferSource.BufferSource imm = mc.renderBuffers().bufferSource();
+        WorldBuffers.BufferSource imm = WorldBuffers.forContext(ctx);
         float td = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         long time = WaypointsModule.mc.level.getGameTime();
         double maxD = (Double)this.maxDistance.get();
@@ -186,7 +186,7 @@ extends Module {
             double horiz = Math.sqrt(dx * dx + dz * dz);
             double dist = Math.sqrt(horiz * horiz + dy * dy);
             if (dist > maxD || !((Boolean)this.beam.get()).booleanValue() || !(horiz < (double)beamLimit) || !(horiz > 1.5)) continue;
-            WaypointsModule.drawBeam((MultiBufferSource)imm, (float)((double)w.x + 0.5 - cam.x), (float)((double)WaypointsModule.mc.level.getMinY() - cam.y), (float)((double)w.z + 0.5 - cam.z), WaypointsModule.mc.level.getHeight(), w.color, (float)time + td);
+            WaypointsModule.drawBeam((WorldBuffers)imm, (float)((double)w.x + 0.5 - cam.x), (float)((double)WaypointsModule.mc.level.getMinY() - cam.y), (float)((double)w.z + 0.5 - cam.z), WaypointsModule.mc.level.getHeight(), w.color, (float)time + td);
         }
         imm.endBatch();
         if (!((Boolean)this.label.get()).booleanValue()) {
@@ -207,15 +207,15 @@ extends Module {
             String sub = (Boolean)this.distance.get() != false ? WaypointsModule.formatDistance(dist) : null;
             int bg = ColorUtil.withAlpha(-15464420, 0.55f);
             float tw = tr.width(title);
-            tr.drawInBatch(title, -tw / 2.0f, sub != null ? -10.0f : -4.0f, w.color | 0xFF000000, false, mat, (MultiBufferSource)imm, Font.DisplayMode.SEE_THROUGH, bg, 0xF000F0);
+            WorldBuffers.drawText(tr, title, -tw / 2.0f, sub != null ? -10.0f : -4.0f, w.color | 0xFF000000, false, mat, (WorldBuffers)imm, Font.DisplayMode.SEE_THROUGH, bg, 0xF000F0);
             if (sub == null) continue;
             float sw = tr.width(sub);
-            tr.drawInBatch(sub, -sw / 2.0f, 1.0f, -1, false, mat, (MultiBufferSource)imm, Font.DisplayMode.SEE_THROUGH, bg, 0xF000F0);
+            WorldBuffers.drawText(tr, sub, -sw / 2.0f, 1.0f, -1, false, mat, (WorldBuffers)imm, Font.DisplayMode.SEE_THROUGH, bg, 0xF000F0);
         }
         imm.endBatch();
     }
 
-    private static void drawBeam(MultiBufferSource consumers, float x, float y, float z, int height, int color, float time) {
+    private static void drawBeam(WorldBuffers consumers, float x, float y, float z, int height, int color, float time) {
         VertexConsumer vc = consumers.getBuffer(RenderTypes.beaconBeam((Identifier)BeaconRenderer.BEAM_LOCATION, (boolean)true));
         float scroll = -(time * 0.025f) % 1.0f;
         float v1 = (float)height * 0.5f + scroll;
@@ -247,7 +247,7 @@ extends Module {
     }
 
     public static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)ClientCommandManager.literal((String)"wp").executes(c -> WaypointsModule.list())).then(((LiteralArgumentBuilder)ClientCommandManager.literal((String)"add").executes(c -> WaypointsModule.add(Waypoints.nextName()))).then(ClientCommandManager.argument((String)"name", (ArgumentType)StringArgumentType.greedyString()).executes(c -> WaypointsModule.add(StringArgumentType.getString((CommandContext)c, (String)"name")))))).then(ClientCommandManager.literal((String)"remove").then(ClientCommandManager.argument((String)"name", (ArgumentType)StringArgumentType.greedyString()).suggests((c, b) -> {
+        dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)ClientCommands.literal((String)"wp").executes(c -> WaypointsModule.list())).then(((LiteralArgumentBuilder)ClientCommands.literal((String)"add").executes(c -> WaypointsModule.add(Waypoints.nextName()))).then(ClientCommands.argument((String)"name", (ArgumentType)StringArgumentType.greedyString()).executes(c -> WaypointsModule.add(StringArgumentType.getString((CommandContext)c, (String)"name")))))).then(ClientCommands.literal((String)"remove").then(ClientCommands.argument((String)"name", (ArgumentType)StringArgumentType.greedyString()).suggests((c, b) -> {
             for (Waypoints.Waypoint w : Waypoints.all()) {
                 b.suggest(w.name);
             }
@@ -256,10 +256,10 @@ extends Module {
             String name = StringArgumentType.getString((CommandContext)c, (String)"name");
             WaypointsModule.say(Waypoints.remove(name) ? "\u0422\u043e\u0447\u043a\u0430 \u00ab" + name + "\u00bb \u0443\u0434\u0430\u043b\u0435\u043d\u0430" : "\u0422\u043e\u0447\u043a\u0438 \u00ab" + name + "\u00bb \u043d\u0435\u0442");
             return 1;
-        })))).then(ClientCommandManager.literal((String)"list").executes(c -> WaypointsModule.list()))).then(ClientCommandManager.literal((String)"clear").executes(c -> {
+        })))).then(ClientCommands.literal((String)"list").executes(c -> WaypointsModule.list()))).then(ClientCommands.literal((String)"clear").executes(c -> {
             WaypointsModule.say("\u0423\u0434\u0430\u043b\u0435\u043d\u043e \u0442\u043e\u0447\u0435\u043a: " + Waypoints.clear());
             return 1;
-        }))).then(ClientCommandManager.literal((String)"share").then(ClientCommandManager.argument((String)"name", (ArgumentType)StringArgumentType.greedyString()).suggests((c, b) -> {
+        }))).then(ClientCommands.literal((String)"share").then(ClientCommands.argument((String)"name", (ArgumentType)StringArgumentType.greedyString()).suggests((c, b) -> {
             for (Waypoints.Waypoint w : Waypoints.all()) {
                 b.suggest(w.name);
             }

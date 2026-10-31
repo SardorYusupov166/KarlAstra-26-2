@@ -2,8 +2,8 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.GuiMessage
- *  net.minecraft.client.GuiMessage$Line
+ *  net.minecraft.client.multiplayer.chat.GuiMessage
+ *  net.minecraft.client.multiplayer.chat.GuiMessage$Line
  *  net.minecraft.client.gui.components.ChatComponent
  *  org.spongepowered.asm.mixin.Mixin
  *  org.spongepowered.asm.mixin.gen.Accessor
@@ -12,7 +12,7 @@
 package astra.mixin;
 
 import java.util.List;
-import net.minecraft.client.GuiMessage;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 import net.minecraft.client.gui.components.ChatComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

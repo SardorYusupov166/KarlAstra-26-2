@@ -105,7 +105,7 @@ public final class SoundSlot {
                 return allowed.test(this.ids[idx - 1]) ? this.ids[idx - 1] : null;
             }
         }
-        ArrayList<String> pool = new ArrayList<String>();
+        ArrayList<Object> pool = new ArrayList<>();
         for (SoundPacks.Pack pack : activePacks.get()) {
             pool.addAll(pack.events().getOrDefault(this.key, List.of()));
         }

@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  net.minecraft.client.KeyMapping
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  org.joml.Matrix3x2fStack
  */
 package astra.module.modules.pvp;
@@ -20,7 +20,7 @@ import astra.theme.Theme;
 import astra.utils.ClickTracker;
 import astra.utils.FrameStats;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
 
 public class KeystrokesHud
@@ -71,12 +71,12 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         float dt = FrameStats.delta();
         this.draw(ctx, KeystrokesHud.theme(), w, dt, new boolean[]{this.pressed(KeystrokesHud.mc.options.keyUp), this.pressed(KeystrokesHud.mc.options.keyLeft), this.pressed(KeystrokesHud.mc.options.keyDown), this.pressed(KeystrokesHud.mc.options.keyRight), this.pressed(KeystrokesHud.mc.options.keyAttack), this.pressed(KeystrokesHud.mc.options.keyUse), this.pressed(KeystrokesHud.mc.options.keyShift), this.pressed(KeystrokesHud.mc.options.keyJump)});
     }
 
-    private void draw(GuiGraphics ctx, Theme t, float w, float dt, boolean[] state) {
+    private void draw(GuiGraphicsExtractor ctx, Theme t, float w, float dt, boolean[] state) {
         float[] p = new float[8];
         for (int i = 0; i < 8; ++i) {
             p[i] = this.anim[i].update(state[i] ? 1.0f : 0.0f, dt);

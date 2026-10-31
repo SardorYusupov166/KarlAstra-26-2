@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.core.BlockPos
  *  net.minecraft.network.chat.Component
  *  net.minecraft.resources.Identifier
@@ -21,7 +21,7 @@ import astra.settings.ModeSetting;
 import astra.theme.Theme;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -91,7 +91,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = CoordinatesHud.theme();
         float y = 5.0f;
         for (String line : this.lines()) {

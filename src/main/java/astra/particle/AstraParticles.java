@@ -6,12 +6,12 @@
  *  com.mojang.blaze3d.vertex.PoseStack$Pose
  *  com.mojang.blaze3d.vertex.VertexConsumer
  *  net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
- *  net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
- *  net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
+ *  net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
+ *  net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents
  *  net.minecraft.client.Camera
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.multiplayer.ClientLevel
- *  net.minecraft.client.renderer.MultiBufferSource$BufferSource
+ *  astra.render.WorldBuffers$BufferSource
  *  net.minecraft.client.renderer.rendertype.RenderType
  *  net.minecraft.client.renderer.rendertype.RenderTypes
  *  net.minecraft.client.renderer.texture.OverlayTexture
@@ -34,12 +34,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import astra.render.WorldBuffers;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -61,7 +61,7 @@ public final class AstraParticles {
 
     public static void init() {
         ClientTickEvents.END_CLIENT_TICK.register(AstraParticles::tick);
-        WorldRenderEvents.AFTER_ENTITIES.register(AstraParticles::render);
+        LevelRenderEvents.COLLECT_SUBMITS.register(AstraParticles::render);
     }
 
     public static Random random() {
@@ -133,7 +133,7 @@ public final class AstraParticles {
         });
     }
 
-    private static void render(WorldRenderContext ctx) {
+    private static void render(LevelRenderContext ctx) {
         if (PARTICLES.isEmpty()) {
             return;
         }
@@ -146,14 +146,14 @@ public final class AstraParticles {
         }
     }
 
-    private static void draw(WorldRenderContext ctx) {
+    private static void draw(LevelRenderContext ctx) {
         Minecraft mc = Minecraft.getInstance();
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
         Vec3 cam = camera.position();
         Quaternionf rotation = camera.rotation();
         float td = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         PARTICLES.sort(Comparator.comparingDouble(p -> -AstraParticles.sqDist(p, cam)));
-        MultiBufferSource.BufferSource immediate = mc.renderBuffers().bufferSource();
+        WorldBuffers.BufferSource immediate = WorldBuffers.forContext(ctx);
         RenderType layer = RenderTypes.entityTranslucentEmissive((Identifier)SHEET);
         VertexConsumer vc = immediate.getBuffer(layer);
         PoseStack.Pose entry = new PoseStack().last();

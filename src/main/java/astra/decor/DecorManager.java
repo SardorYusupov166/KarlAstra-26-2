@@ -7,7 +7,7 @@
  *  com.google.gson.reflect.TypeToken
  *  com.mojang.blaze3d.platform.NativeImage
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.renderer.texture.AbstractTexture
  *  net.minecraft.client.renderer.texture.DynamicTexture
  *  net.minecraft.resources.Identifier
@@ -41,7 +41,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
@@ -133,8 +133,11 @@ public final class DecorManager {
         if (failed != null && System.currentTimeMillis() - failed < 3000L) {
             return null;
         }
-        Path f = ArtManager.artDir().resolve(image);
+        Path f = ArtManager.artDir().resolve(image).normalize();
         try {
+            if (!f.getParent().equals(ArtManager.artDir().normalize())) {
+                throw new IllegalArgumentException("Изображение вне папки art");
+            }
             if (!Files.isRegularFile(f, new LinkOption[0])) {
                 throw new IllegalStateException("\u043d\u0435\u0442 \u0444\u0430\u0439\u043b\u0430");
             }
@@ -171,18 +174,24 @@ public final class DecorManager {
         }
     }
 
-    public static void renderMenu(GuiGraphics ctx, String depth, float designW) {
+    public static void refreshImages() {
+        lastStampCheck = 0L;
+        DecorManager.checkStamps();
+        FAILED.clear();
+    }
+
+    public static void renderMenu(GuiGraphicsExtractor ctx, String depth, float designW) {
         for (DecorLayer l : DecorManager.layers()) {
             if (!l.visible || !l.isMenu() || !depth.equals(l.depth)) continue;
             DecorManager.draw(ctx, l, l.x * designW, l.y, l.w, l.h, 1.0f);
         }
     }
 
-    public static void renderScreen(GuiGraphics ctx, String depth, float sw, float sh) {
+    public static void renderScreen(GuiGraphicsExtractor ctx, String depth, float sw, float sh) {
         DecorManager.renderScreen(ctx, depth, sw, sh, false);
     }
 
-    public static void renderScreen(GuiGraphics ctx, String depth, float sw, float sh, boolean fromEditor) {
+    public static void renderScreen(GuiGraphicsExtractor ctx, String depth, float sw, float sh, boolean fromEditor) {
         if (editing && !fromEditor) {
             return;
         }
@@ -192,7 +201,7 @@ public final class DecorManager {
         }
     }
 
-    public static void draw(GuiGraphics ctx, DecorLayer l, float cx, float cy, float w, float h, float alphaMul) {
+    public static void draw(GuiGraphicsExtractor ctx, DecorLayer l, float cx, float cy, float w, float h, float alphaMul) {
         boolean neon;
         Tex tex = DecorManager.texture(l.image);
         float t = AnimationUtils.time() * l.animSpeed / 100.0f + l.phase;

@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
  *  net.minecraft.client.input.CharacterEvent
  *  net.minecraft.client.input.KeyEvent
@@ -32,6 +32,7 @@ import astra.gui.style.GuiStyle;
 import astra.module.Category;
 import astra.module.ClientSettings;
 import astra.module.modules.cosmetic.SoundsModule;
+import astra.module.ModuleManager;
 import astra.render.ArtManager;
 import astra.render.ColorUtil;
 import astra.render.Decorations;
@@ -44,7 +45,7 @@ import astra.theme.Theme;
 import astra.theme.ThemeManager;
 import java.util.EnumMap;
 import java.util.Map;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -118,7 +119,7 @@ implements PopupHost {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public void renderPreview(GuiGraphics ctx, float ox, float oy, float s, float dt) {
+    public void renderPreview(GuiGraphicsExtractor ctx, float ox, float oy, float s, float dt) {
         this.computeLayout();
         this.openProgress = 1.0f;
         this.ui.ctx = ctx;
@@ -222,9 +223,9 @@ implements PopupHost {
         return (guiY - cy) / (double)(this.scale * this.zoom) + 300.0;
     }
 
-    public void renderBackground(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         if (this.minecraft.level == null) {
-            this.renderPanorama(ctx, delta);
+            this.extractPanorama(ctx, delta);
         }
         float e = AnimationUtils.easeOutCubic(this.openProgress);
         ClientSettings cs = ClientSettings.get();
@@ -241,7 +242,7 @@ implements PopupHost {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public void render(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
         long now = System.nanoTime();
         float dt = this.lastFrame == 0L ? 0.016f : Math.min(0.1f, (float)(now - this.lastFrame) / 1.0E9f);
         this.lastFrame = now;
@@ -280,11 +281,15 @@ implements PopupHost {
             m.popMatrix();
             Render2D.alpha = 1.0f;
         }
+        if (this.minecraft.player == null) {
+            SoundsModule sounds = ModuleManager.get(SoundsModule.class);
+            if (sounds != null) sounds.renderHud(ctx);
+        }
     }
 
     private void renderWindow(UiContext ui) {
         Theme t = ui.theme;
-        GuiGraphics ctx = ui.ctx;
+        GuiGraphicsExtractor ctx = ui.ctx;
         float W = this.designW;
         float H = 600.0f;
         float glow = UiDraw.glowStrength();
@@ -384,7 +389,7 @@ implements PopupHost {
 
     private void renderSidebar(UiContext ui) {
         Theme t = ui.theme;
-        GuiGraphics ctx = ui.ctx;
+        GuiGraphicsExtractor ctx = ui.ctx;
         if (GuiStyle.begin(ctx, ui, "logo", 10.0f, 10.0f, 176.0f, 68.0f)) {
             DecorManager.Tex tex;
             String img = GuiStyle.image("logo");
@@ -445,7 +450,7 @@ implements PopupHost {
         this.renderConfigSwitcher(ui);
     }
 
-    public static void drawLogo(GuiGraphics ctx, Theme t, float x, float y, float k) {
+    public static void drawLogo(GuiGraphicsExtractor ctx, Theme t, float x, float y, float k) {
         ArtManager.drawLogo(ctx, x, y, 176.0f * k, 1.0f, t.accent(), t.accent2());
         float tw = AnimationUtils.pulse(2.4f);
         Render2D.sparkle(ctx, x + 158.0f * k, y + 12.0f * k, (3.0f + 2.2f * tw) * k, tw * 45.0f, ColorUtil.withAlpha(-1, 0.6f + 0.4f * tw));
@@ -473,7 +478,7 @@ implements PopupHost {
 
     private void renderConfigSwitcherInner(UiContext ui) {
         Theme t = GuiStyle.theme("config", ui.theme);
-        GuiGraphics ctx = ui.ctx;
+        GuiGraphicsExtractor ctx = ui.ctx;
         float x = 12.0f;
         float w = 172.0f;
         float h = 82.0f;
@@ -774,11 +779,11 @@ implements PopupHost {
 
     private void finishClose() {
         ConfigManager.save();
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     public void openHudEditor() {
-        this.minecraft.setScreen((Screen)new HudEditorScreen(this));
+        this.minecraft.gui.setScreen((Screen)new HudEditorScreen(this));
     }
 
     public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
@@ -800,7 +805,7 @@ implements PopupHost {
     public boolean charTyped(CharacterEvent input) {
         boolean handled = false;
         for (char ch : input.codepointAsString().toCharArray()) {
-            handled |= this.charTyped(ch, input.modifiers());
+            handled |= this.charTyped(ch, 0);
         }
         return handled;
     }

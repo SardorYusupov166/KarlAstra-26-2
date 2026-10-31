@@ -185,7 +185,7 @@ extends ModulesPage {
                 }
                 if (mx >= (double)(this.x + 266.0f) && mx < (double)(this.x + 436.0f)) {
                     Minecraft mc = Minecraft.getInstance();
-                    mc.setScreen((Screen)new DecorEditorScreen(mc.screen));
+                    mc.gui.setScreen((Screen)new DecorEditorScreen(mc.gui.screen()));
                     return true;
                 }
                 if (mx >= (double)(this.x + 160.0f) && mx < (double)(this.x + 260.0f)) {

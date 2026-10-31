@@ -168,7 +168,7 @@ extends Module {
         }
         String name = self ? "\u0412\u044b" : player.getName().getString();
         MutableComponent msg = Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)name).withColor(0xFFFFFF)).append((Component)Component.literal((String)(self ? " \u043f\u043e\u0442\u0435\u0440\u044f\u043b\u0438 \u0442\u043e\u0442\u0435\u043c " : " \u043f\u043e\u0442\u0435\u0440\u044f\u043b \u0442\u043e\u0442\u0435\u043c ")).withColor(13220057)).append((Component)Component.literal((String)("\u00d7" + count)).withColor(16731608));
-        PvpTweaks.mc.gui.getChat().addMessage((Component)msg);
+        PvpTweaks.mc.gui.hud.getChat().addClientSystemMessage((Component)msg);
     }
 
     public static int pops(Entity entity) {
@@ -187,7 +187,7 @@ extends Module {
         for (Player p : PvpTweaks.mc.level.players()) {
             Integer popped;
             if (!p.isDeadOrDying() || (popped = POPS.remove(p.getUUID())) == null || !((Boolean)this.popCounter.get()).booleanValue() || p == PvpTweaks.mc.player) continue;
-            PvpTweaks.mc.gui.getChat().addMessage((Component)Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)p.getName().getString()).withColor(0xFFFFFF)).append((Component)Component.literal((String)" \u0443\u043c\u0435\u0440, \u0441\u043d\u0435\u0441\u0435\u043d\u043e \u0442\u043e\u0442\u0435\u043c\u043e\u0432: ").withColor(13220057)).append((Component)Component.literal((String)String.valueOf(popped)).withColor(16731608)));
+            PvpTweaks.mc.gui.hud.getChat().addClientSystemMessage((Component)Component.literal((String)"\u2726 ").withColor(16731608).append((Component)Component.literal((String)p.getName().getString()).withColor(0xFFFFFF)).append((Component)Component.literal((String)" \u0443\u043c\u0435\u0440, \u0441\u043d\u0435\u0441\u0435\u043d\u043e \u0442\u043e\u0442\u0435\u043c\u043e\u0432: ").withColor(13220057)).append((Component)Component.literal((String)String.valueOf(popped)).withColor(16731608)));
         }
     }
 }

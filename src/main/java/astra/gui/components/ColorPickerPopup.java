@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.gui.components;
 
@@ -14,7 +14,7 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.settings.ColorSetting;
 import astra.theme.Theme;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class ColorPickerPopup
 extends Popup {
@@ -52,7 +52,7 @@ extends Popup {
         float a = this.open.update(1.0f, ui.dt);
         float prev = Render2D.alpha;
         Render2D.alpha *= a;
-        GuiGraphics ctx = ui.ctx;
+        GuiGraphicsExtractor ctx = ui.ctx;
         Render2D.shadow(ctx, this.x, this.y, this.w, this.h, 6.0f, 10.0f, -1879048192);
         Render2D.roundRect(ctx, this.x, this.y, this.w, this.h, 6.0f, Paint.vertical(this.y, this.y + this.h, t.bg2(), t.bg()));
         Render2D.outline(ctx, this.x, this.y, this.w, this.h, 6.0f, 0.8f, ColorUtil.withAlpha(t.accent(), 0.6f));

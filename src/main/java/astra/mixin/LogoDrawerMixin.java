@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.LogoRenderer
  *  net.minecraft.client.gui.screens.Screen
  *  org.spongepowered.asm.mixin.Mixin
@@ -17,7 +17,7 @@ import astra.gui.vanilla.AstraWidgets;
 import astra.render.ArtManager;
 import astra.theme.Theme;
 import astra.theme.ThemeManager;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,8 +27,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={LogoRenderer.class})
 public abstract class LogoDrawerMixin {
-    @Inject(method={"renderLogo(Lnet/minecraft/class_332;IFI)V"}, at={@At(value="HEAD")}, cancellable=true)
-    private void astra$logo(GuiGraphics ctx, int screenWidth, float alpha, int y, CallbackInfo ci) {
+    @Inject(method={"extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IFI)V"}, at=@At(value="HEAD"), cancellable=true)
+    private void astra$logo(GuiGraphicsExtractor ctx, int screenWidth, float alpha, int y, CallbackInfo ci) {
         if (!AstraWidgets.enabled()) {
             return;
         }

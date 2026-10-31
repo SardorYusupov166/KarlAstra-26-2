@@ -60,7 +60,7 @@ public final class StylePresets {
     private static void set(Module m, String setting, Object value) {
         for (Setting<?> s : m.getSettings()) {
             if (!s.getName().equals(setting)) continue;
-            s.set(value);
+            ((Setting)s).set(value);
             return;
         }
     }

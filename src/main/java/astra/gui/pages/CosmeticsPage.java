@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.renderer.entity.state.EntityRenderState
  *  net.minecraft.world.entity.Entity
  *  net.minecraft.world.entity.LivingEntity
@@ -32,7 +32,7 @@ import astra.render.Render2D;
 import astra.theme.Theme;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -126,7 +126,7 @@ extends ModulesPage {
         Fonts.drawCentered(ui.ctx, "\u0422\u044f\u043d\u0438\u0442\u0435 \u043c\u044b\u0448\u044c\u044e, \u0447\u0442\u043e\u0431\u044b \u0432\u0440\u0430\u0449\u0430\u0442\u044c", cx, py + 8.0f, 6.0f, t.textMuted(), false);
     }
 
-    private static void drawPlayer(GuiGraphics ctx, LivingEntity entity, float x1, float y1, float x2, float y2, float size, float yaw) {
+    private static void drawPlayer(GuiGraphicsExtractor ctx, LivingEntity entity, float x1, float y1, float x2, float y2, float size, float yaw) {
         Matrix3x2fStack m = ctx.pose();
         Vector2f a = m.transformPosition(x1, y1, new Vector2f());
         Vector2f b = m.transformPosition(x2, y2, new Vector2f());
@@ -154,7 +154,7 @@ extends ModulesPage {
         renderState.lightCoords = 0xF000F0;
         renderState.shadowPieces.clear();
         renderState.outlineColor = 0;
-        ctx.submitEntityRenderState(renderState, size * scale / entityScale, translation, rotation, camera, sx1, sy1, sx2, sy2);
+        ctx.entity(renderState, size * scale / entityScale, translation, rotation, camera, sx1, sy1, sx2, sy2);
         entity.yBodyRot = bodyYaw;
         entity.setYRot(entYaw);
         entity.setXRot(pitch);

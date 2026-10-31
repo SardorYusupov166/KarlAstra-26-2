@@ -94,7 +94,7 @@ extends ModulesPage {
             Fonts.draw(ui.ctx, this.text, this.x + 14.0f, this.y + 3.6f, 8.2f, t.text(), true);
             float tw = Fonts.width(this.text, 8.2f, true);
             List<ModuleCard> list = SoundsPage.this.groups.get(this);
-            String string = list == null ? "" : (count = list.size() + (list.size() == 1 ? " \u0441\u043e\u0431\u044b\u0442\u0438\u0435" : (list.size() < 5 ? " \u0441\u043e\u0431\u044b\u0442\u0438\u044f" : " \u0441\u043e\u0431\u044b\u0442\u0438\u0439")));
+            count = list == null ? "" : list.size() + (list.size() == 1 ? " \u0441\u043e\u0431\u044b\u0442\u0438\u0435" : (list.size() < 5 ? " \u0441\u043e\u0431\u044b\u0442\u0438\u044f" : " \u0441\u043e\u0431\u044b\u0442\u0438\u0439"));
             if (!count.isEmpty()) {
                 Fonts.draw(ui.ctx, count, this.x + 20.0f + tw, this.y + 5.0f, 6.0f, t.textMuted(), false);
             }

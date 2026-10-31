@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "astra.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "client": [
     "AbstractClientPlayerEntityMixin",
     "ChatHudAccessor",
@@ -38,7 +38,8 @@
     "WorldMixin",
     "NativeSplashMixin",
     "NativeTitleTextMixin",
-    "NativeCopyrightMixin"
+    "NativeCopyrightMixin",
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -4,7 +4,7 @@
  * Could not load the following classes:
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.Font
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.network.chat.Component
  *  net.minecraft.network.chat.FontDescription
  *  net.minecraft.network.chat.FontDescription$Resource
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.FormattedText;
@@ -89,27 +89,27 @@ public final class Fonts {
         return Fonts.width(s, size, false);
     }
 
-    public static void draw(GuiGraphics ctx, String s, float x, float y, float size, int color, boolean bold) {
+    public static void draw(GuiGraphicsExtractor ctx, String s, float x, float y, float size, int color, boolean bold) {
         Fonts.drawText(ctx, Fonts.text(s, bold), x, y, size, color, false);
     }
 
-    public static void draw(GuiGraphics ctx, String s, float x, float y, float size, int color) {
+    public static void draw(GuiGraphicsExtractor ctx, String s, float x, float y, float size, int color) {
         Fonts.draw(ctx, s, x, y, size, color, false);
     }
 
-    public static void drawShadow(GuiGraphics ctx, String s, float x, float y, float size, int color, boolean bold) {
+    public static void drawShadow(GuiGraphicsExtractor ctx, String s, float x, float y, float size, int color, boolean bold) {
         Fonts.drawText(ctx, Fonts.text(s, bold), x, y, size, color, true);
     }
 
-    public static void drawCentered(GuiGraphics ctx, String s, float cx, float y, float size, int color, boolean bold) {
+    public static void drawCentered(GuiGraphicsExtractor ctx, String s, float cx, float y, float size, int color, boolean bold) {
         Fonts.draw(ctx, s, cx - Fonts.width(s, size, bold) / 2.0f, y, size, color, bold);
     }
 
-    public static void drawRight(GuiGraphics ctx, String s, float right, float y, float size, int color, boolean bold) {
+    public static void drawRight(GuiGraphicsExtractor ctx, String s, float right, float y, float size, int color, boolean bold) {
         Fonts.draw(ctx, s, right - Fonts.width(s, size, bold), y, size, color, bold);
     }
 
-    public static void drawText(GuiGraphics ctx, Component text, float x, float y, float size, int color, boolean shadow) {
+    public static void drawText(GuiGraphicsExtractor ctx, Component text, float x, float y, float size, int color, boolean shadow) {
         int c = ColorUtil.mulAlpha(color, Render2D.alpha);
         if (ColorUtil.alpha(c) < 5) {
             return;
@@ -119,11 +119,11 @@ public final class Fonts {
         m.translate(x, y);
         float s = size / 9.0f;
         m.scale(s, s);
-        ctx.drawString(Fonts.tr(), text, 0, 0, c, shadow);
+        ctx.text(Fonts.tr(), text, 0, 0, c, shadow);
         m.popMatrix();
     }
 
-    public static void drawGradient(GuiGraphics ctx, String s, float x, float y, float size, int from, int to, boolean bold) {
+    public static void drawGradient(GuiGraphicsExtractor ctx, String s, float x, float y, float size, int from, int to, boolean bold) {
         int cp;
         float total = Math.max(1.0f, Fonts.width(s, size, bold));
         float cx = x;

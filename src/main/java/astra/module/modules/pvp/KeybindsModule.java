@@ -69,7 +69,7 @@ extends Module {
             return;
         }
         Window window = mc.getWindow();
-        boolean canUse = KeybindsModule.mc.screen == null;
+        boolean canUse = KeybindsModule.mc.gui.screen() == null;
         int active = this.count.getInt();
         for (int i = 0; i < this.binds.size(); ++i) {
             boolean down;
@@ -153,7 +153,7 @@ extends Module {
             int i = n - 1;
             this.key = (KeybindSetting)KeybindsModule.this.add((KeybindSetting)new KeybindSetting("\u0411\u0438\u043d\u0434 " + n + " \u00b7 \u043a\u043b\u0430\u0432\u0438\u0448\u0430", -1).visibleWhen(() -> i < KeybindsModule.this.count.getInt()));
             this.action = (ModeSetting)KeybindsModule.this.add((ModeSetting)new ModeSetting("\u0411\u0438\u043d\u0434 " + n + " \u00b7 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435", KeybindsModule.CHAT, KeybindsModule.CHAT, KeybindsModule.TOGGLE, KeybindsModule.OFF).visibleWhen(() -> i < KeybindsModule.this.count.getInt()));
-            this.text = (StringSetting)KeybindsModule.this.add((StringSetting)((Setting)new StringSetting("\u0411\u0438\u043d\u0434 " + n + " \u00b7 \u0442\u0435\u043a\u0441\u0442", "", "/spawn  \u0438\u043b\u0438  gg && gl", 256).desc("\u041a\u043e\u043c\u0430\u043d\u0434\u0430 \u043d\u0430\u0447\u0438\u043d\u0430\u0435\u0442\u0441\u044f \u0441 \u00ab/\u00bb. \u041d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0439 \u2014 \u0447\u0435\u0440\u0435\u0437 &&. \u041f\u043e\u0434\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0438: {x} {y} {z} {target} {hp}")).visibleWhen(() -> i < KeybindsModule.this.count.getInt() && this.action.is(KeybindsModule.CHAT)));
+            this.text = (StringSetting)KeybindsModule.this.add((StringSetting)(new StringSetting("\u0411\u0438\u043d\u0434 " + n + " \u00b7 \u0442\u0435\u043a\u0441\u0442", "", "/spawn  \u0438\u043b\u0438  gg && gl", 256).desc("\u041a\u043e\u043c\u0430\u043d\u0434\u0430 \u043d\u0430\u0447\u0438\u043d\u0430\u0435\u0442\u0441\u044f \u0441 \u00ab/\u00bb. \u041d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0439 \u2014 \u0447\u0435\u0440\u0435\u0437 &&. \u041f\u043e\u0434\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0438: {x} {y} {z} {target} {hp}")).visibleWhen(() -> i < KeybindsModule.this.count.getInt() && this.action.is(KeybindsModule.CHAT)));
             this.module = (ModeSetting)KeybindsModule.this.add((ModeSetting)new ModeSetting("\u0411\u0438\u043d\u0434 " + n + " \u00b7 \u043c\u043e\u0434\u0443\u043b\u044c", "", "").dynamic(KeybindsModule::moduleNames).visibleWhen(() -> i < KeybindsModule.this.count.getInt() && this.action.is(KeybindsModule.TOGGLE)));
         }
     }

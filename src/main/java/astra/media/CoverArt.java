@@ -36,58 +36,26 @@ public final class CoverArt {
     }
 
     public static Cover get(String path) {
-        Cover cover;
-        block12: {
-            if (path == null || path.isEmpty()) {
-                return null;
-            }
-            Cover c = LOADED.get(path);
-            if (c != null) {
-                return c;
-            }
-            Long failedAt = FAILED.get(path);
-            if (failedAt != null && System.currentTimeMillis() - failedAt < 3000L) {
-                return null;
-            }
-            Path file = Path.of(path, new String[0]);
-            if (!Files.isRegularFile(file, new LinkOption[0])) {
-                FAILED.put(path, System.currentTimeMillis());
-                return null;
-            }
-            InputStream in = Files.newInputStream(file, new OpenOption[0]);
-            try {
-                NativeImage img = NativeImage.read((InputStream)in);
-                int[] palette = CoverArt.palette(img);
-                Identifier id = Identifier.fromNamespaceAndPath((String)"astra", (String)("media/cover_" + counter++));
-                Minecraft.getInstance().getTextureManager().register(id, (AbstractTexture)new DynamicTexture(() -> "astra_cover", img));
-                c = new Cover(id, palette[0], palette[1]);
-                LOADED.put(path, c);
-                FAILED.remove(path);
-                CoverArt.trim();
-                cover = c;
-                if (in == null) break block12;
-            }
-            catch (Throwable throwable) {
-                try {
-                    if (in != null) {
-                        try {
-                            in.close();
-                        }
-                        catch (Throwable throwable2) {
-                            throwable.addSuppressed(throwable2);
-                        }
-                    }
-                    throw throwable;
-                }
-                catch (Exception e) {
-                    FAILED.put(path, System.currentTimeMillis());
-                    AstraClient.LOGGER.debug("\u041e\u0431\u043b\u043e\u0436\u043a\u0430 \u043d\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u043b\u0430\u0441\u044c: {}", (Object)path, (Object)e);
-                    return null;
-                }
-            }
-            in.close();
+        if (path == null || path.isEmpty()) return null;
+        Cover cached = LOADED.get(path);
+        if (cached != null) return cached;
+        Long failedAt = FAILED.get(path);
+        if (failedAt != null && System.currentTimeMillis() - failedAt < 3000L) return null;
+        try (InputStream in = Files.newInputStream(Path.of(path))) {
+            NativeImage image = NativeImage.read(in);
+            int[] palette = palette(image);
+            Identifier id = Identifier.fromNamespaceAndPath("astra", "media/cover_" + counter++);
+            Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(() -> "astra_cover", image));
+            Cover cover = new Cover(id, palette[0], palette[1]);
+            LOADED.put(path, cover);
+            FAILED.remove(path);
+            trim();
+            return cover;
+        } catch (Exception e) {
+            FAILED.put(path, System.currentTimeMillis());
+            AstraClient.LOGGER.debug("Unable to load cover: {}", path, e);
+            return null;
         }
-        return cover;
     }
 
     private static void trim() {

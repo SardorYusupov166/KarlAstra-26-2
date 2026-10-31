@@ -5,7 +5,7 @@
  *  net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
  *  net.fabricmc.fabric.api.client.screen.v1.Screens
  *  net.minecraft.client.Minecraft
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.AbstractWidget
  *  net.minecraft.client.gui.components.Button
  *  net.minecraft.client.gui.components.StringWidget
@@ -30,7 +30,7 @@ import java.util.List;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
@@ -57,13 +57,13 @@ public final class MenuStyle {
                 MenuStyle.replaceModsButton(screen);
             }
             if (screen instanceof PauseScreen && AstraWidgets.enabled()) {
-                Screens.getButtons((Screen)screen).removeIf(b -> b instanceof StringWidget && b.getMessage().getString().equals(screen.getTitle().getString()));
-                ScreenEvents.afterRender((Screen)screen).register((s, ctx, mx, my, delta) -> MenuStyle.drawPauseLogo(s, ctx));
+                Screens.getWidgets((Screen)screen).removeIf(b -> b instanceof StringWidget && b.getMessage().getString().equals(screen.getTitle().getString()));
+                ScreenEvents.afterExtract((Screen)screen).register((s, ctx, mx, my, delta) -> MenuStyle.drawPauseLogo(s, ctx));
             }
         });
     }
 
-    public static void drawMenuBackground(GuiGraphics ctx, int w, int h) {
+    public static void drawMenuBackground(GuiGraphicsExtractor ctx, int w, int h) {
         if (!AstraWidgets.enabled()) {
             return;
         }
@@ -81,13 +81,13 @@ public final class MenuStyle {
         PETALS.render(ctx, t, 0.9f);
     }
 
-    public static void renderPausePreview(Screen screen, GuiGraphics ctx) {
+    public static void renderPausePreview(Screen screen, GuiGraphicsExtractor ctx) {
         MenuStyle.drawPauseLogo(screen, ctx);
     }
 
-    private static void drawPauseLogo(Screen screen, GuiGraphics ctx) {
+    private static void drawPauseLogo(Screen screen, GuiGraphicsExtractor ctx) {
         int minY = Integer.MAX_VALUE;
-        for (AbstractWidget b : Screens.getButtons((Screen)screen)) {
+        for (AbstractWidget b : Screens.getWidgets((Screen)screen)) {
             if (!(b instanceof Button)) continue;
             minY = Math.min(minY, b.getY());
         }
@@ -109,7 +109,7 @@ public final class MenuStyle {
         if (!MenuStyle.customMods()) {
             return;
         }
-        List buttons = Screens.getButtons((Screen)screen);
+        List<AbstractWidget> buttons = Screens.getWidgets((Screen)screen);
         String modmenu = Component.translatable((String)"modmenu.title").getString();
         ArrayList<AbstractWidget> found = new ArrayList<AbstractWidget>();
         for (AbstractWidget b : buttons) {
@@ -118,13 +118,13 @@ public final class MenuStyle {
             found.add(b);
         }
         for (AbstractWidget old : found) {
-            Button mine = Button.builder((Component)Component.literal((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.getInstance().setScreen((Screen)new AstraModsScreen(screen))).bounds(old.getX(), old.getY(), old.getWidth(), old.getHeight()).build();
+            Button mine = Button.builder((Component)Component.literal((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.getInstance().gui.setScreen((Screen)new AstraModsScreen(screen))).bounds(old.getX(), old.getY(), old.getWidth(), old.getHeight()).build();
             int i = buttons.indexOf(old);
             buttons.remove(old);
             buttons.add(Math.min(i, buttons.size()), mine);
         }
         if (found.isEmpty() && screen instanceof TitleScreen) {
-            buttons.add(Button.builder((Component)Component.literal((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.getInstance().setScreen((Screen)new AstraModsScreen(screen))).bounds(4, 4, 60, 18).build());
+            buttons.add(Button.builder((Component)Component.literal((String)"\u041c\u043e\u0434\u044b"), btn -> Minecraft.getInstance().gui.setScreen((Screen)new AstraModsScreen(screen))).bounds(4, 4, 60, 18).build());
         }
     }
 }

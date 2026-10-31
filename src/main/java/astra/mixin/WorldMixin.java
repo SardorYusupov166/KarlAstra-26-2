@@ -19,11 +19,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value={Level.class})
 public abstract class WorldMixin {
-    @Inject(method={"getRainLevel", "getThunderLevel"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"getRainLevel", "getThunderLevel"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$clearWeather(float delta, CallbackInfoReturnable<Float> cir) {
-        Level self = (Level)this;
+        Level self = (Level)(Object)this;
         if (self.isClientSide() && WorldVisuals.clearWeather()) {
-            cir.setReturnValue((Object)Float.valueOf(0.0f));
+            cir.setReturnValue(Float.valueOf(0.0f));
         }
     }
 }

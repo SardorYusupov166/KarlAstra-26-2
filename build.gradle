@@ -1,0 +1,63 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17.17'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+loom { accessWidenerPath = file('src/main/resources/astra.accesswidener') }
+
+if (project.hasProperty('smokeTest')) {
+    loom.runs.client {
+        vmArg '-Dastra.smokeTest=true'
+    }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    include implementation('javazoom:jlayer:1.0.1')
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 25
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xmaxerrs', '1000']
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+    withSourcesJar()
+}
+
+tasks.register('verifyModJar') {
+    dependsOn tasks.jar
+    doLast {
+        def archive = tasks.jar.archiveFile.get().asFile
+        new java.util.zip.ZipFile(archive).withCloseable { zip ->
+            def metadata = new groovy.json.JsonSlurper().parse(zip.getInputStream(zip.getEntry('fabric.mod.json')))
+            assert metadata.depends.minecraft == '~26.2'
+            assert metadata.depends.java == '>=25'
+            assert metadata.version == project.version.toString()
+            def mixins = new groovy.json.JsonSlurper().parse(zip.getInputStream(zip.getEntry('astra.mixins.json')))
+            mixins.client.each { name ->
+                assert zip.getEntry(mixins.package.replace('.', '/') + '/' + name + '.class') != null : "Missing mixin ${name}"
+            }
+            fileTree('src/main/resources/assets').files.each { resource ->
+                def entry = file('src/main/resources').toPath().relativize(resource.toPath()).toString().replace('\\', '/')
+                assert zip.getEntry(entry) != null : "Missing original asset ${entry}"
+            }
+        }
+    }
+}
+tasks.check { dependsOn tasks.named('verifyModJar') }

@@ -3,7 +3,7 @@
  * 
  * Could not load the following classes:
  *  com.mojang.blaze3d.platform.NativeImage
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.multiplayer.ClientLevel
  *  net.minecraft.client.renderer.texture.AbstractTexture
  *  net.minecraft.client.renderer.texture.DynamicTexture
@@ -43,7 +43,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -111,7 +111,7 @@ extends HudModule {
                     int cx = pcx + dx;
                     int cz = pcz + dz;
                     if (!world.getChunkSource().hasChunk(cx, cz)) continue;
-                    long key2 = ChunkPos.asLong((int)cx, (int)cz);
+                    long key2 = ChunkPos.pack((int)cx, (int)cz);
                     Long last = this.updatedAt.get(key2);
                     long l = maxAge = r <= 1 ? 1000L : 4000L;
                     if (last != null && now - last < maxAge) continue;
@@ -161,7 +161,7 @@ extends HudModule {
             for (x = 0; x < 16; ++x) {
                 int north;
                 MapColor mapColor;
-                int depth;
+                int depth = 0;
                 int y = heights[(z + 1) * 17 + x];
                 pos.set(baseX + x, y, baseZ + z);
                 BlockState state = world.getBlockState((BlockPos)pos);
@@ -211,7 +211,7 @@ extends HudModule {
                 int cx = wx >> 4;
                 if (cx != lastCx) {
                     lastCx = cx;
-                    c = this.chunks.get(ChunkPos.asLong((int)cx, (int)cz));
+                    c = this.chunks.get(ChunkPos.pack((int)cx, (int)cz));
                 }
                 int col = c == null ? empty : c[row + (wx & 0xF)];
                 img.setPixel(tx, tz, col == 0 ? empty : col);
@@ -243,7 +243,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         this.drawMap(ctx, MinimapHud.theme(), 0.0f, 0.0f, 90.0f, this.accentColor(), editor);
         float y = 92.0f;
         Theme t = MinimapHud.theme();
@@ -257,7 +257,7 @@ extends HudModule {
         }
     }
 
-    private void drawMap(GuiGraphics ctx, Theme t, float x, float y, float size, int accent, boolean editor) {
+    private void drawMap(GuiGraphicsExtractor ctx, Theme t, float x, float y, float size, int accent, boolean editor) {
         WaypointsModule wps;
         int col;
         float rotation;

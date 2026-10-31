@@ -1,30 +1,18 @@
-/*
- * Decompiled with CFR 0.152.
- * 
- * Could not load the following classes:
- *  net.minecraft.client.multiplayer.ClientLevel$ClientLevelData
- *  org.spongepowered.asm.mixin.Mixin
- *  org.spongepowered.asm.mixin.injection.At
- *  org.spongepowered.asm.mixin.injection.Inject
- *  org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
- */
 package astra.mixin;
-
 import astra.module.modules.visual.WorldVisuals;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.ClientClockManager;
+import net.minecraft.core.Holder;
+import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.clock.WorldClocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-@Mixin(value={ClientLevel.ClientLevelData.class})
+@Mixin(ClientClockManager.class)
 public abstract class ClientWorldPropertiesMixin {
-    @Inject(method={"getDayTime"}, at={@At(value="HEAD")}, cancellable=true)
-    private void astra$timeOfDay(CallbackInfoReturnable<Long> cir) {
+    @Inject(method="getTotalTicks", at=@At("HEAD"), cancellable=true)
+    private void astra$timeOfDay(Holder<WorldClock> clock, CallbackInfoReturnable<Long> cir) {
         long time = WorldVisuals.overrideTime();
-        if (time >= 0L) {
-            cir.setReturnValue((Object)time);
-        }
+        if (time >= 0 && clock.is(WorldClocks.OVERWORLD)) cir.setReturnValue(time);
     }
 }
-

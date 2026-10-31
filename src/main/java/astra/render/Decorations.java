@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.render;
 
@@ -12,7 +12,7 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.theme.Theme;
 import java.util.Random;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public final class Decorations {
     private final Random random = new Random();
@@ -54,7 +54,7 @@ public final class Decorations {
         }
     }
 
-    public void render(GuiGraphics ctx, Theme t, float alpha) {
+    public void render(GuiGraphicsExtractor ctx, Theme t, float alpha) {
         if (!this.initialized) {
             return;
         }

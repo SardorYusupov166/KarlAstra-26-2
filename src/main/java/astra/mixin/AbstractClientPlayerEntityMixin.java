@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value={AbstractClientPlayer.class})
 public abstract class AbstractClientPlayerEntityMixin {
-    @Inject(method={"getSkin"}, at={@At(value="RETURN")}, cancellable=true)
+    @Inject(method={"getSkin"}, at=@At(value="RETURN"), cancellable=true)
     private void astra$cape(CallbackInfoReturnable<PlayerSkin> cir) {
         Identifier cape;
         Minecraft mc = Minecraft.getInstance();
@@ -41,7 +41,7 @@ public abstract class AbstractClientPlayerEntityMixin {
         }
         try {
             CapeCosmetic remote;
-            cape = this == mc.player ? CapeCosmetic.capeTexture() : ((remote = (CapeCosmetic)RemoteCosmetics.get((Player)((AbstractClientPlayer)this), "cape")) != null ? remote.texture() : null);
+            cape = (Object)this == mc.player ? CapeCosmetic.capeTexture() : ((remote = (CapeCosmetic)RemoteCosmetics.get((Player)((AbstractClientPlayer)(Object)this), "cape")) != null ? remote.texture() : null);
         }
         catch (RuntimeException e) {
             AstraClient.LOGGER.error("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u0438\u0442\u044c \u043f\u043b\u0430\u0449 Astra", (Throwable)e);
@@ -51,7 +51,7 @@ public abstract class AbstractClientPlayerEntityMixin {
             return;
         }
         PlayerSkin s = (PlayerSkin)cir.getReturnValue();
-        cir.setReturnValue((Object)new PlayerSkin(s.body(), (ClientAsset.Texture)new ClientAsset.ResourceTexture(cape, cape), s.elytra(), s.model(), s.secure()));
+        cir.setReturnValue(new PlayerSkin(s.body(), (ClientAsset.Texture)new ClientAsset.ResourceTexture(cape, cape), s.elytra(), s.model(), s.secure()));
     }
 }
 

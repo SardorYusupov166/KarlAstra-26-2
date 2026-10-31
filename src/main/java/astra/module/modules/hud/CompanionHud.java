@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.player.LocalPlayer
  *  org.joml.Matrix3x2fStack
  */
@@ -36,7 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.util.List;
 import java.util.Random;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import org.joml.Matrix3x2fStack;
 
@@ -236,7 +236,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = CompanionHud.theme();
         int acc = this.accentColor();
         float time = AnimationUtils.time();
@@ -310,7 +310,7 @@ extends HudModule {
         }
     }
 
-    private void drawMoodIcons(GuiGraphics ctx, Theme t, int acc, float cx, float cy, float r, float time, float age) {
+    private void drawMoodIcons(GuiGraphicsExtractor ctx, Theme t, int acc, float cx, float cy, float r, float time, float age) {
         switch (this.mood.ordinal()) {
             case 1: 
             case 2: {
@@ -351,7 +351,7 @@ extends HudModule {
         }
     }
 
-    private void drawBubble(GuiGraphics ctx, Theme t, int acc, String text, float w, boolean editor) {
+    private void drawBubble(GuiGraphicsExtractor ctx, Theme t, int acc, String text, float w, boolean editor) {
         long age = editor ? 1000L : System.currentTimeMillis() - this.bubbleAt;
         long life = 3600L;
         if (!editor && age > life) {

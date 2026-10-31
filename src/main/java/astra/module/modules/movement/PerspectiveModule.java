@@ -32,7 +32,7 @@ extends Module {
     @Override
     public void onTick() {
         boolean down;
-        boolean bl = down = PerspectiveModule.mc.screen == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
+        boolean bl = down = PerspectiveModule.mc.gui.screen() == null && this.key.isBound() && InputConstants.isKeyDown((Window)mc.getWindow(), (int)this.key.getKey());
         if (this.mode.is("\u0423\u0434\u0435\u0440\u0436\u0430\u043d\u0438\u0435")) {
             if (down && !this.wasDown) {
                 this.before = PerspectiveModule.mc.options.getCameraType();

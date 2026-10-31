@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.util.Mth
  */
 package astra.module.modules.hud;
@@ -16,7 +16,7 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.settings.ModeSetting;
 import astra.theme.Theme;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Mth;
 
 public class DirectionHud
@@ -56,7 +56,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         Theme t = DirectionHud.theme();
         if (!this.tape()) {
             String s = this.cardinal() + "  |  " + Math.round(this.bearing()) + "\u00b0";
@@ -75,35 +75,35 @@ extends HudModule {
                 String label;
                 switch (norm) {
                     case 0: {
-                        String string = "N";
+                        label = "N";
                         break;
                     }
                     case 45: {
-                        String string = "NE";
+                        label = "NE";
                         break;
                     }
                     case 90: {
-                        String string = "E";
+                        label = "E";
                         break;
                     }
                     case 135: {
-                        String string = "SE";
+                        label = "SE";
                         break;
                     }
                     case 180: {
-                        String string = "S";
+                        label = "S";
                         break;
                     }
                     case 225: {
-                        String string = "SW";
+                        label = "SW";
                         break;
                     }
                     case 270: {
-                        String string = "W";
+                        label = "W";
                         break;
                     }
                     default: {
-                        String string = label = "NW";
+                        label = "NW";
                     }
                 }
                 int col = norm % 90 == 0 ? (norm == 0 ? this.accentColor() : t.text()) : t.textDim();

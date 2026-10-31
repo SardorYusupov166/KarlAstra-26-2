@@ -21,11 +21,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value={LivingEntity.class})
 public abstract class LivingEntityMixin {
-    @Inject(method={"getCurrentSwingDuration"}, at={@At(value="RETURN")}, cancellable=true)
+    @Inject(method={"getCurrentSwingDuration"}, at=@At(value="RETURN"), cancellable=true)
     private void astra$swingDuration(CallbackInfoReturnable<Integer> cir) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && this == mc.player) {
-            cir.setReturnValue((Object)ArmAnimation.swingDuration(cir.getReturnValueI()));
+        if (mc.player != null && (Object)this == mc.player) {
+            cir.setReturnValue(ArmAnimation.swingDuration(cir.getReturnValueI()));
         }
     }
 }

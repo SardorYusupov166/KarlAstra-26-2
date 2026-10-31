@@ -4,15 +4,15 @@
  * Could not load the following classes:
  *  com.mojang.blaze3d.platform.InputConstants
  *  com.mojang.blaze3d.platform.Window
- *  net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext
+ *  net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext
  *  net.minecraft.client.Camera
  *  net.minecraft.client.Minecraft
  *  net.minecraft.client.gui.Font
  *  net.minecraft.client.gui.Font$DisplayMode
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.screens.Screen
- *  net.minecraft.client.renderer.MultiBufferSource
- *  net.minecraft.client.renderer.MultiBufferSource$BufferSource
+ *  astra.render.WorldBuffers
+ *  astra.render.WorldBuffers$BufferSource
  *  net.minecraft.network.chat.Component
  *  net.minecraft.network.chat.FormattedText
  *  net.minecraft.util.Mth
@@ -65,13 +65,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.MultiBufferSource;
+import astra.render.WorldBuffers;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.Mth;
@@ -114,7 +114,7 @@ extends HudModule {
     private static final String ON_SCREEN = "\u041d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435";
     private static final String OFF = "\u0412\u044b\u043a\u043b";
     private final ModeSetting lyricsMode = this.add(new ModeSetting("\u0422\u0435\u043a\u0441\u0442 \u043f\u0435\u0441\u043d\u0438", "\u0412 \u043c\u0438\u0440\u0435", "\u0412 \u043c\u0438\u0440\u0435", "\u041d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435", "\u0412\u044b\u043a\u043b"));
-    private final ModeSetting lyricsFx = this.add((ModeSetting)((Setting)new ModeSetting("\u042d\u0444\u0444\u0435\u043a\u0442 \u043f\u043e\u044f\u0432\u043b\u0435\u043d\u0438\u044f", "\u0412\u043e\u043b\u043d\u0430", LyricFx.WORLD_EFFECTS).desc("\u00ab\u0423\u0434\u0430\u0440 \u043c\u043e\u043b\u043d\u0438\u0438\u00bb \u0440\u0438\u0441\u0443\u0435\u0442 \u0440\u0430\u0437\u0440\u044f\u0434\u044b \u043f\u043e \u0431\u0443\u043a\u0432\u0430\u043c \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 \u00ab\u0412 \u043c\u0438\u0440\u0435\u00bb.")).visibleWhen(this::lyricsOn));
+    private final ModeSetting lyricsFx = this.add((ModeSetting)(new ModeSetting("\u042d\u0444\u0444\u0435\u043a\u0442 \u043f\u043e\u044f\u0432\u043b\u0435\u043d\u0438\u044f", "\u0412\u043e\u043b\u043d\u0430", LyricFx.WORLD_EFFECTS).desc("\u00ab\u0423\u0434\u0430\u0440 \u043c\u043e\u043b\u043d\u0438\u0438\u00bb \u0440\u0438\u0441\u0443\u0435\u0442 \u0440\u0430\u0437\u0440\u044f\u0434\u044b \u043f\u043e \u0431\u0443\u043a\u0432\u0430\u043c \u0432 \u0440\u0435\u0436\u0438\u043c\u0435 \u00ab\u0412 \u043c\u0438\u0440\u0435\u00bb.")).visibleWhen(this::lyricsOn));
     private static final String COLOR_COVER = "\u0426\u0432\u0435\u0442\u0430 \u043e\u0431\u043b\u043e\u0436\u043a\u0438";
     private static final String COLOR_THEME = "\u0426\u0432\u0435\u0442 \u0442\u0435\u043c\u044b";
     private static final String COLOR_RAINBOW = "\u0420\u0430\u0434\u0443\u0433\u0430";
@@ -122,24 +122,24 @@ extends HudModule {
     private final ModeSetting lyricsColor = this.add((ModeSetting)new ModeSetting("\u0426\u0432\u0435\u0442 \u0442\u0435\u043a\u0441\u0442\u0430", "\u0426\u0432\u0435\u0442\u0430 \u043e\u0431\u043b\u043e\u0436\u043a\u0438", "\u0426\u0432\u0435\u0442\u0430 \u043e\u0431\u043b\u043e\u0436\u043a\u0438", "\u0426\u0432\u0435\u0442 \u0442\u0435\u043c\u044b", "\u0420\u0430\u0434\u0443\u0433\u0430", "\u0421\u0432\u043e\u0439").visibleWhen(this::lyricsOn));
     private final ColorSetting color1 = this.add((ColorSetting)new ColorSetting("\u0421\u0432\u043e\u0439 \u0446\u0432\u0435\u0442 1", -45608).visibleWhen(() -> this.lyricsOn() && this.lyricsColor.is(COLOR_CUSTOM)));
     private final ColorSetting color2 = this.add((ColorSetting)new ColorSetting("\u0421\u0432\u043e\u0439 \u0446\u0432\u0435\u0442 2", -13058568).visibleWhen(() -> this.lyricsOn() && this.lyricsColor.is(COLOR_CUSTOM)));
-    private final BooleanSetting karaoke = this.add((BooleanSetting)((Setting)new BooleanSetting("\u041a\u0430\u0440\u0430\u043e\u043a\u0435-\u0437\u0430\u043b\u0438\u0432\u043a\u0430", true).desc("\u0421\u0442\u0440\u043e\u043a\u0430 \u0437\u0430\u043b\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u0446\u0432\u0435\u0442\u043e\u043c \u043f\u043e \u043c\u0435\u0440\u0435 \u0442\u043e\u0433\u043e, \u043a\u0430\u043a \u0435\u0451 \u043f\u043e\u044e\u0442")).visibleWhen(this::lyricsOn));
+    private final BooleanSetting karaoke = this.add((BooleanSetting)(new BooleanSetting("\u041a\u0430\u0440\u0430\u043e\u043a\u0435-\u0437\u0430\u043b\u0438\u0432\u043a\u0430", true).desc("\u0421\u0442\u0440\u043e\u043a\u0430 \u0437\u0430\u043b\u0438\u0432\u0430\u0435\u0442\u0441\u044f \u0446\u0432\u0435\u0442\u043e\u043c \u043f\u043e \u043c\u0435\u0440\u0435 \u0442\u043e\u0433\u043e, \u043a\u0430\u043a \u0435\u0451 \u043f\u043e\u044e\u0442")).visibleWhen(this::lyricsOn));
     private final BooleanSetting glow = this.add((BooleanSetting)new BooleanSetting("\u0421\u0432\u0435\u0447\u0435\u043d\u0438\u0435 \u0442\u0435\u043a\u0441\u0442\u0430", true).visibleWhen(this::lyricsOn));
-    private final BooleanSetting nextLine = this.add((BooleanSetting)((Setting)new BooleanSetting("\u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f \u0441\u0442\u0440\u043e\u043a\u0430", true).desc("\u041f\u043e\u0434 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0441\u0442\u0440\u043e\u043a\u043e\u0439 \u0431\u043b\u0435\u0434\u043d\u043e \u0432\u0438\u0434\u043d\u0430 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f")).visibleWhen(this::lyricsOn));
+    private final BooleanSetting nextLine = this.add((BooleanSetting)(new BooleanSetting("\u0421\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f \u0441\u0442\u0440\u043e\u043a\u0430", true).desc("\u041f\u043e\u0434 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u0441\u0442\u0440\u043e\u043a\u043e\u0439 \u0431\u043b\u0435\u0434\u043d\u043e \u0432\u0438\u0434\u043d\u0430 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0430\u044f")).visibleWhen(this::lyricsOn));
     private final BooleanSetting sway = this.add((BooleanSetting)new BooleanSetting("\u041f\u043e\u043a\u0430\u0447\u0438\u0432\u0430\u043d\u0438\u0435 \u0431\u0443\u043a\u0432", true).visibleWhen(this::lyricsOn));
     private final NumberSetting lyricsSize = this.add((NumberSetting)new NumberSetting("\u0420\u0430\u0437\u043c\u0435\u0440 \u0442\u0435\u043a\u0441\u0442\u0430", 100.0, 40.0, 300.0, 5.0).unit("%").visibleWhen(this::lyricsOn));
     private static final String FOLLOW = "\u041f\u0435\u0440\u0435\u0434 \u0432\u0437\u0433\u043b\u044f\u0434\u043e\u043c";
     private static final String PINNED = "\u0417\u0430\u043a\u0440\u0435\u043f\u043b\u044f\u0442\u044c \u043d\u0430 \u043c\u0435\u0441\u0442\u0435";
-    private final ModeSetting anchor = this.add((ModeSetting)((Setting)((Setting)new ModeSetting("\u0412 \u043c\u0438\u0440\u0435: \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435", "\u041f\u0435\u0440\u0435\u0434 \u0432\u0437\u0433\u043b\u044f\u0434\u043e\u043c", "\u041f\u0435\u0440\u0435\u0434 \u0432\u0437\u0433\u043b\u044f\u0434\u043e\u043c", "\u0417\u0430\u043a\u0440\u0435\u043f\u043b\u044f\u0442\u044c \u043d\u0430 \u043c\u0435\u0441\u0442\u0435").desc("\u00ab\u0417\u0430\u043a\u0440\u0435\u043f\u043b\u044f\u0442\u044c\u00bb \u2014 \u043a\u0430\u0436\u0434\u0430\u044f \u0441\u0442\u0440\u043e\u043a\u0430 \u043f\u043e\u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0432 \u043c\u0438\u0440\u0435 \u0438 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u0432\u044b \u0441\u043c\u043e\u0442\u0440\u0435\u043b\u0438")).visibleWhen(() -> this.lyricsMode.is(IN_WORLD))).onChange(v -> this.resetWorldPlacement()));
+    private final ModeSetting anchor = this.add((ModeSetting)((Setting)(new ModeSetting("\u0412 \u043c\u0438\u0440\u0435: \u043f\u043e\u043b\u043e\u0436\u0435\u043d\u0438\u0435", "\u041f\u0435\u0440\u0435\u0434 \u0432\u0437\u0433\u043b\u044f\u0434\u043e\u043c", "\u041f\u0435\u0440\u0435\u0434 \u0432\u0437\u0433\u043b\u044f\u0434\u043e\u043c", "\u0417\u0430\u043a\u0440\u0435\u043f\u043b\u044f\u0442\u044c \u043d\u0430 \u043c\u0435\u0441\u0442\u0435").desc("\u00ab\u0417\u0430\u043a\u0440\u0435\u043f\u043b\u044f\u0442\u044c\u00bb \u2014 \u043a\u0430\u0436\u0434\u0430\u044f \u0441\u0442\u0440\u043e\u043a\u0430 \u043f\u043e\u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0432 \u043c\u0438\u0440\u0435 \u0438 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0442\u0430\u043c, \u0433\u0434\u0435 \u0432\u044b \u0441\u043c\u043e\u0442\u0440\u0435\u043b\u0438")).visibleWhen(() -> this.lyricsMode.is(IN_WORLD))).onChange(v -> this.resetWorldPlacement()));
     private final BooleanSetting faceCamera = this.add((BooleanSetting)new BooleanSetting("\u0412 \u043c\u0438\u0440\u0435: \u043f\u043e\u0432\u043e\u0440\u043e\u0442 \u043a \u043a\u0430\u043c\u0435\u0440\u0435", true).visibleWhen(() -> this.lyricsMode.is(IN_WORLD) && this.anchor.is(PINNED)));
-    private final BooleanSetting throughBlocks = this.add((BooleanSetting)((Setting)new BooleanSetting("\u0412 \u043c\u0438\u0440\u0435: \u0441\u043a\u0432\u043e\u0437\u044c \u0431\u043b\u043e\u043a\u0438", true).desc("\u0422\u0435\u043a\u0441\u0442 \u043d\u0435 \u043f\u0440\u044f\u0447\u0435\u0442\u0441\u044f \u0437\u0430 \u0441\u043a\u043b\u043e\u043d\u0430\u043c\u0438 \u0438 \u0441\u0442\u0435\u043d\u0430\u043c\u0438")).visibleWhen(() -> this.lyricsMode.is(IN_WORLD)));
-    private final NumberSetting distance = this.add((NumberSetting)((Setting)new NumberSetting("\u0412 \u043c\u0438\u0440\u0435: \u0440\u0430\u0441\u0441\u0442\u043e\u044f\u043d\u0438\u0435", 4.0, 1.5, 10.0, 0.5).unit(" \u0431\u043b.").visibleWhen(() -> this.lyricsMode.is(IN_WORLD))).onChange(v -> this.resetWorldPlacement()));
-    private final NumberSetting height = this.add((NumberSetting)((Setting)new NumberSetting("\u0412 \u043c\u0438\u0440\u0435: \u0432\u044b\u0441\u043e\u0442\u0430", 0.3, -2.0, 2.0, 0.1).unit(" \u0431\u043b.").visibleWhen(() -> this.lyricsMode.is(IN_WORLD))).onChange(v -> this.resetWorldPlacement()));
-    private final NumberSetting follow = this.add((NumberSetting)((Setting)new NumberSetting("\u0412 \u043c\u0438\u0440\u0435: \u043f\u043b\u0430\u0432\u043d\u043e\u0441\u0442\u044c", 5.0, 1.0, 20.0, 1.0).desc("\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u0442\u0435\u043a\u0441\u0442 \u0434\u043e\u0433\u043e\u043d\u044f\u0435\u0442 \u0432\u0437\u0433\u043b\u044f\u0434")).visibleWhen(() -> this.lyricsMode.is(IN_WORLD) && this.anchor.is(FOLLOW)));
+    private final BooleanSetting throughBlocks = this.add((BooleanSetting)(new BooleanSetting("\u0412 \u043c\u0438\u0440\u0435: \u0441\u043a\u0432\u043e\u0437\u044c \u0431\u043b\u043e\u043a\u0438", true).desc("\u0422\u0435\u043a\u0441\u0442 \u043d\u0435 \u043f\u0440\u044f\u0447\u0435\u0442\u0441\u044f \u0437\u0430 \u0441\u043a\u043b\u043e\u043d\u0430\u043c\u0438 \u0438 \u0441\u0442\u0435\u043d\u0430\u043c\u0438")).visibleWhen(() -> this.lyricsMode.is(IN_WORLD)));
+    private final NumberSetting distance = this.add((NumberSetting)(new NumberSetting("\u0412 \u043c\u0438\u0440\u0435: \u0440\u0430\u0441\u0441\u0442\u043e\u044f\u043d\u0438\u0435", 4.0, 1.5, 10.0, 0.5).unit(" \u0431\u043b.").visibleWhen(() -> this.lyricsMode.is(IN_WORLD))).onChange(v -> this.resetWorldPlacement()));
+    private final NumberSetting height = this.add((NumberSetting)(new NumberSetting("\u0412 \u043c\u0438\u0440\u0435: \u0432\u044b\u0441\u043e\u0442\u0430", 0.3, -2.0, 2.0, 0.1).unit(" \u0431\u043b.").visibleWhen(() -> this.lyricsMode.is(IN_WORLD))).onChange(v -> this.resetWorldPlacement()));
+    private final NumberSetting follow = this.add((NumberSetting)(new NumberSetting("\u0412 \u043c\u0438\u0440\u0435: \u043f\u043b\u0430\u0432\u043d\u043e\u0441\u0442\u044c", 5.0, 1.0, 20.0, 1.0).desc("\u041a\u0430\u043a \u0431\u044b\u0441\u0442\u0440\u043e \u0442\u0435\u043a\u0441\u0442 \u0434\u043e\u0433\u043e\u043d\u044f\u0435\u0442 \u0432\u0437\u0433\u043b\u044f\u0434")).visibleWhen(() -> this.lyricsMode.is(IN_WORLD) && this.anchor.is(FOLLOW)));
     private static final String BOTTOM = "\u0421\u043d\u0438\u0437\u0443";
     private static final String MIDDLE = "\u041f\u043e \u0446\u0435\u043d\u0442\u0440\u0443";
     private static final String UP = "\u0421\u0432\u0435\u0440\u0445\u0443";
     private final ModeSetting screenPos = this.add((ModeSetting)new ModeSetting("\u041d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435: \u043f\u043e\u0437\u0438\u0446\u0438\u044f", "\u0421\u043d\u0438\u0437\u0443", "\u0421\u043d\u0438\u0437\u0443", "\u041f\u043e \u0446\u0435\u043d\u0442\u0440\u0443", "\u0421\u0432\u0435\u0440\u0445\u0443").visibleWhen(() -> this.lyricsMode.is(ON_SCREEN)));
-    private final NumberSetting offset = this.add((NumberSetting)((Setting)new NumberSetting("\u0421\u0434\u0432\u0438\u0433 \u0442\u0435\u043a\u0441\u0442\u0430", 0.0, -3000.0, 3000.0, 100.0).unit(" \u043c\u0441").desc("\u0415\u0441\u043b\u0438 \u0442\u0435\u043a\u0441\u0442 \u0441\u043f\u0435\u0448\u0438\u0442 \u0438\u043b\u0438 \u043e\u043f\u0430\u0437\u0434\u044b\u0432\u0430\u0435\u0442")).visibleWhen(this::lyricsOn));
+    private final NumberSetting offset = this.add((NumberSetting)(new NumberSetting("\u0421\u0434\u0432\u0438\u0433 \u0442\u0435\u043a\u0441\u0442\u0430", 0.0, -3000.0, 3000.0, 100.0).unit(" \u043c\u0441").desc("\u0415\u0441\u043b\u0438 \u0442\u0435\u043a\u0441\u0442 \u0441\u043f\u0435\u0448\u0438\u0442 \u0438\u043b\u0438 \u043e\u043f\u0430\u0437\u0434\u044b\u0432\u0430\u0435\u0442")).visibleWhen(this::lyricsOn));
     private final BooleanSetting fetchLyrics = this.add((BooleanSetting)new BooleanSetting("\u0417\u0430\u0433\u0440\u0443\u0436\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442\u044b (lrclib.net)", true).desc("\u0422\u0435\u043a\u0441\u0442\u044b \u043f\u0435\u0441\u0435\u043d \u0438\u0437 \u043e\u0442\u043a\u0440\u044b\u0442\u043e\u0439 \u0431\u0430\u0437\u044b lrclib.net; \u0432 \u0437\u0430\u043f\u0440\u043e\u0441 \u0443\u0445\u043e\u0434\u044f\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0438 \u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c"));
     private final WorldLyricsConfig worldStyle = this.createWorldStyle();
     private final KeybindSetting playerKey = this.add(new KeybindSetting("\u041a\u043b\u0430\u0432\u0438\u0448\u0430 \u043f\u043b\u0435\u0435\u0440\u0430", 74));
@@ -223,7 +223,7 @@ extends HudModule {
         this.resetWorldPlacement();
         this.demoStartedAt = System.currentTimeMillis();
         this.demoLine = -1;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
     }
 
     public void previewLightningLyrics() {
@@ -420,7 +420,7 @@ extends HudModule {
         if (!this.isEnabled()) {
             this.setEnabled(true);
         }
-        mc.setScreen((Screen)new PlayerScreen(NowPlayingModule.mc.screen));
+        mc.gui.setScreen((Screen)new PlayerScreen(NowPlayingModule.mc.gui.screen()));
     }
 
     @Override
@@ -453,7 +453,7 @@ extends HudModule {
     }
 
     private void handleKeys() {
-        if (NowPlayingModule.mc.screen != null) {
+        if (NowPlayingModule.mc.gui.screen() != null) {
             for (int i = 0; i < this.keyWas.length; ++i) {
                 this.keyWas[i] = true;
             }
@@ -566,7 +566,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         NowPlaying np = this.track();
         if (!np.hasTrack()) {
             if (!editor) {
@@ -590,7 +590,7 @@ extends HudModule {
         }
     }
 
-    private void renderCard(GuiGraphics ctx, NowPlaying np, int[] c, float w, float h) {
+    private void renderCard(GuiGraphicsExtractor ctx, NowPlaying np, int[] c, float w, float h) {
         Theme t = NowPlayingModule.theme();
         float cs = 38.0f;
         float cx = 6.0f;
@@ -618,7 +618,7 @@ extends HudModule {
         }
     }
 
-    private void renderCompact(GuiGraphics ctx, NowPlaying np, int[] c, float w, float h) {
+    private void renderCompact(GuiGraphicsExtractor ctx, NowPlaying np, int[] c, float w, float h) {
         Theme t = NowPlayingModule.theme();
         NowPlayingModule.drawCover(ctx, np, c, 3.0f, 3.0f, 16.0f, 4.0f);
         float tx = 23.0f;
@@ -633,7 +633,7 @@ extends HudModule {
         }
     }
 
-    private void renderVinyl(GuiGraphics ctx, NowPlaying np, int[] c, float w, float h) {
+    private void renderVinyl(GuiGraphicsExtractor ctx, NowPlaying np, int[] c, float w, float h) {
         Theme t = NowPlayingModule.theme();
         float r = 23.0f;
         float cx = 6.0f + r;
@@ -681,7 +681,7 @@ extends HudModule {
         return this.vinylAngleValue;
     }
 
-    public static void drawCover(GuiGraphics ctx, NowPlaying np, int[] c, float x, float y, float s, float r) {
+    public static void drawCover(GuiGraphicsExtractor ctx, NowPlaying np, int[] c, float x, float y, float s, float r) {
         Render2D.glow(ctx, x, y, s, s, r, Math.max(3.0f, s * 0.15f), ColorUtil.withAlpha(c[0], 0.35f));
         CoverArt.Cover cover = CoverArt.get(np.cover());
         if (cover != null) {
@@ -693,7 +693,7 @@ extends HudModule {
         Render2D.outline(ctx, x, y, s, s, r, 0.75f, ColorUtil.withAlpha(-1, 0.18f));
     }
 
-    public static void drawEqualizer(GuiGraphics ctx, float x, float y, float w, float h, boolean playing, int[] c) {
+    public static void drawEqualizer(GuiGraphicsExtractor ctx, float x, float y, float w, float h, boolean playing, int[] c) {
         int bars = 4;
         float bw = w / ((float)bars * 1.6f);
         float time = AnimationUtils.time();
@@ -705,7 +705,7 @@ extends HudModule {
         }
     }
 
-    public static void drawProgress(GuiGraphics ctx, float x, float y, float w, float h, float p, int[] c) {
+    public static void drawProgress(GuiGraphicsExtractor ctx, float x, float y, float w, float h, float p, int[] c) {
         Render2D.roundRect(ctx, x, y, w, h, h / 2.0f, ColorUtil.withAlpha(-1, 0.12f));
         float fw = Math.max(h, w * p);
         Render2D.glow(ctx, x, y, fw, h, h / 2.0f, 3.0f, ColorUtil.withAlpha(c[0], 0.3f));
@@ -713,7 +713,7 @@ extends HudModule {
         Render2D.circle(ctx, x + fw, y + h / 2.0f, h * 0.9f, -1);
     }
 
-    private void scrollText(GuiGraphics ctx, String s, float x, float y, float maxW, float size, int color, boolean bold) {
+    private void scrollText(GuiGraphicsExtractor ctx, String s, float x, float y, float maxW, float size, int color, boolean bold) {
         float cycle;
         float tw = Fonts.width(s, size, bold);
         if (tw <= maxW) {
@@ -735,7 +735,7 @@ extends HudModule {
         ctx.disableScissor();
     }
 
-    public void renderOverlay(GuiGraphics ctx) {
+    public void renderOverlay(GuiGraphicsExtractor ctx) {
         NowPlaying np = this.track();
         if (((Boolean)this.banner.get()).booleanValue()) {
             this.renderBanner(ctx);
@@ -811,7 +811,7 @@ extends HudModule {
         return new BannerLayout(song, glyphs, size, sub, width);
     }
 
-    private void renderBanner(GuiGraphics ctx) {
+    private void renderBanner(GuiGraphicsExtractor ctx) {
         TrackBannerHud layout = TrackBannerHud.get();
         if (!this.bannerVisible() || layout == null || !layout.isEnabled()) {
             return;
@@ -822,7 +822,7 @@ extends HudModule {
     /*
      * WARNING - Removed try catching itself - possible behaviour change.
      */
-    public void drawTrackBanner(GuiGraphics ctx, BannerLayout layout, boolean editor, int[] colors) {
+    public void drawTrackBanner(GuiGraphicsExtractor ctx, BannerLayout layout, boolean editor, int[] colors) {
         float life = this.bannerTime.getFloat();
         float age = editor ? 8.0f : (float)(System.currentTimeMillis() - this.trackChangedAt) / 1000.0f;
         float exit = editor || age < life - 0.6f ? -1.0f : age - (life - 0.6f);
@@ -849,7 +849,7 @@ extends HudModule {
         }
     }
 
-    private void renderScreenLyrics(GuiGraphics ctx, NowPlaying np) {
+    private void renderScreenLyrics(GuiGraphicsExtractor ctx, NowPlaying np) {
         String next;
         String text;
         if (Lyrics.status() != Lyrics.Status.SYNCED) {
@@ -880,7 +880,7 @@ extends HudModule {
         }
     }
 
-    private void drawScreenLine(GuiGraphics ctx, String text, float sw, float y, float size, float t, float fill, float alpha, LyricFx.Colors colors, int glowColor, float time, boolean exiting) {
+    private void drawScreenLine(GuiGraphicsExtractor ctx, String text, float sw, float y, float size, float t, float fill, float alpha, LyricFx.Colors colors, int glowColor, float time, boolean exiting) {
         float maxW;
         List<LyricFx.Glyph> gs = LyricFx.split(text, ch -> Fonts.width(ch, 1.0f, true));
         float tw = LyricFx.totalWidth(gs) * size;
@@ -895,7 +895,7 @@ extends HudModule {
         NowPlayingModule.drawGlyphs(ctx, gs, (sw - tw) / 2.0f, y, size, true, (Boolean)this.glow.get(), glowColor, alpha);
     }
 
-    public static void drawGlyphs(GuiGraphics ctx, List<LyricFx.Glyph> gs, float left, float top, float size, boolean bold, boolean glow, int glowColor, float alphaMul) {
+    public static void drawGlyphs(GuiGraphicsExtractor ctx, List<LyricFx.Glyph> gs, float left, float top, float size, boolean bold, boolean glow, int glowColor, float alphaMul) {
         Matrix3x2fStack m = ctx.pose();
         float o = Math.max(0.6f, size * 0.07f);
         for (LyricFx.Glyph g : gs) {
@@ -926,7 +926,7 @@ extends HudModule {
         }
     }
 
-    public void renderWorld(WorldRenderContext context) {
+    public void renderWorld(LevelRenderContext context) {
         Vec3 at;
         WorldPlacement previous;
         boolean showPrevious;
@@ -935,7 +935,7 @@ extends HudModule {
         String next;
         String text;
         boolean demo;
-        if (!this.lyricsMode.is(IN_WORLD) || NowPlayingModule.mc.player == null || NowPlayingModule.mc.level == null || NowPlayingModule.mc.options.hideGui) {
+        if (!this.lyricsMode.is(IN_WORLD) || NowPlayingModule.mc.player == null || NowPlayingModule.mc.level == null || NowPlayingModule.mc.gui.hud.isHidden()) {
             return;
         }
         if (this.placementWorld != NowPlayingModule.mc.level || !this.placementMode.equals(this.anchor.get())) {
@@ -984,7 +984,7 @@ extends HudModule {
         if (text.isBlank() && !showPrevious) {
             return;
         }
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Camera camera = Minecraft.getInstance().gameRenderer.mainCamera();
         if (this.anchor.is(FOLLOW)) {
             this.followView(camera);
             if (!this.followReferenceInit) {
@@ -998,7 +998,7 @@ extends HudModule {
         }
         int[] c = this.lyricColors(np);
         LyricFx.Colors colors = new LyricFx.Colors(c[0], c[1], this.worldStyle.unfilledColor(), this.lyricsColor.is(COLOR_RAINBOW));
-        MultiBufferSource.BufferSource imm = mc.renderBuffers().bufferSource();
+        WorldBuffers.BufferSource imm = WorldBuffers.forContext(context);
         float time = AnimationUtils.time();
         if (showPrevious && (previous = this.worldPlacement(camera, at = this.anchor.is(PINNED) ? this.previousWorldAnchor : this.worldAnchor, this.previousWorldRot, this.previousReferenceDistance)) != null) {
             this.drawWorldGroup(imm, previous, this.outgoingWorldText, "", (float)(now - this.prevLineAt) / 1000.0f, -1.0f, colors, c[0], time, true);
@@ -1110,7 +1110,7 @@ extends HudModule {
         return rows;
     }
 
-    private void drawWorldGroup(MultiBufferSource.BufferSource imm, WorldPlacement placement, String text, String next, float age, float fill, LyricFx.Colors colors, int glowColor, float time, boolean exiting) {
+    private void drawWorldGroup(WorldBuffers.BufferSource imm, WorldPlacement placement, String text, String next, float age, float fill, LyricFx.Colors colors, int glowColor, float time, boolean exiting) {
         if (placement.alpha() * this.worldStyle.opacity.getFloat() / 100.0f < 0.025f) {
             return;
         }
@@ -1169,16 +1169,16 @@ extends HudModule {
                     float[][] border = new float[][]{{-0.55f, 0.0f}, {0.55f, 0.0f}, {0.0f, -0.55f}, {0.0f, 0.55f}};
                     Matrix4f borderMatrix = new Matrix4f((Matrix4fc)nm).translate(0.0f, 0.0f, 0.08f);
                     for (float[] at : border) {
-                        NowPlayingModule.mc.font.drawInBatch(rendered, nextX + at[0], at[1], ColorUtil.withAlpha(-16185838, nextAlpha), false, borderMatrix, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
+                        WorldBuffers.drawText(NowPlayingModule.mc.font, rendered, nextX + at[0], at[1], ColorUtil.withAlpha(-16185838, nextAlpha), false, borderMatrix, (WorldBuffers)imm, this.layerType(), 0, 0xF000F0);
                     }
                     imm.endBatch();
                 }
-                NowPlayingModule.mc.font.drawInBatch(rendered, nextX, 0.0f, ColorUtil.withAlpha(-1, nextAlpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), nm, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
+                WorldBuffers.drawText(NowPlayingModule.mc.font, rendered, nextX, 0.0f, ColorUtil.withAlpha(-1, nextAlpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), nm, (WorldBuffers)imm, this.layerType(), 0, 0xF000F0);
             }
         }
     }
 
-    private void drawWorldGlyphs(MultiBufferSource.BufferSource imm, Matrix4f base, List<LyricFx.Glyph> glyphs, float y, float opacity, int glowColor) {
+    private void drawWorldGlyphs(WorldBuffers.BufferSource imm, Matrix4f base, List<LyricFx.Glyph> glyphs, float y, float opacity, int glowColor) {
         int pass;
         Font tr = NowPlayingModule.mc.font;
         float total = LyricFx.totalWidth(glyphs) * 9.0f;
@@ -1201,7 +1201,7 @@ extends HudModule {
                         if (a < 0.025f) continue;
                         int color = ColorUtil.withAlpha(ColorUtil.lerp(glowColor, glyph.color, 0.3f), a);
                         for (float[] offset : offsets) {
-                            tr.drawInBatch(text, -half + offset[0], -4.5f + offset[1], color, false, matrix, (MultiBufferSource)imm, layer, 0, light);
+                            WorldBuffers.drawText(tr, text, -half + offset[0], -4.5f + offset[1], color, false, matrix, (WorldBuffers)imm, layer, 0, light);
                         }
                         continue;
                     }
@@ -1210,11 +1210,11 @@ extends HudModule {
                         float[][] border = new float[][]{{-0.55f, 0.0f}, {0.55f, 0.0f}, {0.0f, -0.55f}, {0.0f, 0.55f}};
                         Matrix4f borderMatrix = new Matrix4f((Matrix4fc)matrix).translate(0.0f, 0.0f, 0.08f);
                         for (float[] at : border) {
-                            tr.drawInBatch(text, -half + at[0], -4.5f + at[1], edge, false, borderMatrix, (MultiBufferSource)imm, layer, 0, light);
+                            WorldBuffers.drawText(tr, text, -half + at[0], -4.5f + at[1], edge, false, borderMatrix, (WorldBuffers)imm, layer, 0, light);
                         }
                         continue;
                     }
-                    tr.drawInBatch(text, -half, -4.5f, ColorUtil.withAlpha(glyph.color, alpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), matrix, (MultiBufferSource)imm, layer, 0, light);
+                    WorldBuffers.drawText(tr, text, -half, -4.5f, ColorUtil.withAlpha(glyph.color, alpha), ((Boolean)this.worldStyle.shadow.get()).booleanValue(), matrix, (WorldBuffers)imm, layer, 0, light);
                 }
                 imm.endBatch();
             }
@@ -1222,16 +1222,16 @@ extends HudModule {
         }
     }
 
-    private void worldMark(MultiBufferSource.BufferSource imm, Matrix4f base, String text, float x, float y, float size, float rotation, int color) {
+    private void worldMark(WorldBuffers.BufferSource imm, Matrix4f base, String text, float x, float y, float size, float rotation, int color) {
         if (ColorUtil.alpha(color) < 6) {
             return;
         }
         Component rendered = Fonts.text(text, false);
         Matrix4f matrix = new Matrix4f((Matrix4fc)base).translate(x, y, -0.02f).rotateZ(rotation).scale(size);
-        NowPlayingModule.mc.font.drawInBatch(rendered, (float)(-NowPlayingModule.mc.font.width((FormattedText)rendered)) / 2.0f, -4.5f, color, false, matrix, (MultiBufferSource)imm, this.layerType(), 0, 0xF000F0);
+        WorldBuffers.drawText(NowPlayingModule.mc.font, rendered, (float)(-NowPlayingModule.mc.font.width((FormattedText)rendered)) / 2.0f, -4.5f, color, false, matrix, (WorldBuffers)imm, this.layerType(), 0, 0xF000F0);
     }
 
-    private void drawWorldDecor(MultiBufferSource.BufferSource imm, Matrix4f base, float width, float bottom, int color, float alpha, float age, float time) {
+    private void drawWorldDecor(WorldBuffers.BufferSource imm, Matrix4f base, float width, float bottom, int color, float alpha, float age, float time) {
         int tint = ColorUtil.withAlpha(color, alpha * 0.65f);
         switch ((String)this.worldStyle.ornament.get()) {
             case "\u041b\u0438\u043d\u0438\u044f": {

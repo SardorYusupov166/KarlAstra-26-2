@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.render.TextureSetup
  *  net.minecraft.client.renderer.RenderPipelines
  */
@@ -14,7 +14,7 @@ import astra.render.Icon;
 import astra.render.Mesh;
 import astra.render.Paint;
 import astra.render.Render2D;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -24,11 +24,11 @@ public final class Icons {
     private Icons() {
     }
 
-    public static void draw(GuiGraphics ctx, Icon icon, float x, float y, float size, int color) {
+    public static void draw(GuiGraphicsExtractor ctx, Icon icon, float x, float y, float size, int color) {
         Icons.draw(ctx, icon, x, y, size, color, 1.0f);
     }
 
-    public static void drawNeon(GuiGraphics ctx, Icon icon, float x, float y, float size, int color, int glow, float strength) {
+    public static void drawNeon(GuiGraphicsExtractor ctx, Icon icon, float x, float y, float size, int color, int glow, float strength) {
         float gs = UiDraw.glowStrength();
         if (gs > 0.0f && strength > 0.0f) {
             float g = strength * Math.min(1.5f, gs);
@@ -38,7 +38,7 @@ public final class Icons {
         Icons.draw(ctx, icon, x, y, size, color, 1.0f);
     }
 
-    private static void draw(GuiGraphics ctx, Icon icon, float x, float y, float size, int color, float strokeMul) {
+    private static void draw(GuiGraphicsExtractor ctx, Icon icon, float x, float y, float size, int color, float strokeMul) {
         Pen p = new Pen(x, y, size, ColorUtil.mulAlpha(color, 1.0f), Render2D.pixel(ctx), strokeMul);
         switch (icon) {
             case HOME: {

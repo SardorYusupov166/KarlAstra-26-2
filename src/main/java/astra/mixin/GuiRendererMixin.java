@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value={GuiRenderer.class})
 public abstract class GuiRendererMixin {
-    @Inject(method={"render"}, at={@At(value="HEAD")})
+    @Inject(method={"render"}, at=@At(value="HEAD"))
     private void astra$flushShapes(CallbackInfo ci) {
         Render2D.flushBatch();
     }

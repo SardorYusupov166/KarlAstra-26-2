@@ -44,16 +44,16 @@ public abstract class ChatInputSuggestorMixin {
     @Shadow
     private int commandUsagePosition;
 
-    @Redirect(method={"showSuggestions", "renderUsage"}, at={@At(value="FIELD", target="Lnet/minecraft/client/gui/screens/Screen;height:I", opcode=180)})
+    @Redirect(method={"showSuggestions", "extractUsage"}, at=@At(value="FIELD", target="Lnet/minecraft/client/gui/screens/Screen;height:I", opcode=180))
     private int astra$inputAnchor(Screen owner) {
         ChatInputHud layout = ChatInputHud.get();
         return owner instanceof ChatScreen && layout != null && layout.isEnabled() ? this.input.getY() + 12 : owner.height;
     }
 
-    @Redirect(method={"renderUsage"}, at={@At(value="FIELD", target="Lnet/minecraft/client/gui/components/CommandSuggestions;commandUsagePosition:I", opcode=180)})
+    @Redirect(method={"extractUsage"}, at=@At(value="FIELD", target="Lnet/minecraft/client/gui/components/CommandSuggestions;commandUsagePosition:I", opcode=180))
     private int astra$usageX(CommandSuggestions self) {
         ChatInputHud layout = ChatInputHud.get();
-        return Minecraft.getInstance().screen instanceof ChatScreen && layout != null && layout.isEnabled() ? this.input.getX() : this.astra$originalUsageX();
+        return Minecraft.getInstance().gui.screen() instanceof ChatScreen && layout != null && layout.isEnabled() ? this.input.getX() : this.astra$originalUsageX();
     }
 
     @Unique
@@ -61,11 +61,11 @@ public abstract class ChatInputSuggestorMixin {
         return this.commandUsagePosition;
     }
 
-    @Inject(method={"formatChat"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"formatChat"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$maskPassword(String original, int firstCharacterIndex, CallbackInfoReturnable<FormattedCharSequence> cir) {
         FormattedCharSequence masked = StreamerProtect.maskInput(this.input.getValue(), original, firstCharacterIndex);
         if (masked != null) {
-            cir.setReturnValue((Object)masked);
+            cir.setReturnValue(masked);
         }
     }
 }

@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  org.joml.Matrix3x2fStack
  */
 package astra.module.modules.hud;
@@ -20,7 +20,7 @@ import astra.settings.ColorSetting;
 import astra.settings.ModeSetting;
 import astra.settings.NumberSetting;
 import astra.theme.Theme;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
 
 public class TabLayoutHud
@@ -75,7 +75,7 @@ extends HudModule {
         return false;
     }
 
-    public static boolean begin(GuiGraphics ctx) {
+    public static boolean begin(GuiGraphicsExtractor ctx) {
         TabLayoutHud m = TabLayoutHud.get();
         if (m == null || !m.isEnabled() || m.untouched()) {
             return false;
@@ -114,7 +114,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         if (!editor) {
             return;
         }

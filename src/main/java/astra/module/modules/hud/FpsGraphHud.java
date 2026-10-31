@@ -2,7 +2,7 @@
  * Decompiled with CFR 0.152.
  * 
  * Could not load the following classes:
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  */
 package astra.module.modules.hud;
 
@@ -16,7 +16,7 @@ import astra.render.Paint;
 import astra.render.Render2D;
 import astra.theme.Theme;
 import astra.utils.FrameStats;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class FpsGraphHud
 extends HudModule {
@@ -35,7 +35,7 @@ extends HudModule {
     }
 
     @Override
-    protected void renderContent(GuiGraphics ctx, float w, float h, boolean editor) {
+    protected void renderContent(GuiGraphicsExtractor ctx, float w, float h, boolean editor) {
         FpsGraphHud.drawGraph(ctx, 6.0f, 6.0f, 84.0f, h - 12.0f, this.accentColor(), FpsGraphHud.theme());
         Theme t = FpsGraphHud.theme();
         float x = 96.0f;
@@ -46,7 +46,7 @@ extends HudModule {
         Fonts.draw(ctx, "\u041c\u0430\u043a\u0441: " + Math.round(FrameStats.max()), x, 44.0f, 5.5f, t.textDim(), false);
     }
 
-    public static void drawGraph(GuiGraphics ctx, float x, float y, float w, float h, int accent, Theme t) {
+    public static void drawGraph(GuiGraphicsExtractor ctx, float x, float y, float w, float h, int accent, Theme t) {
         float[] hist = FrameStats.history();
         int n = FrameStats.historySize();
         float max = Math.max(60.0f, FrameStats.max() * 1.1f);

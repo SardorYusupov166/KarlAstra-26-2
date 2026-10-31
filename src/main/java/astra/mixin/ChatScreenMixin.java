@@ -6,7 +6,7 @@
  *  com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation
  *  net.minecraft.client.gui.ActiveTextCollector$ClickableStyleFinder
  *  net.minecraft.client.gui.Font
- *  net.minecraft.client.gui.GuiGraphics
+ *  net.minecraft.client.gui.GuiGraphicsExtractor
  *  net.minecraft.client.gui.components.EditBox
  *  net.minecraft.client.gui.screens.ChatScreen
  *  net.minecraft.client.gui.screens.Screen
@@ -32,7 +32,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -59,7 +59,7 @@ extends Screen {
         super(title);
     }
 
-    @Inject(method={"init"}, at={@At(value="TAIL")})
+    @Inject(method={"init"}, at=@At(value="TAIL"))
     private void astra$placeInput(CallbackInfo ci) {
         ChatInputHud layout = ChatInputHud.get();
         if (layout != null && layout.isEnabled()) {
@@ -81,12 +81,12 @@ extends Screen {
         return super.mouseReleased(click);
     }
 
-    @Inject(method={"removed"}, at={@At(value="HEAD")})
+    @Inject(method={"removed"}, at=@At(value="HEAD"))
     private void astra$stopDrag(CallbackInfo ci) {
         this.astra$scrollbar.release();
     }
 
-    @Inject(method={"mouseClicked"}, at={@At(value="HEAD")}, cancellable=true)
+    @Inject(method={"mouseClicked"}, at=@At(value="HEAD"), cancellable=true)
     private void astra$copy(MouseButtonEvent click, boolean doubled, CallbackInfoReturnable<Boolean> cir) {
         double mouseX = click.x();
         double mouseY = click.y();
@@ -94,25 +94,25 @@ extends Screen {
         ChatInputHud input = ChatInputHud.get();
         if (button == 0 && input != null && input.isEnabled() && input.bounds().contains(mouseX, mouseY)) {
             this.input.mouseClicked(click, doubled);
-            cir.setReturnValue((Object)true);
+            cir.setReturnValue(true);
             return;
         }
         if (button == 0 && this.astra$scrollbar.click(mouseX, mouseY)) {
-            cir.setReturnValue((Object)true);
+            cir.setReturnValue(true);
             return;
         }
         if (button == 1 && ChatPatches.copyAt(mouseX, mouseY)) {
-            cir.setReturnValue((Object)true);
+            cir.setReturnValue(true);
         }
     }
 
-    @WrapOperation(method={"mouseClicked"}, at={@At(value="NEW", target="(Lnet/minecraft/client/gui/Font;II)Lnet/minecraft/client/gui/ActiveTextCollector$ClickableStyleFinder;")})
+    @WrapOperation(method={"mouseClicked"}, at=@At(value="NEW", target="(Lnet/minecraft/client/gui/Font;II)Lnet/minecraft/client/gui/ActiveTextCollector$ClickableStyleFinder;"))
     private ActiveTextCollector.ClickableStyleFinder astra$clickHandler(Font tr, int x, int y, Operation<ActiveTextCollector.ClickableStyleFinder> original) {
         return (ActiveTextCollector.ClickableStyleFinder)original.call(new Object[]{tr, (int)ChatLayoutHud.unmapX(x), (int)ChatLayoutHud.unmapY(y)});
     }
 
-    @Redirect(method={"render"}, at={@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V")}, require=0)
-    private void astra$input(GuiGraphics ctx, int x1, int y1, int x2, int y2, int color) {
+    @Redirect(method={"extractRenderState"}, at=@At(value="INVOKE", target="Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V"), require=0)
+    private void astra$input(GuiGraphicsExtractor ctx, int x1, int y1, int x2, int y2, int color) {
         ChatInputHud input = ChatInputHud.get();
         if (input != null && input.isEnabled()) {
             ChatInputHud.Bounds b = input.bounds();
